@@ -51,8 +51,28 @@ func TestDocumentAPIUsage(t *testing.T) {
 	// Add right-aligned text (ensuring it's in regular style, not italic)
 	doc.AddText("This text is right-aligned.").Regular().AlignRight().Draw()
 
-	// bar chart image
-	doc.AddImage("test/res/barchart.png").Height(150).AlignCenter().Draw()
+	// Create and add a bar chart using the new API instead of static image
+	barChart := doc.AddBarChart().
+		Title("Monthly Sales").
+		Height(320).
+		AlignCenter().
+		BarWidth(50).
+		BarSpacing(10)
+
+	// Add data to the chart
+	barChart.AddBar(120, "Jan").
+		AddBar(140, "Feb").
+		AddBar(160, "Mar").
+		AddBar(180, "Apr").
+		AddBar(120, "May").
+		AddBar(140, "Jun")
+
+	// Configurar el gráfico para mostrar los ejes
+	barChart.WithAxis(true, true)
+
+	// Renderizar el gráfico
+	barChart.Draw()
+
 	// Add a footnote (in italic by default)
 	doc.AddFootnote("This is a footnote.").AlignCenter().Draw()
 
