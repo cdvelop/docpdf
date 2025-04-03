@@ -354,7 +354,7 @@ func (r *Rasterizer) Add2(b, c docpdf.Point26_6) {
 			// approximation.
 			midx := (p[0].X + 2*p[1].X + p[2].X) / 4
 			midy := (p[0].Y + 2*p[1].Y + p[2].Y) / 4
-			r.Add1(docpdf.Point26_6{midx, midy})
+			r.Add1(docpdf.Point26_6{X: midx, Y: midy})
 			r.Add1(p[0])
 			i--
 		}
@@ -423,7 +423,7 @@ func (r *Rasterizer) Add3(b, c, d docpdf.Point26_6) {
 			// Replace the level-0 cubic with a two-linear-piece approximation.
 			midx := (p[0].X + 3*(p[1].X+p[2].X) + p[3].X) / 8
 			midy := (p[0].Y + 3*(p[1].Y+p[2].Y) + p[3].Y) / 8
-			r.Add1(docpdf.Point26_6{midx, midy})
+			r.Add1(docpdf.Point26_6{X: midx, Y: midy})
 			r.Add1(p[0])
 			i--
 		}
@@ -436,25 +436,25 @@ func (r *Rasterizer) AddPath(p Path) {
 		switch p[i] {
 		case 0:
 			r.Start(
-				docpdf.Point26_6{p[i+1], p[i+2]},
+				docpdf.Point26_6{X: p[i+1], Y: p[i+2]},
 			)
 			i += 4
 		case 1:
 			r.Add1(
-				docpdf.Point26_6{p[i+1], p[i+2]},
+				docpdf.Point26_6{X: p[i+1], Y: p[i+2]},
 			)
 			i += 4
 		case 2:
 			r.Add2(
-				docpdf.Point26_6{p[i+1], p[i+2]},
-				docpdf.Point26_6{p[i+3], p[i+4]},
+				docpdf.Point26_6{X: p[i+1], Y: p[i+2]},
+				docpdf.Point26_6{X: p[i+3], Y: p[i+4]},
 			)
 			i += 6
 		case 3:
 			r.Add3(
-				docpdf.Point26_6{p[i+1], p[i+2]},
-				docpdf.Point26_6{p[i+3], p[i+4]},
-				docpdf.Point26_6{p[i+5], p[i+6]},
+				docpdf.Point26_6{X: p[i+1], Y: p[i+2]},
+				docpdf.Point26_6{X: p[i+3], Y: p[i+4]},
+				docpdf.Point26_6{X: p[i+5], Y: p[i+6]},
 			)
 			i += 8
 		default:

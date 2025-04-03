@@ -28,7 +28,7 @@ func maxAbs(a, b docpdf.Int26_6) docpdf.Int26_6 {
 
 // pNeg returns the vector -p, or equivalently p rotated by 180 degrees.
 func pNeg(p docpdf.Point26_6) docpdf.Point26_6 {
-	return docpdf.Point26_6{-p.X, -p.Y}
+	return docpdf.Point26_6{X: -p.X, Y: -p.Y}
 }
 
 // pDot returns the dot product p·q.
@@ -51,12 +51,12 @@ func pLen(p docpdf.Point26_6) docpdf.Int26_6 {
 func pNorm(p docpdf.Point26_6, length docpdf.Int26_6) docpdf.Point26_6 {
 	d := pLen(p)
 	if d == 0 {
-		return docpdf.Point26_6{}
+		return docpdf.Point26_6{X: 0, Y: 0}
 	}
 	s, t := int64(length), int64(d)
 	x := int64(p.X) * s / t
 	y := int64(p.Y) * s / t
-	return docpdf.Point26_6{docpdf.Int26_6(x), docpdf.Int26_6(y)}
+	return docpdf.Point26_6{X: docpdf.Int26_6(x), Y: docpdf.Int26_6(y)}
 }
 
 // pRot45CW returns the vector p rotated clockwise by 45 degrees.
@@ -67,14 +67,14 @@ func pRot45CW(p docpdf.Point26_6) docpdf.Point26_6 {
 	px, py := int64(p.X), int64(p.Y)
 	qx := (+px - py) * 181 / 256
 	qy := (+px + py) * 181 / 256
-	return docpdf.Point26_6{docpdf.Int26_6(qx), docpdf.Int26_6(qy)}
+	return docpdf.Point26_6{X: docpdf.Int26_6(qx), Y: docpdf.Int26_6(qy)}
 }
 
 // pRot90CW returns the vector p rotated clockwise by 90 degrees.
 //
 // Note that the Y-axis grows downwards, so {1, 0}.Rot90CW is {0, 1}.
 func pRot90CW(p docpdf.Point26_6) docpdf.Point26_6 {
-	return docpdf.Point26_6{-p.Y, p.X}
+	return docpdf.Point26_6{X: -p.Y, Y: p.X}
 }
 
 // pRot135CW returns the vector p rotated clockwise by 135 degrees.
@@ -85,7 +85,7 @@ func pRot135CW(p docpdf.Point26_6) docpdf.Point26_6 {
 	px, py := int64(p.X), int64(p.Y)
 	qx := (-px - py) * 181 / 256
 	qy := (+px - py) * 181 / 256
-	return docpdf.Point26_6{docpdf.Int26_6(qx), docpdf.Int26_6(qy)}
+	return docpdf.Point26_6{X: docpdf.Int26_6(qx), Y: docpdf.Int26_6(qy)}
 }
 
 // pRot45CCW returns the vector p rotated counter-clockwise by 45 degrees.
@@ -96,14 +96,14 @@ func pRot45CCW(p docpdf.Point26_6) docpdf.Point26_6 {
 	px, py := int64(p.X), int64(p.Y)
 	qx := (+px + py) * 181 / 256
 	qy := (-px + py) * 181 / 256
-	return docpdf.Point26_6{docpdf.Int26_6(qx), docpdf.Int26_6(qy)}
+	return docpdf.Point26_6{X: docpdf.Int26_6(qx), Y: docpdf.Int26_6(qy)}
 }
 
 // pRot90CCW returns the vector p rotated counter-clockwise by 90 degrees.
 //
 // Note that the Y-axis grows downwards, so {1, 0}.Rot90CCW is {0, -1}.
 func pRot90CCW(p docpdf.Point26_6) docpdf.Point26_6 {
-	return docpdf.Point26_6{p.Y, -p.X}
+	return docpdf.Point26_6{X: p.Y, Y: -p.X}
 }
 
 // pRot135CCW returns the vector p rotated counter-clockwise by 135 degrees.
@@ -114,7 +114,7 @@ func pRot135CCW(p docpdf.Point26_6) docpdf.Point26_6 {
 	px, py := int64(p.X), int64(p.Y)
 	qx := (-px + py) * 181 / 256
 	qy := (-px - py) * 181 / 256
-	return docpdf.Point26_6{docpdf.Int26_6(qx), docpdf.Int26_6(qy)}
+	return docpdf.Point26_6{X: docpdf.Int26_6(qx), Y: docpdf.Int26_6(qy)}
 }
 
 // An Adder accumulates points on a curve.
@@ -197,12 +197,12 @@ func (p *Path) AddStroke(q Path, width docpdf.Int26_6, cr Capper, jr Joiner) {
 
 // firstPoint returns the first point in a non-empty Path.
 func (p Path) firstPoint() docpdf.Point26_6 {
-	return docpdf.Point26_6{p[1], p[2]}
+	return docpdf.Point26_6{X: p[1], Y: p[2]}
 }
 
 // lastPoint returns the last point in a non-empty Path.
 func (p Path) lastPoint() docpdf.Point26_6 {
-	return docpdf.Point26_6{p[len(p)-3], p[len(p)-2]}
+	return docpdf.Point26_6{X: p[len(p)-3], Y: p[len(p)-2]}
 }
 
 // addPathReversed adds q reversed to p.
@@ -223,20 +223,20 @@ func addPathReversed(p Adder, q Path) {
 		case 1:
 			i -= 4
 			p.Add1(
-				docpdf.Point26_6{q[i-2], q[i-1]},
+				docpdf.Point26_6{X: q[i-2], Y: q[i-1]},
 			)
 		case 2:
 			i -= 6
 			p.Add2(
-				docpdf.Point26_6{q[i+2], q[i+3]},
-				docpdf.Point26_6{q[i-2], q[i-1]},
+				docpdf.Point26_6{X: q[i+2], Y: q[i+3]},
+				docpdf.Point26_6{X: q[i-2], Y: q[i-1]},
 			)
 		case 3:
 			i -= 8
 			p.Add3(
-				docpdf.Point26_6{q[i+4], q[i+5]},
-				docpdf.Point26_6{q[i+2], q[i+3]},
-				docpdf.Point26_6{q[i-2], q[i-1]},
+				docpdf.Point26_6{X: q[i+4], Y: q[i+5]},
+				docpdf.Point26_6{X: q[i+2], Y: q[i+3]},
+				docpdf.Point26_6{X: q[i-2], Y: q[i-1]},
 			)
 		default:
 			panic("freetype/raster: bad path")
