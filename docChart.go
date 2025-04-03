@@ -30,18 +30,28 @@ type docChart struct {
 	background   chart.Style
 	canvas       chart.Style
 	colorPalette chart.ColorPalette
+
+	// Propiedades para control de calidad
+	dpi            float64 // Resolución del gráfico en DPI (dots per inch)
+	fontSizeTitle  float64 // Tamaño de fuente para el título
+	fontSizeLabels float64 // Tamaño de fuente para las etiquetas
+	strokeWidth    float64 // Ancho de línea para los contornos
 }
 
 // AddBarChart crea un nuevo elemento de gráfico de barras
 func (doc *Document) AddBarChart() *docChart {
 	return &docChart{
-		doc:        doc,
-		width:      500, // Ancho predeterminado
-		height:     200, // Alto predeterminado
-		keepRatio:  true,
-		alignment:  Left,
-		barWidth:   60, // Ancho de barra predeterminado
-		barSpacing: 20, // Espacio entre barras predeterminado
+		doc:            doc,
+		width:          500, // Ancho predeterminado
+		height:         300, // Alto predeterminado
+		keepRatio:      true,
+		alignment:      Left,
+		barWidth:       60,   // Ancho de barra predeterminado
+		barSpacing:     20,   // Espacio entre barras predeterminado
+		dpi:            300,  // DPI predeterminado con calidad alta
+		fontSizeTitle:  14.0, // Tamaño título por defecto
+		fontSizeLabels: 11.0, // Tamaño etiquetas por defecto
+		strokeWidth:    1.5,  // Ancho de línea por defecto
 	}
 }
 
@@ -142,6 +152,31 @@ func (c *docChart) AddBar(value float64, label string) *docChart {
 	return c
 }
 
+// Quality configura la calidad de la imagen del gráfico
+// dpi - Resolución en puntos por pulgada (dots per inch)
+// Valores recomendados:
+// - 72: Calidad para pantalla
+// - 150: Calidad media
+// - 300: Alta calidad (por defecto)
+// - 600: Calidad profesional (archivos más grandes)
+func (c *docChart) Quality(dpi float64) *docChart {
+	if dpi > 0 {
+		c.dpi = dpi
+	}
+	return c
+}
+
+// FontSize configura el tamaño de fuente para el título y las etiquetas
+func (c *docChart) FontSize(titleSize, labelsSize float64) *docChart {
+	if titleSize > 0 {
+		c.fontSizeTitle = titleSize
+	}
+	if labelsSize > 0 {
+		c.fontSizeLabels = labelsSize
+	}
+	return c
+}
+
 // Draw renderiza el gráfico en el documento con manejo de saltos de página
 func (c *docChart) Draw() error {
 	// Crear un archivo temporal para almacenar la imagen del gráfico
@@ -151,36 +186,101 @@ func (c *docChart) Draw() error {
 	}
 	defer os.Remove(tmpFile.Name()) // Eliminar el archivo temporal al finalizar
 
-	// Crear el gráfico de barras usando go-chart
+	// Ajustar las dimensiones del gráfico para la calidad deseada
+	widthInPixels := int(c.width * c.dpi / 72.0)
+	heightInPixels := int(c.height * c.dpi / 72.0)
+
+	// Calcular factor de escala y ajustar para elementos específicos
+	scaleFactor := c.dpi / 72.0
+
+	// Crear el gráfico de barras
 	barChart := chart.BarChart{
 		Title:      c.title,
-		Width:      int(c.width),
-		Height:     int(c.height),
-		BarWidth:   c.barWidth,
-		BarSpacing: c.barSpacing,
+		Width:      widthInPixels,
+		Height:     heightInPixels,
+		BarWidth:   int(float64(c.barWidth) * scaleFactor * 0.5),   // Reducir el ancho de barras
+		BarSpacing: int(float64(c.barSpacing) * scaleFactor * 0.5), // Reducir el espaciado
 		Bars:       c.bars,
+		DPI:        c.dpi,
 	}
 
-	// Aplicar estilos si están configurados
+	// Ajustar título - reducir significativamente el tamaño para alta resolución
+	barChart.TitleStyle = chart.Style{
+		FontSize: c.fontSizeTitle * 0.3 * scaleFactor, // Reducir para evitar título enorme
+		Padding: chart.Box{
+			Top:    int(15 * scaleFactor),
+			Bottom: int(10 * scaleFactor),
+		},
+	}
+
+	// Reservar más espacio para las etiquetas del eje X
+	barChart.Height = int(float64(barChart.Height) * 0.9) // Reducir altura para dar más espacio a etiquetas
+
+	// Configurar el canvas con más espacio en la parte inferior
+	barChart.Canvas = chart.Style{
+		Padding: chart.Box{
+			Bottom: int(40 * scaleFactor), // Espacio adicional para etiquetas
+		},
+	}
+
+	// Aplicar estilos personalizados si están configurados
 	if c.background.FillColor.A > 0 {
 		barChart.Background = c.background
 	}
 
 	if c.canvas.FillColor.A > 0 {
+		// Mantener el padding adicional
+		c.canvas.Padding = chart.Box{
+			Bottom: int(40 * scaleFactor),
+		}
 		barChart.Canvas = c.canvas
 	}
 
+	// Configuración de ejes optimizada para alta resolución
 	if !c.xAxisStyle.Hidden {
-		barChart.XAxis = c.xAxisStyle
+		xStyle := chart.Style{
+			Hidden:              false,
+			FontSize:            c.fontSizeLabels * 0.3 * scaleFactor, // Tamaño de fuente reducido
+			StrokeWidth:         c.strokeWidth,
+			StrokeColor:         c.xAxisStyle.StrokeColor,
+			FontColor:           c.xAxisStyle.FontColor,
+			TextRotationDegrees: 0,
+			Padding: chart.Box{
+				Top:    int(5 * scaleFactor),
+				Bottom: int(20 * scaleFactor), // Más espacio para las etiquetas
+			},
+		}
+		barChart.XAxis = xStyle
 	}
 
 	if !c.yAxisStyle.Hidden {
 		barChart.YAxis = chart.YAxis{
-			Style: c.yAxisStyle,
+			Style: chart.Style{
+				Hidden:      false,
+				FontSize:    c.fontSizeLabels * 0.3 * scaleFactor, // Tamaño de fuente reducido
+				StrokeWidth: c.strokeWidth,
+				Padding: chart.Box{
+					Left:  int(10 * scaleFactor),
+					Right: int(5 * scaleFactor),
+				},
+			},
 		}
 	}
 
-	// Renderizar el gráfico al archivo temporal
+	// Ajustar tamaño de fuente para las etiquetas de las barras
+	for i := range c.bars {
+		c.bars[i].Style.FontSize = c.fontSizeLabels * 0.3 * scaleFactor // Reducir tamaño de etiquetas
+	}
+
+	// Ajustar el espacio total del gráfico
+	barChart.Background.Padding = chart.Box{
+		Top:    int(20 * scaleFactor),
+		Left:   int(20 * scaleFactor),
+		Right:  int(20 * scaleFactor),
+		Bottom: int(40 * scaleFactor), // Más espacio en la parte inferior
+	}
+
+	// Renderizar el gráfico
 	err = barChart.Render(chart.PNG, tmpFile)
 	if err != nil {
 		return err
@@ -267,6 +367,7 @@ func (c *docChart) WithStyle(backgroundColor, barColor drawing.Color) *docChart 
 	// Usar el color proporcionado directamente en lugar de intentar crear una nueva paleta
 	c.canvas = chart.Style{
 		StrokeColor: barColor,
+		StrokeWidth: c.strokeWidth,
 		FillColor:   barColor.WithAlpha(100), // Versión semi-transparente para relleno
 	}
 
