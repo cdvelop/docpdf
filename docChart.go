@@ -46,12 +46,12 @@ func (doc *Document) AddBarChart() *docChart {
 		height:         300, // Alto predeterminado
 		keepRatio:      true,
 		alignment:      Left,
-		barWidth:       60,   // Ancho de barra predeterminado
-		barSpacing:     20,   // Espacio entre barras predeterminado
-		dpi:            300,  // DPI predeterminado con calidad alta
-		fontSizeTitle:  14.0, // Tamaño título por defecto
-		fontSizeLabels: 11.0, // Tamaño etiquetas por defecto
-		strokeWidth:    1.5,  // Ancho de línea por defecto
+		barWidth:       30,   // Ancho de barra predeterminado (ajustado)
+		barSpacing:     15,   // Espacio entre barras predeterminado (ajustado)
+		dpi:            150,  // DPI reducido a 150
+		fontSizeTitle:  12.0, // Tamaño título reducido
+		fontSizeLabels: 8.0,  // Tamaño etiquetas reducido
+		strokeWidth:    1.0,  // Ancho de línea por defecto
 	}
 }
 
@@ -198,18 +198,18 @@ func (c *docChart) Draw() error {
 		Title:      c.title,
 		Width:      widthInPixels,
 		Height:     heightInPixels,
-		BarWidth:   int(float64(c.barWidth) * scaleFactor * 0.5),   // Reducir el ancho de barras
-		BarSpacing: int(float64(c.barSpacing) * scaleFactor * 0.5), // Reducir el espaciado
+		BarWidth:   int(float64(c.barWidth) * scaleFactor),   // Multiplicador extra removido
+		BarSpacing: int(float64(c.barSpacing) * scaleFactor), // Multiplicador extra removido
 		Bars:       c.bars,
-		DPI:        c.dpi,
+		DPI:        c.dpi, // Usar el DPI configurado (150)
 	}
 
-	// Ajustar título - reducir significativamente el tamaño para alta resolución
+	// Ajustar título
 	barChart.TitleStyle = chart.Style{
-		FontSize: c.fontSizeTitle * 0.3 * scaleFactor, // Reducir para evitar título enorme
+		FontSize: c.fontSizeTitle * scaleFactor, // Multiplicador extra removido
 		Padding: chart.Box{
-			Top:    int(15 * scaleFactor),
-			Bottom: int(10 * scaleFactor),
+			Top:    int(10 * scaleFactor), // Padding ajustado para DPI menor
+			Bottom: int(5 * scaleFactor),
 		},
 	}
 
@@ -236,11 +236,11 @@ func (c *docChart) Draw() error {
 		barChart.Canvas = c.canvas
 	}
 
-	// Configuración de ejes optimizada para alta resolución
+	// Configuración de ejes
 	if !c.xAxisStyle.Hidden {
 		xStyle := chart.Style{
 			Hidden:              false,
-			FontSize:            c.fontSizeLabels * 0.3 * scaleFactor, // Tamaño de fuente reducido
+			FontSize:            c.fontSizeLabels * scaleFactor, // Multiplicador extra removido
 			StrokeWidth:         c.strokeWidth,
 			StrokeColor:         c.xAxisStyle.StrokeColor,
 			FontColor:           c.xAxisStyle.FontColor,
@@ -255,29 +255,30 @@ func (c *docChart) Draw() error {
 
 	if !c.yAxisStyle.Hidden {
 		barChart.YAxis = chart.YAxis{
+			// NumberOfTicks: 7, // Campo removido
 			Style: chart.Style{
 				Hidden:      false,
-				FontSize:    c.fontSizeLabels * 0.3 * scaleFactor, // Tamaño de fuente reducido
+				FontSize:    c.fontSizeLabels * scaleFactor, // Multiplicador extra removido
 				StrokeWidth: c.strokeWidth,
 				Padding: chart.Box{
-					Left:  int(10 * scaleFactor),
+					Left:  int(5 * scaleFactor), // Padding ajustado para DPI menor
 					Right: int(5 * scaleFactor),
 				},
 			},
 		}
 	}
 
-	// Ajustar tamaño de fuente para las etiquetas de las barras
-	for i := range c.bars {
-		c.bars[i].Style.FontSize = c.fontSizeLabels * 0.3 * scaleFactor // Reducir tamaño de etiquetas
-	}
+	// Ajustar tamaño de fuente para las etiquetas de las barras (si se muestran)
+	// for i := range c.bars {
+	// 	c.bars[i].Style.FontSize = c.fontSizeLabels * scaleFactor // Ajustado: usar scaleFactor directamente
+	// }
 
 	// Ajustar el espacio total del gráfico
 	barChart.Background.Padding = chart.Box{
-		Top:    int(20 * scaleFactor),
-		Left:   int(20 * scaleFactor),
-		Right:  int(20 * scaleFactor),
-		Bottom: int(40 * scaleFactor), // Más espacio en la parte inferior
+		Top:    int(10 * scaleFactor), // Padding ajustado para DPI menor
+		Left:   int(10 * scaleFactor),
+		Right:  int(10 * scaleFactor),
+		Bottom: int(15 * scaleFactor), // Padding ajustado para DPI menor
 	}
 
 	// Renderizar el gráfico
