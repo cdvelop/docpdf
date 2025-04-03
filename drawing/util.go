@@ -3,6 +3,7 @@ package drawing
 import (
 	"math"
 
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/raster"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 )
@@ -60,7 +61,7 @@ func pointToF64Point(p truetype.Point) (x, y float64) {
 	return fUnitsToFloat64(p.X), -fUnitsToFloat64(p.Y)
 }
 
-func fUnitsToFloat64(x docpdf.Int26_6) float64 {
+func fUnitsToFloat64(x fixedpoint.Int26_6) float64 {
 	scaled := x << 2
 	return float64(scaled/256) + float64(scaled%256)/256.0
 }

@@ -4,7 +4,7 @@ import (
 	"image"
 	"math"
 
-	"github.com/cdvelop/docpdf"
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/raster"
 	"golang.org/x/image/font"
 )
@@ -97,7 +97,7 @@ func (o *Options) glyphCacheEntries() int {
 	return 512
 }
 
-func (o *Options) subPixelsX() (value uint32, halfQuantum, mask docpdf.Int26_6) {
+func (o *Options) subPixelsX() (value uint32, halfQuantum, mask fixedpoint.Int26_6) {
 	if o != nil {
 		switch o.SubPixelsX {
 		case 1, 2, 4, 8, 16, 32, 64:
@@ -110,7 +110,7 @@ func (o *Options) subPixelsX() (value uint32, halfQuantum, mask docpdf.Int26_6) 
 	return subPixels(4)
 }
 
-func (o *Options) subPixelsY() (value uint32, halfQuantum, mask docpdf.Int26_6) {
+func (o *Options) subPixelsY() (value uint32, halfQuantum, mask fixedpoint.Int26_6) {
 	if o != nil {
 		switch o.SubPixelsX {
 		case 1, 2, 4, 8, 16, 32, 64:
@@ -128,7 +128,7 @@ func (o *Options) subPixelsY() (value uint32, halfQuantum, mask docpdf.Int26_6) 
 // sub-pixel locations per full pixel.
 //
 // For example, q == 4 leads to a bias of 8 and a mask of 0xfffffff0, or -16,
-// because we want to round fractions of docpdf.Int26_6 as:
+// because we want to round fractions of fixedpoint.Int26_6 as:
 //   - 0 to  7 rounds to 0.
 //   - 8 to 23 rounds to 16.
 //   - 24 to 39 rounds to 32.
@@ -144,8 +144,8 @@ func (o *Options) subPixelsY() (value uint32, halfQuantum, mask docpdf.Int26_6) 
 // ...
 // When q == 64, we want bias ==  0 and mask ==  -1. (The no-op case).
 // The pattern is clear.
-func subPixels(q int) (value uint32, bias, mask docpdf.Int26_6) {
-	return uint32(q), 32 / docpdf.Int26_6(q), -64 / docpdf.Int26_6(q)
+func subPixels(q int) (value uint32, bias, mask fixedpoint.Int26_6) {
+	return uint32(q), 32 / fixedpoint.Int26_6(q), -64 / fixedpoint.Int26_6(q)
 }
 
 // glyphCacheEntry caches the arguments and return values of rasterize.
@@ -160,7 +160,7 @@ type glyphCacheKey struct {
 }
 
 type glyphCacheVal struct {
-	advanceWidth docpdf.Int26_6
+	advanceWidth fixedpoint.Int26_6
 	offset       image.Point
 	gw           int
 	gh           int
@@ -176,7 +176,7 @@ func NewFace(f *Font, opts *Options) font.Face {
 	a := &face{
 		f:          f,
 		hinting:    opts.hinting(),
-		scale:      docpdf.Int26_6(0.5 + (opts.size() * opts.dpi() * 64 / 72)),
+		scale:      fixedpoint.Int26_6(0.5 + (opts.size() * opts.dpi() * 64 / 72)),
 		glyphCache: make([]glyphCacheEntry, opts.glyphCacheEntries()),
 	}
 	a.subPixelX, a.subPixelBiasX, a.subPixelMaskX = opts.subPixelsX()
@@ -209,13 +209,13 @@ func NewFace(f *Font, opts *Options) font.Face {
 type face struct {
 	f             *Font
 	hinting       font.Hinting
-	scale         docpdf.Int26_6
+	scale         fixedpoint.Int26_6
 	subPixelX     uint32
-	subPixelBiasX docpdf.Int26_6
-	subPixelMaskX docpdf.Int26_6
+	subPixelBiasX fixedpoint.Int26_6
+	subPixelMaskX fixedpoint.Int26_6
 	subPixelY     uint32
-	subPixelBiasY docpdf.Int26_6
-	subPixelMaskY docpdf.Int26_6
+	subPixelBiasY fixedpoint.Int26_6
+	subPixelMaskY fixedpoint.Int26_6
 	masks         *image.Alpha
 	glyphCache    []glyphCacheEntry
 	r             raster.Rasterizer
@@ -252,13 +252,13 @@ func (a *face) Metrics() font.Metrics {
 	fupe := float64(a.f.FUnitsPerEm())
 	return font.Metrics{
 		Height:  a.scale,
-		Ascent:  docpdf.Int26_6(math.Ceil(scale * float64(+a.f.ascent) / fupe)),
-		Descent: docpdf.Int26_6(math.Ceil(scale * float64(-a.f.descent) / fupe)),
+		Ascent:  fixedpoint.Int26_6(math.Ceil(scale * float64(+a.f.ascent) / fupe)),
+		Descent: fixedpoint.Int26_6(math.Ceil(scale * float64(-a.f.descent) / fupe)),
 	}
 }
 
 // Kern satisfies the font.Face interface.
-func (a *face) Kern(r0, r1 rune) docpdf.Int26_6 {
+func (a *face) Kern(r0, r1 rune) fixedpoint.Int26_6 {
 	i0 := a.index(r0)
 	i1 := a.index(r1)
 	kern := a.f.Kern(a.scale, i0, i1)
@@ -269,8 +269,8 @@ func (a *face) Kern(r0, r1 rune) docpdf.Int26_6 {
 }
 
 // Glyph satisfies the font.Face interface.
-func (a *face) Glyph(dot docpdf.Point26_6, r rune) (
-	dr image.Rectangle, mask image.Image, maskp image.Point, advance docpdf.Int26_6, ok bool) {
+func (a *face) Glyph(dot fixedpoint.Point26_6, r rune) (
+	dr image.Rectangle, mask image.Image, maskp image.Point, advance fixedpoint.Int26_6, ok bool) {
 
 	// Quantize to the sub-pixel granularity.
 	dotX := (dot.X + a.subPixelBiasX) & a.subPixelMaskX
@@ -314,30 +314,30 @@ func (a *face) Glyph(dot docpdf.Point26_6, r rune) (
 	return dr, a.masks, image.Point{Y: a.paintOffset}, v.advanceWidth, true
 }
 
-func (a *face) GlyphBounds(r rune) (bounds docpdf.Rectangle26_6, advance docpdf.Int26_6, ok bool) {
+func (a *face) GlyphBounds(r rune) (bounds fixedpoint.Rectangle26_6, advance fixedpoint.Int26_6, ok bool) {
 	if err := a.glyphBuf.Load(a.f, a.scale, a.index(r), a.hinting); err != nil {
-		return docpdf.Rectangle26_6{}, 0, false
+		return fixedpoint.Rectangle26_6{}, 0, false
 	}
 	xmin := +a.glyphBuf.Bounds.Min.X
 	ymin := -a.glyphBuf.Bounds.Max.Y
 	xmax := +a.glyphBuf.Bounds.Max.X
 	ymax := -a.glyphBuf.Bounds.Min.Y
 	if xmin > xmax || ymin > ymax {
-		return docpdf.Rectangle26_6{}, 0, false
+		return fixedpoint.Rectangle26_6{}, 0, false
 	}
-	return docpdf.Rectangle26_6{
-		Min: docpdf.Point26_6{
+	return fixedpoint.Rectangle26_6{
+		Min: fixedpoint.Point26_6{
 			X: xmin,
 			Y: ymin,
 		},
-		Max: docpdf.Point26_6{
+		Max: fixedpoint.Point26_6{
 			X: xmax,
 			Y: ymax,
 		},
 	}, a.glyphBuf.AdvanceWidth, true
 }
 
-func (a *face) GlyphAdvance(r rune) (advance docpdf.Int26_6, ok bool) {
+func (a *face) GlyphAdvance(r rune) (advance fixedpoint.Int26_6, ok bool) {
 	if err := a.glyphBuf.Load(a.f, a.scale, a.index(r), a.hinting); err != nil {
 		return 0, false
 	}
@@ -348,7 +348,7 @@ func (a *face) GlyphAdvance(r rune) (advance docpdf.Int26_6, ok bool) {
 // the width and height of the given glyph at the given sub-pixel offsets.
 //
 // The 26.6 fixed point arguments fx and fy must be in the range [0, 1).
-func (a *face) rasterize(index Index, fx, fy docpdf.Int26_6) (v glyphCacheVal, ok bool) {
+func (a *face) rasterize(index Index, fx, fy fixedpoint.Int26_6) (v glyphCacheVal, ok bool) {
 	if err := a.glyphBuf.Load(a.f, a.scale, index, a.hinting); err != nil {
 		return glyphCacheVal{}, false
 	}
@@ -365,8 +365,8 @@ func (a *face) rasterize(index Index, fx, fy docpdf.Int26_6) (v glyphCacheVal, o
 	// the pixel offsets, based on the font's FUnit metrics, that let a
 	// negative co-ordinate in TrueType space be non-negative in rasterizer
 	// space. xmin and ymin are typically <= 0.
-	fx -= docpdf.Int26_6(xmin << 6)
-	fy -= docpdf.Int26_6(ymin << 6)
+	fx -= fixedpoint.Int26_6(xmin << 6)
+	fy -= fixedpoint.Int26_6(ymin << 6)
 	// Rasterize the glyph's vectors.
 	a.r.Clear()
 	pixOffset := a.paintOffset * a.maxw
@@ -392,7 +392,7 @@ func clear(pix []byte) {
 }
 
 // drawContour draws the given closed contour with the given offset.
-func (a *face) drawContour(ps []Point, dx, dy docpdf.Int26_6) {
+func (a *face) drawContour(ps []Point, dx, dy fixedpoint.Int26_6) {
 	if len(ps) == 0 {
 		return
 	}
@@ -407,7 +407,7 @@ func (a *face) drawContour(ps []Point, dx, dy docpdf.Int26_6) {
 	// ps[0] is a truetype.Point measured in FUnits and positive Y going
 	// upwards. start is the same thing measured in fixed point units and
 	// positive Y going downwards, and offset by (dx, dy).
-	start := docpdf.Point26_6{
+	start := fixedpoint.Point26_6{
 		X: dx + ps[0].X,
 		Y: dy - ps[0].Y,
 	}
@@ -415,7 +415,7 @@ func (a *face) drawContour(ps []Point, dx, dy docpdf.Int26_6) {
 	if ps[0].Flags&0x01 != 0 {
 		others = ps[1:]
 	} else {
-		last := docpdf.Point26_6{
+		last := fixedpoint.Point26_6{
 			X: dx + ps[len(ps)-1].X,
 			Y: dy - ps[len(ps)-1].Y,
 		}
@@ -423,7 +423,7 @@ func (a *face) drawContour(ps []Point, dx, dy docpdf.Int26_6) {
 			start = last
 			others = ps[:len(ps)-1]
 		} else {
-			start = docpdf.Point26_6{
+			start = fixedpoint.Point26_6{
 				X: (start.X + last.X) / 2,
 				Y: (start.Y + last.Y) / 2,
 			}
@@ -433,7 +433,7 @@ func (a *face) drawContour(ps []Point, dx, dy docpdf.Int26_6) {
 	a.r.Start(start)
 	q0, on0 := start, true
 	for _, p := range others {
-		q := docpdf.Point26_6{
+		q := fixedpoint.Point26_6{
 			X: dx + p.X,
 			Y: dy - p.Y,
 		}
@@ -448,7 +448,7 @@ func (a *face) drawContour(ps []Point, dx, dy docpdf.Int26_6) {
 			if on0 {
 				// No-op.
 			} else {
-				mid := docpdf.Point26_6{
+				mid := fixedpoint.Point26_6{
 					X: (q0.X + q.X) / 2,
 					Y: (q0.Y + q.Y) / 2,
 				}

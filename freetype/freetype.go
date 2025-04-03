@@ -8,7 +8,7 @@ import (
 	"image"
 	"image/draw"
 
-	"github.com/cdvelop/docpdf"
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/raster"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"golang.org/x/image/font"
@@ -30,7 +30,7 @@ const (
 type cacheEntry struct {
 	valid        bool
 	glyph        truetype.Index
-	advanceWidth docpdf.Int26_6
+	advanceWidth fixedpoint.Int26_6
 	mask         *image.Alpha
 	offset       image.Point
 }
@@ -42,12 +42,12 @@ func ParseFont(b []byte) (*truetype.Font, error) {
 	return truetype.Parse(b)
 }
 
-// Pt converts from a co-ordinate pair measured in pixels to a docpdf.Point26_6
-// co-ordinate pair measured in docpdf.Int26_6 units.
-func Pt(x, y int) docpdf.Point26_6 {
-	return docpdf.Point26_6{
-		X: docpdf.Int26_6(x << 6),
-		Y: docpdf.Int26_6(y << 6),
+// Pt converts from a co-ordinate pair measured in pixels to a fixedpoint.Point26_6
+// co-ordinate pair measured in fixedpoint.Int26_6 units.
+func Pt(x, y int) fixedpoint.Point26_6 {
+	return fixedpoint.Point26_6{
+		X: fixedpoint.Int26_6(x << 6),
+		Y: fixedpoint.Int26_6(y << 6),
 	}
 }
 
@@ -64,7 +64,7 @@ type Context struct {
 	// fontSize and dpi are used to calculate scale. scale is the number of
 	// 26.6 fixed point units in 1 em. hinting is the hinting policy.
 	fontSize, dpi float64
-	scale         docpdf.Int26_6
+	scale         fixedpoint.Int26_6
 	hinting       font.Hinting
 	// cache is the glyph cache.
 	cache [nGlyphs * nXFractions * nYFractions]cacheEntry
@@ -72,12 +72,12 @@ type Context struct {
 
 // PointToFixed converts the given number of points (as in "a 12 point font")
 // into a 26.6 fixed point number of pixels.
-func (c *Context) PointToFixed(x float64) docpdf.Int26_6 {
-	return docpdf.Int26_6(x * float64(c.dpi) * (64.0 / 72.0))
+func (c *Context) PointToFixed(x float64) fixedpoint.Int26_6 {
+	return fixedpoint.Int26_6(x * float64(c.dpi) * (64.0 / 72.0))
 }
 
 // drawContour draws the given closed contour with the given offset.
-func (c *Context) drawContour(ps []truetype.Point, dx, dy docpdf.Int26_6) {
+func (c *Context) drawContour(ps []truetype.Point, dx, dy fixedpoint.Int26_6) {
 	if len(ps) == 0 {
 		return
 	}
@@ -92,7 +92,7 @@ func (c *Context) drawContour(ps []truetype.Point, dx, dy docpdf.Int26_6) {
 	// ps[0] is a truetype.Point measured in FUnits and positive Y going
 	// upwards. start is the same thing measured in fixed point units and
 	// positive Y going downwards, and offset by (dx, dy).
-	start := docpdf.Point26_6{
+	start := fixedpoint.Point26_6{
 		X: dx + ps[0].X,
 		Y: dy - ps[0].Y,
 	}
@@ -100,7 +100,7 @@ func (c *Context) drawContour(ps []truetype.Point, dx, dy docpdf.Int26_6) {
 	if ps[0].Flags&0x01 != 0 {
 		others = ps[1:]
 	} else {
-		last := docpdf.Point26_6{
+		last := fixedpoint.Point26_6{
 			X: dx + ps[len(ps)-1].X,
 			Y: dy - ps[len(ps)-1].Y,
 		}
@@ -108,7 +108,7 @@ func (c *Context) drawContour(ps []truetype.Point, dx, dy docpdf.Int26_6) {
 			start = last
 			others = ps[:len(ps)-1]
 		} else {
-			start = docpdf.Point26_6{
+			start = fixedpoint.Point26_6{
 				X: (start.X + last.X) / 2,
 				Y: (start.Y + last.Y) / 2,
 			}
@@ -118,7 +118,7 @@ func (c *Context) drawContour(ps []truetype.Point, dx, dy docpdf.Int26_6) {
 	c.r.Start(start)
 	q0, on0 := start, true
 	for _, p := range others {
-		q := docpdf.Point26_6{
+		q := fixedpoint.Point26_6{
 			X: dx + p.X,
 			Y: dy - p.Y,
 		}
@@ -133,7 +133,7 @@ func (c *Context) drawContour(ps []truetype.Point, dx, dy docpdf.Int26_6) {
 			if on0 {
 				// No-op.
 			} else {
-				mid := docpdf.Point26_6{
+				mid := fixedpoint.Point26_6{
 					X: (q0.X + q.X) / 2,
 					Y: (q0.Y + q.Y) / 2,
 				}
@@ -153,8 +153,8 @@ func (c *Context) drawContour(ps []truetype.Point, dx, dy docpdf.Int26_6) {
 // rasterize returns the advance width, glyph mask and integer-pixel offset
 // to render the given glyph at the given sub-pixel offsets.
 // The 26.6 fixed point arguments fx and fy must be in the range [0, 1).
-func (c *Context) rasterize(glyph truetype.Index, fx, fy docpdf.Int26_6) (
-	docpdf.Int26_6, *image.Alpha, image.Point, error) {
+func (c *Context) rasterize(glyph truetype.Index, fx, fy fixedpoint.Int26_6) (
+	fixedpoint.Int26_6, *image.Alpha, image.Point, error) {
 
 	if err := c.glyphBuf.Load(c.f, c.scale, glyph, c.hinting); err != nil {
 		return 0, nil, image.Point{}, err
@@ -172,8 +172,8 @@ func (c *Context) rasterize(glyph truetype.Index, fx, fy docpdf.Int26_6) (
 	// the pixel offsets, based on the font's FUnit metrics, that let a
 	// negative co-ordinate in TrueType space be non-negative in rasterizer
 	// space. xmin and ymin are typically <= 0.
-	fx -= docpdf.Int26_6(xmin << 6)
-	fy -= docpdf.Int26_6(ymin << 6)
+	fx -= fixedpoint.Int26_6(xmin << 6)
+	fy -= fixedpoint.Int26_6(ymin << 6)
 	// Rasterize the glyph's vectors.
 	c.r.Clear()
 	e0 := 0
@@ -190,8 +190,8 @@ func (c *Context) rasterize(glyph truetype.Index, fx, fy docpdf.Int26_6) (
 // render the given glyph at the given sub-pixel point. It is a cache for the
 // rasterize method. Unlike rasterize, p's co-ordinates do not have to be in
 // the range [0, 1).
-func (c *Context) glyph(glyph truetype.Index, p docpdf.Point26_6) (
-	docpdf.Int26_6, *image.Alpha, image.Point, error) {
+func (c *Context) glyph(glyph truetype.Index, p fixedpoint.Point26_6) (
+	fixedpoint.Int26_6, *image.Alpha, image.Point, error) {
 
 	// Split p.X and p.Y into their integer and fractional parts.
 	ix, fx := int(p.X>>6), p.X&0x3f
@@ -221,10 +221,10 @@ func (c *Context) glyph(glyph truetype.Index, p docpdf.Point26_6) (
 // For example, drawing a string that starts with a 'J' in an italic font may
 // affect pixels below and left of the point.
 //
-// p is a docpdf.Point26_6 and can therefore represent sub-pixel positions.
-func (c *Context) DrawString(s string, p docpdf.Point26_6) (docpdf.Point26_6, error) {
+// p is a fixedpoint.Point26_6 and can therefore represent sub-pixel positions.
+func (c *Context) DrawString(s string, p fixedpoint.Point26_6) (fixedpoint.Point26_6, error) {
 	if c.f == nil {
-		return docpdf.Point26_6{}, errors.New("freetype: DrawText called with a nil font")
+		return fixedpoint.Point26_6{}, errors.New("freetype: DrawText called with a nil font")
 	}
 	prev, hasPrev := truetype.Index(0), false
 	for _, rune := range s {
@@ -238,7 +238,7 @@ func (c *Context) DrawString(s string, p docpdf.Point26_6) (docpdf.Point26_6, er
 		}
 		advanceWidth, mask, offset, err := c.glyph(index, p)
 		if err != nil {
-			return docpdf.Point26_6{}, err
+			return fixedpoint.Point26_6{}, err
 		}
 		p.X += advanceWidth
 		glyphRect := mask.Bounds().Add(offset)
@@ -255,7 +255,7 @@ func (c *Context) DrawString(s string, p docpdf.Point26_6) (docpdf.Point26_6, er
 // recalc recalculates scale and bounds values from the font size, screen
 // resolution and font metrics, and invalidates the glyph cache.
 func (c *Context) recalc() {
-	c.scale = docpdf.Int26_6(c.fontSize * c.dpi * (64.0 / 72.0))
+	c.scale = fixedpoint.Int26_6(c.fontSize * c.dpi * (64.0 / 72.0))
 	if c.f == nil {
 		c.r.SetBounds(0, 0)
 	} else {

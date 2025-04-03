@@ -6,7 +6,7 @@
 // metrics and control points. All these methods take a scale parameter, which
 // is the number of pixels in 1 em, expressed as a 26.6 fixed point value. For
 // example, if 1 em is 10 pixels then scale is docpdf.I(10), which is equal to
-// docpdf.Int26_6(10 << 6).
+// fixedpoint.Int26_6(10 << 6).
 //
 // To measure a TrueType font in ideal FUnit space, use scale equal to
 // font.FUnitsPerEm().
@@ -15,7 +15,7 @@ package truetype
 import (
 	"fmt"
 
-	"github.com/cdvelop/docpdf"
+	"github.com/cdvelop/docpdf/fixedpoint"
 )
 
 // An Index is a Font's index of a rune.
@@ -61,12 +61,12 @@ const (
 
 // An HMetric holds the horizontal metrics of a single glyph.
 type HMetric struct {
-	AdvanceWidth, LeftSideBearing docpdf.Int26_6
+	AdvanceWidth, LeftSideBearing fixedpoint.Int26_6
 }
 
 // A VMetric holds the vertical metrics of a single glyph.
 type VMetric struct {
-	AdvanceHeight, TopSideBearing docpdf.Int26_6
+	AdvanceHeight, TopSideBearing fixedpoint.Int26_6
 }
 
 // A FormatError reports that the input is not a valid TrueType font.
@@ -180,9 +180,9 @@ type Font struct {
 	locaOffsetFormat        int
 	nGlyph, nHMetric, nKern int
 	fUnitsPerEm             int32
-	ascent                  int32                // In FUnits.
-	descent                 int32                // In FUnits; typically negative.
-	bounds                  docpdf.Rectangle26_6 // In FUnits.
+	ascent                  int32                    // In FUnits.
+	descent                 int32                    // In FUnits; typically negative.
+	bounds                  fixedpoint.Rectangle26_6 // In FUnits.
 	// Values from the maxp section.
 	maxTwilightPoints, maxStorage, maxFunctionDefs, maxStackElements uint16
 }
@@ -268,10 +268,10 @@ func (f *Font) parseHead() error {
 		return FormatError(fmt.Sprintf("bad head length: %d", len(f.head)))
 	}
 	f.fUnitsPerEm = int32(u16(f.head, 18))
-	f.bounds.Min.X = docpdf.Int26_6(int16(u16(f.head, 36)))
-	f.bounds.Min.Y = docpdf.Int26_6(int16(u16(f.head, 38)))
-	f.bounds.Max.X = docpdf.Int26_6(int16(u16(f.head, 40)))
-	f.bounds.Max.Y = docpdf.Int26_6(int16(u16(f.head, 42)))
+	f.bounds.Min.X = fixedpoint.Int26_6(int16(u16(f.head, 36)))
+	f.bounds.Min.Y = fixedpoint.Int26_6(int16(u16(f.head, 38)))
+	f.bounds.Max.X = fixedpoint.Int26_6(int16(u16(f.head, 40)))
+	f.bounds.Max.Y = fixedpoint.Int26_6(int16(u16(f.head, 42)))
 	switch i := u16(f.head, 50); i {
 	case 0:
 		f.locaOffsetFormat = locaOffsetFormatShort
@@ -359,17 +359,17 @@ func (f *Font) parseMaxp() error {
 }
 
 // scale returns x divided by f.fUnitsPerEm, rounded to the nearest integer.
-func (f *Font) scale(x docpdf.Int26_6) docpdf.Int26_6 {
+func (f *Font) scale(x fixedpoint.Int26_6) fixedpoint.Int26_6 {
 	if x >= 0 {
-		x += docpdf.Int26_6(f.fUnitsPerEm) / 2
+		x += fixedpoint.Int26_6(f.fUnitsPerEm) / 2
 	} else {
-		x -= docpdf.Int26_6(f.fUnitsPerEm) / 2
+		x -= fixedpoint.Int26_6(f.fUnitsPerEm) / 2
 	}
-	return x / docpdf.Int26_6(f.fUnitsPerEm)
+	return x / fixedpoint.Int26_6(f.fUnitsPerEm)
 }
 
 // Bounds returns the union of a Font's glyphs' bounds.
-func (f *Font) Bounds(scale docpdf.Int26_6) docpdf.Rectangle26_6 {
+func (f *Font) Bounds(scale fixedpoint.Int26_6) fixedpoint.Rectangle26_6 {
 	b := f.bounds
 	b.Min.X = f.scale(scale * b.Min.X)
 	b.Min.Y = f.scale(scale * b.Min.Y)
@@ -451,18 +451,18 @@ func (f *Font) unscaledHMetric(i Index) (h HMetric) {
 	if j >= f.nHMetric {
 		p := 4 * (f.nHMetric - 1)
 		return HMetric{
-			AdvanceWidth:    docpdf.Int26_6(u16(f.hmtx, p)),
-			LeftSideBearing: docpdf.Int26_6(int16(u16(f.hmtx, p+2*(j-f.nHMetric)+4))),
+			AdvanceWidth:    fixedpoint.Int26_6(u16(f.hmtx, p)),
+			LeftSideBearing: fixedpoint.Int26_6(int16(u16(f.hmtx, p+2*(j-f.nHMetric)+4))),
 		}
 	}
 	return HMetric{
-		AdvanceWidth:    docpdf.Int26_6(u16(f.hmtx, 4*j)),
-		LeftSideBearing: docpdf.Int26_6(int16(u16(f.hmtx, 4*j+2))),
+		AdvanceWidth:    fixedpoint.Int26_6(u16(f.hmtx, 4*j)),
+		LeftSideBearing: fixedpoint.Int26_6(int16(u16(f.hmtx, 4*j+2))),
 	}
 }
 
 // HMetric returns the horizontal metrics for the glyph with the given index.
-func (f *Font) HMetric(scale docpdf.Int26_6, i Index) HMetric {
+func (f *Font) HMetric(scale fixedpoint.Int26_6, i Index) HMetric {
 	h := f.unscaledHMetric(i)
 	h.AdvanceWidth = f.scale(scale * h.AdvanceWidth)
 	h.LeftSideBearing = f.scale(scale * h.LeftSideBearing)
@@ -471,15 +471,15 @@ func (f *Font) HMetric(scale docpdf.Int26_6, i Index) HMetric {
 
 // unscaledVMetric returns the unscaled vertical metrics for the glyph with
 // the given index. yMax is the top of the glyph's bounding box.
-func (f *Font) unscaledVMetric(i Index, yMax docpdf.Int26_6) (v VMetric) {
+func (f *Font) unscaledVMetric(i Index, yMax fixedpoint.Int26_6) (v VMetric) {
 	j := int(i)
 	if j < 0 || f.nGlyph <= j {
 		return VMetric{}
 	}
 	if 4*j+4 <= len(f.vmtx) {
 		return VMetric{
-			AdvanceHeight:  docpdf.Int26_6(u16(f.vmtx, 4*j)),
-			TopSideBearing: docpdf.Int26_6(int16(u16(f.vmtx, 4*j+2))),
+			AdvanceHeight:  fixedpoint.Int26_6(u16(f.vmtx, 4*j)),
+			TopSideBearing: fixedpoint.Int26_6(int16(u16(f.vmtx, 4*j+2))),
 		}
 	}
 	// The OS/2 table has grown over time.
@@ -488,21 +488,21 @@ func (f *Font) unscaledVMetric(i Index, yMax docpdf.Int26_6) (v VMetric) {
 	// the ascender and descender, are described at
 	// http://www.microsoft.com/typography/otspec/os2.htm
 	if len(f.os2) >= 72 {
-		sTypoAscender := docpdf.Int26_6(int16(u16(f.os2, 68)))
-		sTypoDescender := docpdf.Int26_6(int16(u16(f.os2, 70)))
+		sTypoAscender := fixedpoint.Int26_6(int16(u16(f.os2, 68)))
+		sTypoDescender := fixedpoint.Int26_6(int16(u16(f.os2, 70)))
 		return VMetric{
 			AdvanceHeight:  sTypoAscender - sTypoDescender,
 			TopSideBearing: sTypoAscender - yMax,
 		}
 	}
 	return VMetric{
-		AdvanceHeight:  docpdf.Int26_6(f.fUnitsPerEm),
+		AdvanceHeight:  fixedpoint.Int26_6(f.fUnitsPerEm),
 		TopSideBearing: 0,
 	}
 }
 
 // VMetric returns the vertical metrics for the glyph with the given index.
-func (f *Font) VMetric(scale docpdf.Int26_6, i Index) VMetric {
+func (f *Font) VMetric(scale fixedpoint.Int26_6, i Index) VMetric {
 	// TODO: should 0 be bounds.YMax?
 	v := f.unscaledVMetric(i, 0)
 	v.AdvanceHeight = f.scale(scale * v.AdvanceHeight)
@@ -512,7 +512,7 @@ func (f *Font) VMetric(scale docpdf.Int26_6, i Index) VMetric {
 
 // Kern returns the horizontal adjustment for the given glyph pair. A positive
 // kern means to move the glyphs further apart.
-func (f *Font) Kern(scale docpdf.Int26_6, i0, i1 Index) docpdf.Int26_6 {
+func (f *Font) Kern(scale fixedpoint.Int26_6, i0, i1 Index) fixedpoint.Int26_6 {
 	if f.nKern == 0 {
 		return 0
 	}
@@ -526,7 +526,7 @@ func (f *Font) Kern(scale docpdf.Int26_6, i0, i1 Index) docpdf.Int26_6 {
 		} else if ig > g {
 			hi = i
 		} else {
-			return f.scale(scale * docpdf.Int26_6(int16(u16(f.kern, 22+6*i))))
+			return f.scale(scale * fixedpoint.Int26_6(int16(u16(f.kern, 22+6*i))))
 		}
 	}
 	return 0

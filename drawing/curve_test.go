@@ -3,7 +3,7 @@ package drawing
 import (
 	"testing"
 
-	"github.com/wcharczuk/go-chart/v2/testutil"
+	"github.com/cdvelop/docpdf/chart/testutil"
 )
 
 type point struct {

@@ -23,7 +23,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/cdvelop/docpdf"
 	"github.com/cdvelop/docpdf/freetype/raster"
 )
 
@@ -91,11 +90,11 @@ var inside = []node{
 	node{686, 1274, -1},
 }
 
-func p(n node) docpdf.Point26_6 {
+func p(n node) fixedpoint.Point26_6 {
 	x, y := 20+n.x/4, 380-n.y/4
-	return docpdf.Point26_6{
-		X: docpdf.Int26_6(x << 6),
-		Y: docpdf.Int26_6(y << 6),
+	return fixedpoint.Point26_6{
+		X: fixedpoint.Int26_6(x << 6),
+		Y: fixedpoint.Int26_6(y << 6),
 	}
 }
 

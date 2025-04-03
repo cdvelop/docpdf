@@ -19,14 +19,14 @@ import (
 	"log"
 	"os"
 
-	"github.com/cdvelop/docpdf"
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"golang.org/x/image/font"
 )
 
 var fontfile = flag.String("fontfile", "../../testdata/luxisr.ttf", "filename of the ttf font")
 
-func printBounds(b docpdf.Rectangle26_6) {
+func printBounds(b fixedpoint.Rectangle26_6) {
 	fmt.Printf("Min.X:%d Min.Y:%d Max.X:%d Max.Y:%d\n", b.Min.X, b.Min.Y, b.Max.X, b.Max.Y)
 }
 
@@ -61,7 +61,7 @@ func main() {
 		log.Println(err)
 		return
 	}
-	fupe := docpdf.Int26_6(f.FUnitsPerEm())
+	fupe := fixedpoint.Int26_6(f.FUnitsPerEm())
 	printBounds(f.Bounds(fupe))
 	fmt.Printf("FUnitsPerEm:%d\n\n", fupe)
 

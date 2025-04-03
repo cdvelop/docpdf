@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/wcharczuk/go-chart/v2"
+	"github.com/cdvelop/docpdf/chart"
 )
 
 // Note: Additional examples on how to add Stylesheets are in the custom_stylesheets example

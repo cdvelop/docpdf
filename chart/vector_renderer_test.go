@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wcharczuk/go-chart/v2/drawing"
-	"github.com/wcharczuk/go-chart/v2/testutil"
+	"github.com/cdvelop/docpdf/chart/testutil"
+	"github.com/cdvelop/docpdf/drawing"
 )
 
 func TestVectorRendererPath(t *testing.T) {

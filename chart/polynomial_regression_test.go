@@ -3,8 +3,8 @@ package chart
 import (
 	"testing"
 
-	"github.com/wcharczuk/go-chart/v2/matrix"
-	"github.com/wcharczuk/go-chart/v2/testutil"
+	"github.com/cdvelop/docpdf/chart/matrix"
+	"github.com/cdvelop/docpdf/chart/testutil"
 )
 
 func TestPolynomialRegression(t *testing.T) {

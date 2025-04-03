@@ -18,7 +18,7 @@ package raster // import "github.com/cdvelop/docpdf/freetype/raster"
 import (
 	"strconv"
 
-	"github.com/cdvelop/docpdf"
+	"github.com/cdvelop/docpdf/fixedpoint"
 )
 
 // A cell is part of a linked list (for a given yi co-ordinate) of accumulated
@@ -43,7 +43,7 @@ type Rasterizer struct {
 	splitScale2, splitScale3 int
 
 	// The current pen position.
-	a docpdf.Point26_6
+	a fixedpoint.Point26_6
 	// The current cell and its area/coverage being accumulated.
 	xi, yi      int
 	area, cover int
@@ -118,12 +118,12 @@ func (r *Rasterizer) setCell(xi, yi int) {
 // scan accumulates area/coverage for the yi'th scanline, going from
 // x0 to x1 in the horizontal direction (in 26.6 fixed point co-ordinates)
 // and from y0f to y1f fractional vertical units within that scanline.
-func (r *Rasterizer) scan(yi int, x0, y0f, x1, y1f docpdf.Int26_6) {
+func (r *Rasterizer) scan(yi int, x0, y0f, x1, y1f fixedpoint.Int26_6) {
 	// Break the 26.6 fixed point X co-ordinates into integral and fractional parts.
 	x0i := int(x0) / 64
-	x0f := x0 - docpdf.Int26_6(64*x0i)
+	x0f := x0 - fixedpoint.Int26_6(64*x0i)
 	x1i := int(x1) / 64
-	x1f := x1 - docpdf.Int26_6(64*x1i)
+	x1f := x1 - fixedpoint.Int26_6(64*x1i)
 
 	// A perfectly horizontal scan.
 	if y0f == y1f {
@@ -141,7 +141,7 @@ func (r *Rasterizer) scan(yi int, x0, y0f, x1, y1f docpdf.Int26_6) {
 	// all intermediate cells go through the full width of the cell,
 	// or 64 units in 26.6 fixed point format.
 	var (
-		p, q, edge0, edge1 docpdf.Int26_6
+		p, q, edge0, edge1 fixedpoint.Int26_6
 		xiDelta            int
 	)
 	if dx > 0 {
@@ -191,22 +191,22 @@ func (r *Rasterizer) scan(yi int, x0, y0f, x1, y1f docpdf.Int26_6) {
 }
 
 // Start starts a new curve at the given point.
-func (r *Rasterizer) Start(a docpdf.Point26_6) {
+func (r *Rasterizer) Start(a fixedpoint.Point26_6) {
 	r.setCell(int(a.X/64), int(a.Y/64))
 	r.a = a
 }
 
 // Add1 adds a linear segment to the current curve.
-func (r *Rasterizer) Add1(b docpdf.Point26_6) {
+func (r *Rasterizer) Add1(b fixedpoint.Point26_6) {
 	x0, y0 := r.a.X, r.a.Y
 	x1, y1 := b.X, b.Y
 	dx, dy := x1-x0, y1-y0
 	// Break the 26.6 fixed point Y co-ordinates into integral and fractional
 	// parts.
 	y0i := int(y0) / 64
-	y0f := y0 - docpdf.Int26_6(64*y0i)
+	y0f := y0 - fixedpoint.Int26_6(64*y0i)
 	y1i := int(y1) / 64
-	y1f := y1 - docpdf.Int26_6(64*y1i)
+	y1f := y1 - fixedpoint.Int26_6(64*y1i)
 
 	if y0i == y1i {
 		// There is only one scanline.
@@ -216,7 +216,7 @@ func (r *Rasterizer) Add1(b docpdf.Point26_6) {
 		// This is a vertical line segment. We avoid calling r.scan and instead
 		// manipulate r.area and r.cover directly.
 		var (
-			edge0, edge1 docpdf.Int26_6
+			edge0, edge1 fixedpoint.Int26_6
 			yiDelta      int
 		)
 		if dy > 0 {
@@ -253,7 +253,7 @@ func (r *Rasterizer) Add1(b docpdf.Point26_6) {
 		// scanlines, all intermediate scanlines go through the full height of
 		// the row, or 64 units in 26.6 fixed point format.
 		var (
-			p, q, edge0, edge1 docpdf.Int26_6
+			p, q, edge0, edge1 fixedpoint.Int26_6
 			yiDelta            int
 		)
 		if dy > 0 {
@@ -302,11 +302,11 @@ func (r *Rasterizer) Add1(b docpdf.Point26_6) {
 }
 
 // Add2 adds a quadratic segment to the current curve.
-func (r *Rasterizer) Add2(b, c docpdf.Point26_6) {
+func (r *Rasterizer) Add2(b, c fixedpoint.Point26_6) {
 	// Calculate nSplit (the number of recursive decompositions) based on how
 	// 'curvy' it is. Specifically, how much the middle point b deviates from
 	// (a+c)/2.
-	dev := maxAbs(r.a.X-2*b.X+c.X, r.a.Y-2*b.Y+c.Y) / docpdf.Int26_6(r.splitScale2)
+	dev := maxAbs(r.a.X-2*b.X+c.X, r.a.Y-2*b.Y+c.Y) / fixedpoint.Int26_6(r.splitScale2)
 	nsplit := 0
 	for dev > 0 {
 		dev /= 4
@@ -320,7 +320,7 @@ func (r *Rasterizer) Add2(b, c docpdf.Point26_6) {
 	}
 	// Recursively decompose the curve nSplit levels deep.
 	var (
-		pStack [2*maxNsplit + 3]docpdf.Point26_6
+		pStack [2*maxNsplit + 3]fixedpoint.Point26_6
 		sStack [maxNsplit + 1]int
 		i      int
 	)
@@ -354,7 +354,7 @@ func (r *Rasterizer) Add2(b, c docpdf.Point26_6) {
 			// approximation.
 			midx := (p[0].X + 2*p[1].X + p[2].X) / 4
 			midy := (p[0].Y + 2*p[1].Y + p[2].Y) / 4
-			r.Add1(docpdf.Point26_6{X: midx, Y: midy})
+			r.Add1(fixedpoint.Point26_6{X: midx, Y: midy})
 			r.Add1(p[0])
 			i--
 		}
@@ -362,11 +362,11 @@ func (r *Rasterizer) Add2(b, c docpdf.Point26_6) {
 }
 
 // Add3 adds a cubic segment to the current curve.
-func (r *Rasterizer) Add3(b, c, d docpdf.Point26_6) {
+func (r *Rasterizer) Add3(b, c, d fixedpoint.Point26_6) {
 	// Calculate nSplit (the number of recursive decompositions) based on how
 	// 'curvy' it is.
-	dev2 := maxAbs(r.a.X-3*(b.X+c.X)+d.X, r.a.Y-3*(b.Y+c.Y)+d.Y) / docpdf.Int26_6(r.splitScale2)
-	dev3 := maxAbs(r.a.X-2*b.X+d.X, r.a.Y-2*b.Y+d.Y) / docpdf.Int26_6(r.splitScale3)
+	dev2 := maxAbs(r.a.X-3*(b.X+c.X)+d.X, r.a.Y-3*(b.Y+c.Y)+d.Y) / fixedpoint.Int26_6(r.splitScale2)
+	dev3 := maxAbs(r.a.X-2*b.X+d.X, r.a.Y-2*b.Y+d.Y) / fixedpoint.Int26_6(r.splitScale3)
 	nsplit := 0
 	for dev2 > 0 || dev3 > 0 {
 		dev2 /= 8
@@ -381,7 +381,7 @@ func (r *Rasterizer) Add3(b, c, d docpdf.Point26_6) {
 	}
 	// Recursively decompose the curve nSplit levels deep.
 	var (
-		pStack [3*maxNsplit + 4]docpdf.Point26_6
+		pStack [3*maxNsplit + 4]fixedpoint.Point26_6
 		sStack [maxNsplit + 1]int
 		i      int
 	)
@@ -423,7 +423,7 @@ func (r *Rasterizer) Add3(b, c, d docpdf.Point26_6) {
 			// Replace the level-0 cubic with a two-linear-piece approximation.
 			midx := (p[0].X + 3*(p[1].X+p[2].X) + p[3].X) / 8
 			midy := (p[0].Y + 3*(p[1].Y+p[2].Y) + p[3].Y) / 8
-			r.Add1(docpdf.Point26_6{X: midx, Y: midy})
+			r.Add1(fixedpoint.Point26_6{X: midx, Y: midy})
 			r.Add1(p[0])
 			i--
 		}
@@ -436,25 +436,25 @@ func (r *Rasterizer) AddPath(p Path) {
 		switch p[i] {
 		case 0:
 			r.Start(
-				docpdf.Point26_6{X: p[i+1], Y: p[i+2]},
+				fixedpoint.Point26_6{X: p[i+1], Y: p[i+2]},
 			)
 			i += 4
 		case 1:
 			r.Add1(
-				docpdf.Point26_6{X: p[i+1], Y: p[i+2]},
+				fixedpoint.Point26_6{X: p[i+1], Y: p[i+2]},
 			)
 			i += 4
 		case 2:
 			r.Add2(
-				docpdf.Point26_6{X: p[i+1], Y: p[i+2]},
-				docpdf.Point26_6{X: p[i+3], Y: p[i+4]},
+				fixedpoint.Point26_6{X: p[i+1], Y: p[i+2]},
+				fixedpoint.Point26_6{X: p[i+3], Y: p[i+4]},
 			)
 			i += 6
 		case 3:
 			r.Add3(
-				docpdf.Point26_6{X: p[i+1], Y: p[i+2]},
-				docpdf.Point26_6{X: p[i+3], Y: p[i+4]},
-				docpdf.Point26_6{X: p[i+5], Y: p[i+6]},
+				fixedpoint.Point26_6{X: p[i+1], Y: p[i+2]},
+				fixedpoint.Point26_6{X: p[i+3], Y: p[i+4]},
+				fixedpoint.Point26_6{X: p[i+5], Y: p[i+6]},
 			)
 			i += 8
 		default:
@@ -464,7 +464,7 @@ func (r *Rasterizer) AddPath(p Path) {
 }
 
 // AddStroke adds a stroked Path.
-func (r *Rasterizer) AddStroke(q Path, width docpdf.Int26_6, cr Capper, jr Joiner) {
+func (r *Rasterizer) AddStroke(q Path, width fixedpoint.Int26_6, cr Capper, jr Joiner) {
 	Stroke(r, q, width, cr, jr)
 }
 
@@ -552,7 +552,7 @@ func (r *Rasterizer) Rasterize(p Painter) {
 
 // Clear cancels any previous calls to r.Start or r.AddXxx.
 func (r *Rasterizer) Clear() {
-	r.a = docpdf.Point26_6{}
+	r.a = fixedpoint.Point26_6{}
 	r.xi = 0
 	r.yi = 0
 	r.area = 0
@@ -564,7 +564,7 @@ func (r *Rasterizer) Clear() {
 }
 
 // SetBounds sets the maximum width and height of the rasterized image and
-// calls Clear. The width and height are in pixels, not docpdf.Int26_6 units.
+// calls Clear. The width and height are in pixels, not fixedpoint.Int26_6 units.
 func (r *Rasterizer) SetBounds(width, height int) {
 	if width < 0 {
 		width = 0

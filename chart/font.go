@@ -3,8 +3,8 @@ package chart
 import (
 	"sync"
 
+	"github.com/cdvelop/docpdf/chart/roboto"
 	"github.com/cdvelop/docpdf/freetype/truetype"
-	"github.com/wcharczuk/go-chart/v2/roboto"
 )
 
 var (

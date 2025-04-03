@@ -1,6 +1,7 @@
 package drawing
 
 import (
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 )
 
@@ -56,7 +57,7 @@ type FontExtents struct {
 // Extents returns the FontExtents for a font.
 // TODO needs to read this https://developer.apple.com/fonts/TrueType-Reference-Manual/RM02/Chap2.html#intro
 func Extents(font *truetype.Font, size float64) FontExtents {
-	bounds := font.Bounds(docpdf.Int26_6(font.FUnitsPerEm()))
+	bounds := font.Bounds(fixedpoint.Int26_6(font.FUnitsPerEm()))
 	scale := size / float64(font.FUnitsPerEm())
 	return FontExtents{
 		Ascent:  float64(bounds.Max.Y) * scale,

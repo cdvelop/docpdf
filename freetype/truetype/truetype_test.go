@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cdvelop/docpdf"
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"golang.org/x/image/font"
 )
 
@@ -27,13 +27,13 @@ func parseTestdataFont(name string) (f *Font, testdataIsOptional bool, err error
 	return f, false, nil
 }
 
-func mkBounds(minX, minY, maxX, maxY docpdf.Int26_6) docpdf.Rectangle26_6 {
-	return docpdf.Rectangle26_6{
-		Min: docpdf.Point26_6{
+func mkBounds(minX, minY, maxX, maxY fixedpoint.Int26_6) fixedpoint.Rectangle26_6 {
+	return fixedpoint.Rectangle26_6{
+		Min: fixedpoint.Point26_6{
 			X: minX,
 			Y: minY,
 		},
-		Max: docpdf.Point26_6{
+		Max: fixedpoint.Point26_6{
 			X: maxX,
 			Y: maxY,
 		},
@@ -50,7 +50,7 @@ func TestParse(t *testing.T) {
 	if got, want := f.FUnitsPerEm(), int32(2048); got != want {
 		t.Errorf("FUnitsPerEm: got %v, want %v", got, want)
 	}
-	fupe := docpdf.Int26_6(f.FUnitsPerEm())
+	fupe := fixedpoint.Int26_6(f.FUnitsPerEm())
 	if got, want := f.Bounds(fupe), mkBounds(-441, -432, 2024, 2033); got != want {
 		t.Errorf("Bounds: got %v, want %v", got, want)
 	}
@@ -66,7 +66,7 @@ func TestParse(t *testing.T) {
 	if got, want := f.VMetric(fupe, i0), (VMetric{2465, 553}); got != want {
 		t.Errorf("VMetric: got %v, want %v", got, want)
 	}
-	if got, want := f.Kern(fupe, i0, i1), docpdf.Int26_6(-144); got != want {
+	if got, want := f.Kern(fupe, i0, i1), fixedpoint.Int26_6(-144); got != want {
 		t.Errorf("Kern: got %v, want %v", got, want)
 	}
 
@@ -229,8 +229,8 @@ func TestName(t *testing.T) {
 }
 
 type scalingTestData struct {
-	advanceWidth docpdf.Int26_6
-	bounds       docpdf.Rectangle26_6
+	advanceWidth fixedpoint.Int26_6
+	bounds       fixedpoint.Rectangle26_6
 	points       []Point
 }
 
@@ -238,13 +238,13 @@ type scalingTestData struct {
 // 213 -22 -111 236 555;-22 -111 1, 178 555 1, 236 555 1, 36 -111 1
 // The line will not have a trailing "\n".
 func scalingTestParse(line string) (ret scalingTestData) {
-	next := func(s string) (string, docpdf.Int26_6) {
+	next := func(s string) (string, fixedpoint.Int26_6) {
 		t, i := "", strings.Index(s, " ")
 		if i != -1 {
 			s, t = s[:i], s[i+1:]
 		}
 		x, _ := strconv.Atoi(s)
-		return t, docpdf.Int26_6(x)
+		return t, fixedpoint.Int26_6(x)
 	}
 
 	i := strings.Index(line, ";")
@@ -351,7 +351,7 @@ func testScaling(t *testing.T, h font.Hinting) {
 
 		glyphBuf := &GlyphBuf{}
 		for i, want := range wants {
-			if err = glyphBuf.Load(f, docpdf.I(tc.size), Index(i), h); err != nil {
+			if err = glyphBuf.Load(f, fixedpoint.I(tc.size), Index(i), h); err != nil {
 				t.Errorf("%s: glyph #%d: Load: %v", tc.name, i, err)
 				continue
 			}

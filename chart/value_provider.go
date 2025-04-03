@@ -1,6 +1,6 @@
 package chart
 
-import "github.com/wcharczuk/go-chart/v2/drawing"
+import "github.com/cdvelop/docpdf/drawing"
 
 // ValuesProvider is a type that produces values.
 type ValuesProvider interface {

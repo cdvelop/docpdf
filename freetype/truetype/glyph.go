@@ -1,7 +1,7 @@
 package truetype
 
 import (
-	"github.com/cdvelop/docpdf"
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"golang.org/x/image/font"
 )
 
@@ -10,7 +10,7 @@ import (
 // A Point is a co-ordinate pair plus whether it is 'on' a contour or an 'off'
 // control point.
 type Point struct {
-	X, Y docpdf.Int26_6
+	X, Y fixedpoint.Int26_6
 	// The Flags' LSB means whether or not this Point is 'on' the contour.
 	// Other bits are reserved for internal use.
 	Flags uint32
@@ -20,9 +20,9 @@ type Point struct {
 // series of glyphs from a Font.
 type GlyphBuf struct {
 	// AdvanceWidth is the glyph's advance width.
-	AdvanceWidth docpdf.Int26_6
+	AdvanceWidth fixedpoint.Int26_6
 	// Bounds is the glyph's bounding box.
-	Bounds docpdf.Rectangle26_6
+	Bounds fixedpoint.Rectangle26_6
 	// Points contains all Points from all contours of the glyph. If hinting
 	// was used to load a glyph then Unhinted contains those Points before they
 	// were hinted, and InFontUnits contains those Points before they were
@@ -35,7 +35,7 @@ type GlyphBuf struct {
 	Ends []int
 
 	font    *Font
-	scale   docpdf.Int26_6
+	scale   fixedpoint.Int26_6
 	hinting font.Hinting
 	hinter  hinter
 	// phantomPoints are the co-ordinates of the synthetic phantom points
@@ -44,7 +44,7 @@ type GlyphBuf struct {
 	// pp1x is the X co-ordinate of the first phantom point. The '1' is
 	// using 1-based indexing; pp1x is almost always phantomPoints[0].X.
 	// TODO: eliminate this and consistently use phantomPoints[0].X.
-	pp1x docpdf.Int26_6
+	pp1x fixedpoint.Int26_6
 	// metricsSet is whether the glyph's metrics have been set yet. For a
 	// compound glyph, a sub-glyph may override the outer glyph's metrics.
 	metricsSet bool
@@ -77,7 +77,7 @@ const (
 // Load loads a glyph's contours from a Font, overwriting any previously loaded
 // contours for this GlyphBuf. scale is the number of 26.6 fixed point units in
 // 1 em, i is the glyph index, and h is the hinting policy.
-func (g *GlyphBuf) Load(f *Font, scale docpdf.Int26_6, i Index, h font.Hinting) error {
+func (g *GlyphBuf) Load(f *Font, scale fixedpoint.Int26_6, i Index, h font.Hinting) error {
 	g.Points = g.Points[:0]
 	g.Unhinted = g.Unhinted[:0]
 	g.InFontUnits = g.InFontUnits[:0]
@@ -115,8 +115,8 @@ func (g *GlyphBuf) Load(f *Font, scale docpdf.Int26_6, i Index, h font.Hinting) 
 		if len(f.hdmx) >= 8 {
 			if n := u32(f.hdmx, 4); n > 3+uint32(i) {
 				for hdmx := f.hdmx[8:]; uint32(len(hdmx)) >= n; hdmx = hdmx[n:] {
-					if docpdf.Int26_6(hdmx[0]) == scale>>6 {
-						advanceWidth = docpdf.Int26_6(hdmx[2+i]) << 6
+					if fixedpoint.Int26_6(hdmx[0]) == scale>>6 {
+						advanceWidth = fixedpoint.Int26_6(hdmx[2+i]) << 6
 						break
 					}
 				}
@@ -133,7 +133,7 @@ func (g *GlyphBuf) Load(f *Font, scale docpdf.Int26_6, i Index, h font.Hinting) 
 	// the nominal bounding box in the glyf data as the hinting process and
 	// phantom point adjustment may move points outside of that box.
 	if len(g.Points) == 0 {
-		g.Bounds = docpdf.Rectangle26_6{}
+		g.Bounds = fixedpoint.Rectangle26_6{}
 	} else {
 		p := g.Points[0]
 		g.Bounds.Min.X = p.X
@@ -183,16 +183,16 @@ func (g *GlyphBuf) load(recursion uint32, i Index, useMyMetrics bool) (err error
 	// Decode the contour count and nominal bounding box, from the first
 	// 10 bytes of the glyf data. boundsYMin and boundsXMax, at offsets 4
 	// and 6, are unused.
-	glyf, ne, boundsXMin, boundsYMax := []byte(nil), 0, docpdf.Int26_6(0), docpdf.Int26_6(0)
+	glyf, ne, boundsXMin, boundsYMax := []byte(nil), 0, fixedpoint.Int26_6(0), fixedpoint.Int26_6(0)
 	if g0+10 <= g1 {
 		glyf = g.font.glyf[g0:g1]
 		ne = int(int16(u16(glyf, 0)))
-		boundsXMin = docpdf.Int26_6(int16(u16(glyf, 2)))
-		boundsYMax = docpdf.Int26_6(int16(u16(glyf, 8)))
+		boundsXMin = fixedpoint.Int26_6(int16(u16(glyf, 2)))
+		boundsYMax = fixedpoint.Int26_6(int16(u16(glyf, 8)))
 	}
 
 	// Create the phantom points.
-	uhm, pp1x := g.font.unscaledHMetric(i), docpdf.Int26_6(0)
+	uhm, pp1x := g.font.unscaledHMetric(i), fixedpoint.Int26_6(0)
 	uvm := g.font.unscaledVMetric(i, boundsYMax)
 	g.phantomPoints = [4]Point{
 		{X: boundsXMin - uhm.LeftSideBearing},
@@ -317,7 +317,7 @@ func (g *GlyphBuf) loadSimple(glyf []byte, ne int) (program []byte) {
 			x += int16(u16(glyf, offset))
 			offset += 2
 		}
-		g.Points[i].X = docpdf.Int26_6(x)
+		g.Points[i].X = fixedpoint.Int26_6(x)
 	}
 	var y int16
 	for i := np0; i < np1; i++ {
@@ -334,7 +334,7 @@ func (g *GlyphBuf) loadSimple(glyf []byte, ne int) (program []byte) {
 			y += int16(u16(glyf, offset))
 			offset += 2
 		}
-		g.Points[i].Y = docpdf.Int26_6(y)
+		g.Points[i].Y = fixedpoint.Int26_6(y)
 	}
 
 	return program
@@ -363,14 +363,14 @@ func (g *GlyphBuf) loadCompound(recursion uint32, uhm HMetric, i Index,
 	for {
 		flags := u16(glyf, offset)
 		component := Index(u16(glyf, offset+2))
-		dx, dy, transform, hasTransform := docpdf.Int26_6(0), docpdf.Int26_6(0), [4]int16{}, false
+		dx, dy, transform, hasTransform := fixedpoint.Int26_6(0), fixedpoint.Int26_6(0), [4]int16{}, false
 		if flags&flagArg1And2AreWords != 0 {
-			dx = docpdf.Int26_6(int16(u16(glyf, offset+4)))
-			dy = docpdf.Int26_6(int16(u16(glyf, offset+6)))
+			dx = fixedpoint.Int26_6(int16(u16(glyf, offset+4)))
+			dy = fixedpoint.Int26_6(int16(u16(glyf, offset+6)))
 			offset += 8
 		} else {
-			dx = docpdf.Int26_6(int16(int8(glyf[offset+4])))
-			dy = docpdf.Int26_6(int16(int8(glyf[offset+5])))
+			dx = fixedpoint.Int26_6(int16(int8(glyf[offset+4])))
+			dy = fixedpoint.Int26_6(int16(int8(glyf[offset+5])))
 			offset += 6
 		}
 		if flags&flagArgsAreXYValues == 0 {
@@ -408,11 +408,11 @@ func (g *GlyphBuf) loadCompound(recursion uint32, uhm HMetric, i Index,
 			for j := np0; j < len(g.Points); j++ {
 				p := &g.Points[j]
 				newX := 0 +
-					docpdf.Int26_6((int64(p.X)*int64(transform[0])+1<<13)>>14) +
-					docpdf.Int26_6((int64(p.Y)*int64(transform[2])+1<<13)>>14)
+					fixedpoint.Int26_6((int64(p.X)*int64(transform[0])+1<<13)>>14) +
+					fixedpoint.Int26_6((int64(p.Y)*int64(transform[2])+1<<13)>>14)
 				newY := 0 +
-					docpdf.Int26_6((int64(p.X)*int64(transform[1])+1<<13)>>14) +
-					docpdf.Int26_6((int64(p.Y)*int64(transform[3])+1<<13)>>14)
+					fixedpoint.Int26_6((int64(p.X)*int64(transform[1])+1<<13)>>14) +
+					fixedpoint.Int26_6((int64(p.Y)*int64(transform[3])+1<<13)>>14)
 				p.X, p.Y = newX, newY
 			}
 		}

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cdvelop/docpdf"
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"golang.org/x/image/font"
 )
 
@@ -37,7 +37,7 @@ func BenchmarkDrawString(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for j, line := range lines {
-			d.Dot = docpdf.P(0, (j*16)%600)
+			d.Dot = fixedpoint.P(0, (j*16)%600)
 			d.DrawString(line)
 		}
 	}

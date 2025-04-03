@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cdvelop/docpdf"
+	"github.com/cdvelop/docpdf/fixedpoint"
 )
 
 func TestBytecode(t *testing.T) {
@@ -586,7 +586,7 @@ func TestMove(t *testing.T) {
 	h, p := hinter{}, Point{}
 	testCases := []struct {
 		pvX, pvY, fvX, fvY f2dot14
-		wantX, wantY       docpdf.Int26_6
+		wantX, wantY       fixedpoint.Int26_6
 	}{
 		{+0x4000, +0x0000, +0x4000, +0x0000, +1000, +0},
 		{+0x4000, +0x0000, -0x4000, +0x0000, +1000, +0},

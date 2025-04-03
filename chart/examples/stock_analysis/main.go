@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/wcharczuk/go-chart/v2"
-	"github.com/wcharczuk/go-chart/v2/drawing"
+	"github.com/cdvelop/docpdf/chart"
+	"github.com/cdvelop/docpdf/drawing"
 )
 
 func main() {

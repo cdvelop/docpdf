@@ -6,8 +6,8 @@ import (
 	"io"
 	"math"
 
+	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/freetype/truetype"
-	"github.com/wcharczuk/go-chart/v2/drawing"
 )
 
 // PNG returns a new png/raster renderer.

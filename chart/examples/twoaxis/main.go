@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/wcharczuk/go-chart/v2"
+	"github.com/cdvelop/docpdf/chart"
 )
 
 func main() {

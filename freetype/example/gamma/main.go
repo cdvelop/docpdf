@@ -22,14 +22,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/cdvelop/docpdf"
 	"github.com/cdvelop/docpdf/freetype/raster"
 )
 
-func p(x, y int) docpdf.Point26_6 {
-	return docpdf.Point26_6{
-		X: docpdf.Int26_6(x * 64),
-		Y: docpdf.Int26_6(y * 64),
+func p(x, y int) fixedpoint.Point26_6 {
+	return fixedpoint.Point26_6{
+		X: fixedpoint.Int26_6(x * 64),
+		Y: fixedpoint.Int26_6(y * 64),
 	}
 }
 

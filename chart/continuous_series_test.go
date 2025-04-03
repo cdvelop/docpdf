@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/wcharczuk/go-chart/v2/testutil"
+	"github.com/cdvelop/docpdf/chart/testutil"
 )
 
 func TestContinuousSeries(t *testing.T) {

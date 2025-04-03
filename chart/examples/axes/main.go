@@ -5,7 +5,7 @@ package main
 import (
 	"os"
 
-	chart "github.com/wcharczuk/go-chart/v2"
+	chart "github.com/cdvelop/docpdf/chart"
 )
 
 func main() {

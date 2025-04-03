@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/wcharczuk/go-chart/v2/testutil"
+	"github.com/cdvelop/docpdf/chart/testutil"
 )
 
 func TestDonutChart(t *testing.T) {

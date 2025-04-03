@@ -29,7 +29,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/cdvelop/docpdf"
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"golang.org/x/image/font"
 )
@@ -170,7 +170,7 @@ func main() {
 	})
 	defer face.Close()
 
-	fBounds := f.Bounds(docpdf.Int26_6(*size * 64))
+	fBounds := f.Bounds(fixedpoint.Int26_6(*size * 64))
 	iBounds := image.Rect(
 		+fBounds.Min.X.Floor(),
 		-fBounds.Max.Y.Ceil(),
@@ -180,12 +180,12 @@ func main() {
 
 	tBounds := image.Rectangle{}
 	glyphs := map[rune]*image.Gray{}
-	advance := docpdf.Int26_6(-1)
+	advance := fixedpoint.Int26_6(-1)
 
 	ranges := loadRanges(f)
 	for _, rr := range ranges {
 		for r := rr[0]; r < rr[1]; r++ {
-			dr, mask, maskp, adv, ok := face.Glyph(docpdf.Point26_6{}, r)
+			dr, mask, maskp, adv, ok := face.Glyph(fixedpoint.Point26_6{}, r)
 			if !ok {
 				log.Fatalf("could not load glyph for %U", r)
 			}

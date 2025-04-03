@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"math"
 
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/raster"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"golang.org/x/image/draw"
@@ -104,7 +105,7 @@ func (rgc *RasterGraphicContext) StrokeStringAt(text string, x, y float64) (curs
 }
 
 func (rgc *RasterGraphicContext) drawGlyph(glyph truetype.Index, dx, dy float64) error {
-	if err := rgc.glyphBuf.Load(rgc.current.Font, docpdf.Int26_6(rgc.current.Scale), glyph, font.HintingNone); err != nil {
+	if err := rgc.glyphBuf.Load(rgc.current.Font, fixedpoint.Int26_6(rgc.current.Scale), glyph, font.HintingNone); err != nil {
 		return err
 	}
 	e0 := 0
@@ -134,14 +135,14 @@ func (rgc *RasterGraphicContext) CreateStringPath(s string, x, y float64) (curso
 	for _, rc := range s {
 		index := f.Index(rc)
 		if hasPrev {
-			x += fUnitsToFloat64(f.Kern(docpdf.Int26_6(rgc.current.Scale), prev, index))
+			x += fUnitsToFloat64(f.Kern(fixedpoint.Int26_6(rgc.current.Scale), prev, index))
 		}
 		err = rgc.drawGlyph(index, x, y)
 		if err != nil {
 			cursor = x - startx
 			return
 		}
-		x += fUnitsToFloat64(f.HMetric(docpdf.Int26_6(rgc.current.Scale), index).AdvanceWidth)
+		x += fUnitsToFloat64(f.HMetric(fixedpoint.Int26_6(rgc.current.Scale), index).AdvanceWidth)
 		prev, hasPrev = index, true
 	}
 	cursor = x - startx
@@ -165,10 +166,10 @@ func (rgc *RasterGraphicContext) GetStringBounds(s string) (left, top, right, bo
 	for _, rc := range s {
 		index := f.Index(rc)
 		if hasPrev {
-			cursor += fUnitsToFloat64(f.Kern(docpdf.Int26_6(rgc.current.Scale), prev, index))
+			cursor += fUnitsToFloat64(f.Kern(fixedpoint.Int26_6(rgc.current.Scale), prev, index))
 		}
 
-		if err = rgc.glyphBuf.Load(rgc.current.Font, docpdf.Int26_6(rgc.current.Scale), index, font.HintingNone); err != nil {
+		if err = rgc.glyphBuf.Load(rgc.current.Font, fixedpoint.Int26_6(rgc.current.Scale), index, font.HintingNone); err != nil {
 			return
 		}
 		e0 := 0
@@ -183,7 +184,7 @@ func (rgc *RasterGraphicContext) GetStringBounds(s string) (left, top, right, bo
 			}
 			e0 = e1
 		}
-		cursor += fUnitsToFloat64(f.HMetric(docpdf.Int26_6(rgc.current.Scale), index).AdvanceWidth)
+		cursor += fUnitsToFloat64(f.HMetric(fixedpoint.Int26_6(rgc.current.Scale), index).AdvanceWidth)
 		prev, hasPrev = index, true
 	}
 	return

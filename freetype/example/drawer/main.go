@@ -26,6 +26,7 @@ import (
 	"os"
 
 	"github.com/cdvelop/docpdf"
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"golang.org/x/image/font"
 )
@@ -125,7 +126,7 @@ func main() {
 	}
 	y := 10 + int(math.Ceil(*size**dpi/72))
 	dy := int(math.Ceil(*size * *spacing * *dpi / 72))
-	d.Dot = docpdf.Point26_6{
+	d.Dot = fixedpoint.Point26_6{
 		X: (docpdf.I(imgW) - d.MeasureString(title)) / 2,
 		Y: docpdf.I(y),
 	}

@@ -6,8 +6,8 @@ import (
 
 	_ "net/http/pprof"
 
-	"github.com/wcharczuk/go-chart/v2"
-	"github.com/wcharczuk/go-chart/v2/drawing"
+	"github.com/cdvelop/docpdf/chart"
+	"github.com/cdvelop/docpdf/drawing"
 )
 
 func drawChart(res http.ResponseWriter, req *http.Request) {

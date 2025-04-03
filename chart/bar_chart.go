@@ -42,6 +42,7 @@ type BarChart struct {
 
 // GetDPI returns the dpi for the chart.
 func (bc BarChart) GetDPI() float64 {
+
 	if bc.DPI == 0 {
 		return DefaultDPI
 	}

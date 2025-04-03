@@ -1,4 +1,4 @@
-package docpdf
+package fixedpoint
 
 // Package fixed implements fixed-point integer types.
 // from  "golang.org/x/image/math/fixed"

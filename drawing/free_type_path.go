@@ -1,6 +1,7 @@
 package drawing
 
 import (
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/raster"
 )
 
@@ -11,12 +12,12 @@ type FtLineBuilder struct {
 
 // MoveTo implements the path builder interface.
 func (liner FtLineBuilder) MoveTo(x, y float64) {
-	liner.Adder.Start(docpdf.Point26_6{X: docpdf.Int26_6(x * 64), Y: docpdf.Int26_6(y * 64)})
+	liner.Adder.Start(fixedpoint.Point26_6{X: fixedpoint.Int26_6(x * 64), Y: fixedpoint.Int26_6(y * 64)})
 }
 
 // LineTo implements the path builder interface.
 func (liner FtLineBuilder) LineTo(x, y float64) {
-	liner.Adder.Add1(docpdf.Point26_6{X: docpdf.Int26_6(x * 64), Y: docpdf.Int26_6(y * 64)})
+	liner.Adder.Add1(fixedpoint.Point26_6{X: fixedpoint.Int26_6(x * 64), Y: fixedpoint.Int26_6(y * 64)})
 }
 
 // LineJoin implements the path builder interface.

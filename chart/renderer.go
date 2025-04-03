@@ -3,8 +3,8 @@ package chart
 import (
 	"io"
 
+	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/freetype/truetype"
-	"github.com/wcharczuk/go-chart/v2/drawing"
 )
 
 // Renderer represents the basic methods required to draw a chart.
