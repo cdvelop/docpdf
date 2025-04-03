@@ -16,8 +16,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/cdvelop/docpdf"
 	"github.com/cdvelop/docpdf/freetype/truetype"
@@ -51,7 +51,7 @@ func printGlyph(g *truetype.GlyphBuf) {
 func main() {
 	flag.Parse()
 	fmt.Printf("Loading fontfile %q\n", *fontfile)
-	b, err := ioutil.ReadFile(*fontfile)
+	b, err := os.ReadFile(*fontfile)
 	if err != nil {
 		log.Println(err)
 		return

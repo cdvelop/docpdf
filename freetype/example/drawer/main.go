@@ -21,7 +21,6 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
-	"io/ioutil"
 	"log"
 	"math"
 	"os"
@@ -29,7 +28,6 @@ import (
 	"github.com/cdvelop/docpdf"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"golang.org/x/image/font"
-	"golang.org/x/image/math/fixed"
 )
 
 var (
@@ -84,7 +82,7 @@ func main() {
 	flag.Parse()
 
 	// Read the font data.
-	fontBytes, err := ioutil.ReadFile(*fontfile)
+	fontBytes, err := os.ReadFile(*fontfile)
 	if err != nil {
 		log.Println(err)
 		return
@@ -134,7 +132,7 @@ func main() {
 	d.DrawString(title)
 	y += dy
 	for _, s := range text {
-		d.Dot = fixed.P(10, y)
+		d.Dot = docpdf.P(10, y)
 		d.DrawString(s)
 		y += dy
 	}

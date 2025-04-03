@@ -22,9 +22,10 @@ import (
 	"go/format"
 	"image"
 	"image/draw"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"unicode"
 
@@ -48,9 +49,9 @@ func loadFontFile() ([]byte, error) {
 			return nil, err
 		}
 		defer resp.Body.Close()
-		return ioutil.ReadAll(resp.Body)
+		return io.ReadAll(resp.Body)
 	}
-	return ioutil.ReadFile(*fontfile)
+	return os.ReadFile(*fontfile)
 }
 
 func parseHinting(h string) font.Hinting {
@@ -233,7 +234,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("format.Source: %v", err)
 	}
-	if err := ioutil.WriteFile(*vr+".go", fmted, 0644); err != nil {
-		log.Fatalf("ioutil.WriteFile: %v", err)
+	if err := os.WriteFile(*vr+".go", fmted, 0644); err != nil {
+		log.Fatalf("os.WriteFile: %v", err)
 	}
 }

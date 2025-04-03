@@ -8,20 +8,20 @@ package freetype
 import (
 	"image"
 	"image/draw"
-	"io/ioutil"
+	"os"
 	"runtime"
 	"strings"
 	"testing"
 )
 
 func BenchmarkDrawString(b *testing.B) {
-	data, err := ioutil.ReadFile("licenses/gpl.txt")
+	data, err := os.ReadFile("licenses/gpl.txt")
 	if err != nil {
 		b.Fatal(err)
 	}
 	lines := strings.Split(string(data), "\n")
 
-	data, err = ioutil.ReadFile("testdata/luxisr.ttf")
+	data, err = os.ReadFile("testdata/luxisr.ttf")
 	if err != nil {
 		b.Fatal(err)
 	}
