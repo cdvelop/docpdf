@@ -1,8 +1,3 @@
-// Copyright 2010 The Freetype-Go Authors. All rights reserved.
-// Use of this source code is governed by your choice of either the
-// FreeType License or the GNU General Public License version 2 (or
-// any later version), both of which can be found in the LICENSE file.
-
 // Package truetype provides a parser for the TTF and TTC file formats.
 // Those formats are documented at http://developer.apple.com/fonts/TTRefMan/
 // and http://www.microsoft.com/typography/otspec/
@@ -15,7 +10,7 @@
 //
 // To measure a TrueType font in ideal FUnit space, use scale equal to
 // font.FUnitsPerEm().
-package truetype // import "github.com/cdvelop/docpdf/freetype/truetype"
+package truetype
 
 import (
 	"fmt"
