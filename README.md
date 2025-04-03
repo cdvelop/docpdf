@@ -1,10 +1,29 @@
 # docpdf
 
-An open-source Go library for generating PDFs with a minimalist and intuitive API, similar to writing in Word. Optimized to run in the browser with WebAssembly.
+An open-source Go library for generating PDFs with a minimalist and intuitive API, similar to writing in Word. Optimized to run in the browser with WebAssembly without dependencies.
 
 ## Description
 
 docpdf is a Go library that allows you to generate PDF documents with an intuitive and simple API. It is designed to be easy to use, with an approach similar to writing in a word processor like Word. The library is optimized to work in the browser with WebAssembly.
+
+The main focus of this library is to compile into a compact binary size using TinyGo for frontend usage, as standard Go binaries tend to be large. This makes it ideal for web applications where binary size matters.
+
+### TinyGo Compatibility Checklist
+
+The following standard libraries will be replaced or modified as they are not 100% compatible with TinyGo, in order to reduce the binary size:
+
+- [ ] bufio
+- [ ] crypto/sha1
+- [ ] errors
+- [ ] fmt
+- [ ] golang.org/x/image
+- [ ] io
+- [ ] os
+- [ ] path/filepath
+- [ ] sort
+- [ ] strings
+- [ ] sync
+- [ ] time
 
 ## Usage Example:
 
@@ -18,7 +37,7 @@ This example shows the main features of the library:
 ```go
 // Create a document with default settings
 doc := docpdf.NewDocument(func(a ...any) {
-    // Simple logging function (optional)
+    // Simple logging function
     fmt.Println(a...)
 })
 
@@ -184,9 +203,11 @@ if err != nil {
 
 ## Acknowledgements
 
-This library would not have been possible without:
+This library would not have been possible without github repositories:
 - signintech/gopdf
 - phpdave11/gofpdi
+- wcharczuk/go-chart
+- golang/freetype
 
 
 ## Important
