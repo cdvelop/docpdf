@@ -181,6 +181,24 @@ type Rect struct {
 	unitOverride defaultUnitConfig
 }
 
+// PageSize provides an intuitive way to define custom page sizes
+// It allows users to specify width and height in their preferred unit of measurement
+type PageSize struct {
+	Width  float64 // Width of the page
+	Height float64 // Height of the page
+	Unit   int     // Unit type (UnitPT, UnitMM, UnitCM, UnitIN, UnitPX)
+}
+
+// ToRect converts a PageSize to a Rect for internal use
+func (ps PageSize) ToRect() *Rect {
+	unitConfig := defaultUnitConfig{Unit: ps.Unit}
+	return &Rect{
+		W:            ps.Width,
+		H:            ps.Height,
+		unitOverride: unitConfig,
+	}
+}
+
 // defaultUnitConfig is the standard implementation of the unitConfigurator interface.
 // It stores the unit type and an optional custom conversion factor.
 type defaultUnitConfig struct {

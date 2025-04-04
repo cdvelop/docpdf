@@ -37,7 +37,7 @@ func init() {
 	// Estos valores se actualizarán con InitFromDocConfig
 	SharedFontConfig = &FontConfig{
 		Font:            nil,
-		TitleSize:       16,
+		TitleSize:       14,
 		AxisLabelSize:   11,
 		ValueLabelSize:  11,
 		LegendSize:      9,

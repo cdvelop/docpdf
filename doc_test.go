@@ -209,3 +209,79 @@ func TestDocumentAPIUsage(t *testing.T) {
 	absPath, _ := filepath.Abs(outFilePath)
 	t.Logf("PDF created successfully at: %s", absPath)
 }
+
+func TestPageSizeOptions(t *testing.T) {
+	// Test directory setup
+	outDir := "test/out"
+	err := os.MkdirAll(outDir, 0755)
+	if err != nil {
+		t.Fatalf("Error creating output directory: %v", err)
+	}
+
+	// Test 1: Using predefined page size (PageSizeA4)
+	t.Run("PredefinedPageSize", func(t *testing.T) {
+		doc := NewDocument(func(a ...any) {
+			t.Log(a...)
+		}, PageSizeA4)
+
+		doc.AddText("This document uses predefined PageSizeA4").Bold().AlignCenter().Draw()
+
+		outFilePath := filepath.Join(outDir, "test_predefined_pagesize.pdf")
+		err := doc.WritePdf(outFilePath)
+		if err != nil {
+			t.Fatalf("Error writing PDF: %v", err)
+		}
+	})
+
+	// Test 2: Using custom PageSize with mm units
+	t.Run("CustomPageSizeWithUnits", func(t *testing.T) {
+		// Create custom A5 size in mm (148mm x 210mm)
+		doc := NewDocument(func(a ...any) {
+			t.Log(a...)
+		}, PageSize{Width: 148, Height: 210, Unit: UnitMM})
+
+		doc.AddText("This document uses custom PageSize (A5 in mm)").Bold().AlignCenter().Draw()
+
+		outFilePath := filepath.Join(outDir, "test_custom_pagesize.pdf")
+		err := doc.WritePdf(outFilePath)
+		if err != nil {
+			t.Fatalf("Error writing PDF: %v", err)
+		}
+	})
+
+	// Test 3: Using custom PageSize with inches
+	t.Run("CustomPageSizeInches", func(t *testing.T) {
+		// Create custom size in inches (8.5 x 11 inches - US Letter)
+		doc := NewDocument(func(a ...any) {
+			t.Log(a...)
+		}, PageSize{Width: 8.5, Height: 11, Unit: UnitIN})
+
+		doc.AddText("This document uses custom PageSize (Letter in inches)").Bold().AlignCenter().Draw()
+
+		outFilePath := filepath.Join(outDir, "test_custom_pagesize_inches.pdf")
+		err := doc.WritePdf(outFilePath)
+		if err != nil {
+			t.Fatalf("Error writing PDF: %v", err)
+		}
+	})
+
+	// Test 4: Combining PageSize with other options
+	t.Run("CombinedOptions", func(t *testing.T) {
+		doc := NewDocument(func(a ...any) {
+			t.Log(a...)
+		},
+			// Custom page size (A4 landscape in mm)
+			PageSize{Width: 297, Height: 210, Unit: UnitMM},
+			// Custom margins
+			Margins{Left: 20, Top: 15, Right: 20, Bottom: 15},
+		)
+
+		doc.AddText("This document combines custom PageSize with custom margins").Bold().AlignCenter().Draw()
+
+		outFilePath := filepath.Join(outDir, "test_combined_options.pdf")
+		err := doc.WritePdf(outFilePath)
+		if err != nil {
+			t.Fatalf("Error writing PDF: %v", err)
+		}
+	})
+}

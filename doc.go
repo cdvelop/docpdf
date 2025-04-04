@@ -5,10 +5,9 @@ import "strconv"
 type Document struct {
 	*pdfEngine
 	fontConfig         FontConfig
-	contentAreaWidth   float64 // Width of the content area (page width - margins)
-	inlineMode         bool    // Add this field to track inline element state
-	lastInlineWidth    float64 // Track the width of the last inline element
-	log                func(a ...any)
+	contentAreaWidth   float64       // Width of the content area (page width - margins)
+	inlineMode         bool          // Add this field to track inline element state
+	lastInlineWidth    float64       // Track the width of the last inline element
 	header             *headerFooter // New field for document header
 	footer             *headerFooter // New field for document footer
 	inHeaderFooterDraw bool          // Flag to prevent recursion in header/footer drawing
@@ -16,12 +15,17 @@ type Document struct {
 }
 
 // NewDocument creates a new PDF document with configurable settings
-// Accepts optional configurations including custom margins in millimeters:
+// Accepts optional configurations including:
 //   - FontConfig: Custom font configuration
 //   - Font: Custom font family
 //   - Margins: Custom margins in millimeters (more intuitive than points)
+//   - PageSize: Custom page size with desired units
+//   - *Rect: Predefined page size (like PageSizeLetter, PageSizeA4, etc.)
 //
-// Example: NewDocument(fmt.Println, Margins{Left: 15, Top: 10, Right: 10, Bottom: 10})
+// Examples:
+//   - NewDocument(fmt.Println, Margins{Left: 15, Top: 10, Right: 10, Bottom: 10})
+//   - NewDocument(fmt.Println, PageSize{Width: 210, Height: 297, Unit: UnitMM}) // A4 size in mm
+//   - NewDocument(fmt.Println, PageSizeA4) // Using predefined page size
 func NewDocument(logPrint func(a ...any), configs ...any) *Document {
 
 	doc := &Document{
@@ -31,14 +35,13 @@ func NewDocument(logPrint func(a ...any), configs ...any) *Document {
 		fontConfig:      defaultFontConfig(),
 		inlineMode:      false,
 		lastInlineWidth: 0,
-		log:             logPrint,
 	}
 
 	// Default margins: 1.5 cm left, 1 cm on other sides
 	leftMargin := 42.52   // 1.5 cm in points
 	otherMargins := 28.35 // 1 cm in points
 
-	// Start with default page configuration
+	// Start with default page configuration (will be overridden if PageSize is provided)
 	doc.Start(config{
 		PageSize: *PageSizeLetter,
 	})
@@ -61,6 +64,16 @@ func NewDocument(logPrint func(a ...any), configs ...any) *Document {
 				v.Right*(72.0/25.4),
 				v.Bottom*(72.0/25.4),
 			)
+		case PageSize:
+			// User provided a custom page size with specific units
+			doc.Start(config{
+				PageSize: *v.ToRect(),
+			})
+		case *Rect:
+			// User provided a predefined page size (like PageSizeLetter, PageSizeA4, etc.)
+			doc.Start(config{
+				PageSize: *v,
+			})
 		}
 	}
 

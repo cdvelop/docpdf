@@ -25,6 +25,33 @@ The following standard libraries will be replaced or modified as they are not 10
 - [ ] sync
 - [ ] time
 
+## Page Size Options
+
+The library offers multiple ways to specify page sizes for your documents:
+
+1. **Using predefined page sizes**:
+   ```go
+   doc := NewDocument(fmt.Println, PageSizeA4)  // Use A4 page size
+   doc := NewDocument(fmt.Println, PageSizeLetter)  // Use Letter page size
+   ```
+
+2. **Using the new PageSize struct with unit specification**:
+   ```go
+   // Create an A4 page size (210mm x 297mm) with millimeter units
+   doc := NewDocument(fmt.Println, PageSize{Width: 210, Height: 297, Unit: UnitMM})
+   
+   // Create a US Letter page size (8.5in x 11in) with inch units
+   doc := NewDocument(fmt.Println, PageSize{Width: 8.5, Height: 11, Unit: UnitIN})
+   ```
+
+3. **Combining page size with other options**:
+   ```go
+   doc := NewDocument(fmt.Println, 
+      PageSize{Width: 210, Height: 297, Unit: UnitMM},  // A4 size
+      Margins{Left: 15, Top: 10, Right: 10, Bottom: 10}  // Custom margins
+   )
+   ```
+
 ## Usage Example:
 
 ### Page 1
