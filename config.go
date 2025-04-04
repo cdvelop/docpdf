@@ -82,46 +82,26 @@ type pdfProtectionConfig struct {
 	OwnerPass []byte
 }
 
-// unitsToPoints converts a value from the specified unit system to points (1/72 inch).
-// This is a utility function for converting measurement units in the PDF document.
-//
-// Parameters:
-//   - unit: Either an integer representing a unit type (UnitPT, UnitMM, etc.) or a unitConfigurator interface
-//   - u: The value to convert
-//
-// Returns:
-//   - The equivalent value in points
-func unitsToPoints(unit interface{}, u float64) float64 {
-	var unitCfg unitConfigurator
-
-	// Determine the unit configuration based on parameter type
+// getUnitConfigurator extrae la configuración de unidades de diferentes tipos de entrada
+func getUnitConfigurator(unit interface{}) unitConfigurator {
 	switch t := unit.(type) {
 	case int:
-		unitCfg = defaultUnitConfig{Unit: t}
+		return defaultUnitConfig{Unit: t}
 	case unitConfigurator:
-		unitCfg = t
+		return t
 	default:
-		// Default to points if invalid type passed
-		unitCfg = defaultUnitConfig{Unit: UnitPT}
+		return defaultUnitConfig{Unit: UnitPT}
 	}
+}
 
-	if unitCfg.getConversionForUnit() != 0 {
-		return u * unitCfg.getConversionForUnit()
-	}
-	switch unitCfg.getUnit() {
-	case UnitPT:
-		return u * conversionUnitPT
-	case UnitMM:
-		return u * conversionUnitMM
-	case UnitCM:
-		return u * conversionUnitCM
-	case UnitIN:
-		return u * conversionUnitIN
-	case UnitPX:
-		return u * conversionUnitPX
-	default:
-		return u
-	}
+// unitsToPoints convierte un valor desde el sistema de unidades especificado a puntos
+// Parámetros:
+//   - unit: Entero representando tipo de unidad o una interfaz unitConfigurator
+//   - u: El valor a convertir
+// Retorna:
+//   - El valor equivalente en puntos
+func unitsToPoints(unit interface{}, u float64) float64 {
+	return unitsToPointsCfg(getUnitConfigurator(unit), u)
 }
 
 // unitsToPoints is an internal function that converts units to points using the provided
@@ -153,46 +133,14 @@ func unitsToPointsCfg(unitCfg unitConfigurator, u float64) float64 {
 	}
 }
 
-// pointsToUnits converts a value from points to the specified unit system.
-// This is a utility function for converting measurement units in the PDF document.
-//
-// Parameters:
-//   - unit: Either an integer representing a unit type (UnitPT, UnitMM, etc.) or a unitConfigurator interface
-//   - u: The value in points to convert
-//
-// Returns:
-//   - The equivalent value in the specified unit system
+// pointsToUnits convierte un valor de puntos al sistema de unidades especificado
+// Parámetros:
+//   - unit: Entero representando tipo de unidad o una interfaz unitConfigurator
+//   - u: El valor en puntos a convertir
+// Retorna:
+//   - El valor equivalente en el sistema de unidades especificado
 func pointsToUnits(unit interface{}, u float64) float64 {
-	var unitCfg unitConfigurator
-
-	// Determine the unit configuration based on parameter type
-	switch t := unit.(type) {
-	case int:
-		unitCfg = defaultUnitConfig{Unit: t}
-	case unitConfigurator:
-		unitCfg = t
-	default:
-		// Default to points if invalid type passed
-		unitCfg = defaultUnitConfig{Unit: UnitPT}
-	}
-
-	if unitCfg.getConversionForUnit() != 0 {
-		return u / unitCfg.getConversionForUnit()
-	}
-	switch unitCfg.getUnit() {
-	case UnitPT:
-		return u / conversionUnitPT
-	case UnitMM:
-		return u / conversionUnitMM
-	case UnitCM:
-		return u / conversionUnitCM
-	case UnitIN:
-		return u / conversionUnitIN
-	case UnitPX:
-		return u / conversionUnitPX
-	default:
-		return u
-	}
+	return pointsToUnitsCfg(getUnitConfigurator(unit), u)
 }
 
 // pointsToUnits is an internal function that converts points to the specified unit system
@@ -224,29 +172,12 @@ func pointsToUnitsCfg(unitCfg unitConfigurator, u float64) float64 {
 	}
 }
 
-// unitsToPointsVar converts multiple values from the specified unit system to points.
-// This is a convenience function to convert multiple values at once.
-//
-// Parameters:
-//   - unit: Either an integer representing a unit type (UnitPT, UnitMM, etc.) or a unitConfigurator interface
-//   - u: Pointers to values to convert (modified in place)
+// unitsToPointsVar convierte múltiples valores al sistema de unidades especificado a puntos
+// Parámetros:
+//   - unit: Entero representando tipo de unidad o una interfaz unitConfigurator
+//   - u: Punteros a valores a convertir (modificados en el lugar)
 func unitsToPointsVar(unit interface{}, u ...*float64) {
-	var unitCfg unitConfigurator
-
-	// Determine the unit configuration based on parameter type
-	switch t := unit.(type) {
-	case int:
-		unitCfg = defaultUnitConfig{Unit: t}
-	case unitConfigurator:
-		unitCfg = t
-	default:
-		// Default to points if invalid type passed
-		unitCfg = defaultUnitConfig{Unit: UnitPT}
-	}
-
-	for x := 0; x < len(u); x++ {
-		*u[x] = unitsToPointsCfg(unitCfg, *u[x])
-	}
+	unitsToPointsVarCfg(getUnitConfigurator(unit), u...)
 }
 
 // unitsToPointsVar is an internal function that converts multiple values from units to points
@@ -261,29 +192,12 @@ func unitsToPointsVarCfg(unitCfg unitConfigurator, u ...*float64) {
 	}
 }
 
-// pointsToUnitsVar converts multiple values from points to the specified unit system.
-// This is a convenience function to convert multiple values at once.
-//
-// Parameters:
-//   - unit: Either an integer representing a unit type (UnitPT, UnitMM, etc.) or a unitConfigurator interface
-//   - u: Pointers to values to convert (modified in place)
+// pointsToUnitsVar convierte múltiples valores de puntos al sistema de unidades especificado
+// Parámetros:
+//   - unit: Entero representando tipo de unidad o una interfaz unitConfigurator
+//   - u: Punteros a valores a convertir (modificados en el lugar)
 func pointsToUnitsVar(unit interface{}, u ...*float64) {
-	var unitCfg unitConfigurator
-
-	// Determine the unit configuration based on parameter type
-	switch t := unit.(type) {
-	case int:
-		unitCfg = defaultUnitConfig{Unit: t}
-	case unitConfigurator:
-		unitCfg = t
-	default:
-		// Default to points if invalid type passed
-		unitCfg = defaultUnitConfig{Unit: UnitPT}
-	}
-
-	for x := 0; x < len(u); x++ {
-		*u[x] = pointsToUnitsCfg(unitCfg, *u[x])
-	}
+	pointsToUnitsVarCfg(getUnitConfigurator(unit), u...)
 }
 
 // pointsToUnitsVar is an internal function that converts multiple values from points to units

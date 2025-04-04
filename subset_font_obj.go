@@ -1,7 +1,6 @@
 package docpdf
 
 import (
-	"errors"
 	"fmt"
 	"io"
 
@@ -9,10 +8,10 @@ import (
 )
 
 // errCharNotFound char not found
-var errCharNotFound = errors.New("char not found")
+var errCharNotFound = newErr("char not found")
 
 // errGlyphNotFound font file not contain glyph
-var errGlyphNotFound = errors.New("glyph not found")
+var errGlyphNotFound = newErr("glyph not found")
 
 // subsetFontObj pdf subsetFont object
 type subsetFontObj struct {

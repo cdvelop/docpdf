@@ -1,9 +1,35 @@
 package docpdf
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"strconv"
+	"strings"
 )
+
+// Regular - font style regular
+const Regular = 0 //000000
+// Italic - font style italic
+const Italic = 1 //000001
+// Bold - font style bold
+const Bold = 2 //000010
+// Underline - font style underline
+const Underline = 4 //000100
+
+func getConvertedStyle(fontStyle string) (style int) {
+	fontStyle = strings.ToUpper(fontStyle)
+	if strings.Contains(fontStyle, "B") {
+		style = style | Bold
+	}
+	if strings.Contains(fontStyle, "I") {
+		style = style | Italic
+	}
+	if strings.Contains(fontStyle, "U") {
+		style = style | Underline
+	}
+	return
+}
 
 // iFont represents a font interface.
 type iFont interface {
@@ -20,6 +46,26 @@ type iFont interface {
 
 	SetFamily(family string)
 	GetFamily() string
+}
+
+// ttfOption  font option
+type ttfOption struct {
+	UseKerning                bool
+	Style                     int               //Regular|Bold|Italic
+	OnGlyphNotFound           func(r rune)      //Called when a glyph cannot be found, just for debugging
+	OnGlyphNotFoundSubstitute func(r rune) rune //Called when a glyph cannot be found, we can return a new rune to replace it.
+}
+
+func defaultTtfFontOption() ttfOption {
+	var defa ttfOption
+	defa.UseKerning = false
+	defa.Style = Regular
+	defa.OnGlyphNotFoundSubstitute = defaultOnGlyphNotFoundSubstitute
+	return defa
+}
+
+func defaultOnGlyphNotFoundSubstitute(r rune) rune {
+	return rune('\u0020')
 }
 
 // fontCw maps characters to integers.
@@ -155,4 +201,74 @@ func (gp *pdfEngine) SetCharSpacing(charSpacing float64) error {
 	gp.unitsToPointsVar(&charSpacing)
 	gp.curr.CharSpacing = charSpacing
 	return nil
+}
+
+// fontConvertHelperCw2Str converts main ASCII characters of a FontCW to a string.
+func fontConvertHelperCw2Str(cw fontCw) string {
+	buff := new(bytes.Buffer)
+	buff.WriteString(" ")
+	i := 32
+	for i <= 255 {
+		buff.WriteString(strconv.Itoa(cw[byte(i)]) + " ")
+		i++
+	}
+	return buff.String()
+}
+
+// fontConvertHelper_Cw2Str converts main ASCII characters of a FontCW to a string. (for backward compatibility)
+// Deprecated: Use fontConvertHelperCw2Str(cw fontCw) instead
+func fontConvertHelper_Cw2Str(cw fontCw) string {
+	return fontConvertHelperCw2Str(cw)
+}
+
+// fontDescriptorObj is a font descriptor object.
+type fontDescriptorObj struct {
+	font              iFont
+	fontFileObjRelate string
+}
+
+func (f *fontDescriptorObj) init(funcGetRoot func() *pdfEngine) {
+
+}
+
+func (f *fontDescriptorObj) write(w io.Writer, objID int) error {
+
+	fmt.Fprintf(w, "<</Type /FontDescriptor /FontName /%s ", f.font.GetName())
+	descs := f.font.GetDesc()
+	i := 0
+	max := len(descs)
+	for i < max {
+		fmt.Fprintf(w, "/%s %s ", descs[i].Key, descs[i].Val)
+		i++
+	}
+
+	if f.getType() == "Type1" {
+		io.WriteString(w, "/FontFile ")
+	} else {
+		io.WriteString(w, "/FontFile2 ")
+	}
+
+	io.WriteString(w, f.fontFileObjRelate)
+	io.WriteString(w, ">>\n")
+
+	return nil
+}
+
+func (f *fontDescriptorObj) getType() string {
+	return "FontDescriptor"
+}
+
+// SetFont sets the font in descriptor.
+func (f *fontDescriptorObj) SetFont(font iFont) {
+	f.font = font
+}
+
+// GetFont gets font from descriptor.
+func (f *fontDescriptorObj) GetFont() iFont {
+	return f.font
+}
+
+// SetFontFileObjRelate ???
+func (f *fontDescriptorObj) SetFontFileObjRelate(relate string) {
+	f.fontFileObjRelate = relate
 }
