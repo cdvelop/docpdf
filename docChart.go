@@ -5,7 +5,7 @@ import (
 
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/drawing"
-	"github.com/cdvelop/docpdf/freetype/truetype"
+	"github.com/cdvelop/docpdf/fontbridge"
 )
 
 // docChart representa un gráfico que se añadirá al documento
@@ -32,26 +32,56 @@ type docChart struct {
 	colorPalette chart.ColorPalette
 
 	// Propiedades para control de calidad
-	dpi            float64 // Resolución del gráfico en DPI (dots per inch)
-	fontSizeTitle  float64 // Tamaño de fuente para el título
-	fontSizeLabels float64 // Tamaño de fuente para las etiquetas
-	strokeWidth    float64 // Ancho de línea para los contornos
+	dpi         float64 // Resolución del gráfico en DPI (dots per inch)
+	strokeWidth float64 // Ancho de línea para los contornos
 }
 
 // AddBarChart crea un nuevo elemento de gráfico de barras
 func (doc *Document) AddBarChart() *docChart {
+	// Inicializar fontbridge con la configuración de fuentes actual del documento
+	// si aún no se ha inicializado
+	if fontbridge.SharedFontConfig.Font == nil && doc != nil {
+		// Convertir RGBColor a drawing.Color
+		titleColor := fontbridge.GetDrawingColor(
+			doc.fontConfig.Header1.Color.R,
+			doc.fontConfig.Header1.Color.G,
+			doc.fontConfig.Header1.Color.B,
+		)
+		normalColor := fontbridge.GetDrawingColor(
+			doc.fontConfig.Normal.Color.R,
+			doc.fontConfig.Normal.Color.G,
+			doc.fontConfig.Normal.Color.B,
+		)
+		footnoteColor := fontbridge.GetDrawingColor(
+			doc.fontConfig.Footnote.Color.R,
+			doc.fontConfig.Footnote.Color.G,
+			doc.fontConfig.Footnote.Color.B,
+		)
+
+		// Inicializar la configuración compartida
+		fontbridge.InitFromDocConfig(
+			doc.fontConfig.Family.Path,
+			doc.fontConfig.Family.Regular,
+			float64(doc.fontConfig.Header1.Size),
+			float64(doc.fontConfig.Normal.Size),
+			float64(doc.fontConfig.Footnote.Size),
+			titleColor,
+			normalColor,
+			footnoteColor,
+			doc.fontConfig.Normal.LineSpacing,
+		)
+	}
+
 	return &docChart{
-		doc:            doc,
-		width:          500, // Ancho predeterminado
-		height:         300, // Alto predeterminado
-		keepRatio:      true,
-		alignment:      Left,
-		barWidth:       30,   // Ancho de barra predeterminado (ajustado)
-		barSpacing:     15,   // Espacio entre barras predeterminado (ajustado)
-		dpi:            150,  // DPI reducido a 150
-		fontSizeTitle:  12.0, // Tamaño título reducido
-		fontSizeLabels: 8.0,  // Tamaño etiquetas reducido
-		strokeWidth:    1.0,  // Ancho de línea por defecto
+		doc:         doc,
+		width:       500, // Ancho predeterminado
+		height:      300, // Alto predeterminado
+		keepRatio:   true,
+		alignment:   Left,
+		barWidth:    30,  // Ancho de barra predeterminado (ajustado)
+		barSpacing:  15,  // Espacio entre barras predeterminado (ajustado)
+		dpi:         150, // DPI reducido a 150
+		strokeWidth: 1.0, // Ancho de línea por defecto
 	}
 }
 
@@ -166,17 +196,6 @@ func (c *docChart) Quality(dpi float64) *docChart {
 	return c
 }
 
-// FontSize configura el tamaño de fuente para el título y las etiquetas
-func (c *docChart) FontSize(titleSize, labelsSize float64) *docChart {
-	if titleSize > 0 {
-		c.fontSizeTitle = titleSize
-	}
-	if labelsSize > 0 {
-		c.fontSizeLabels = labelsSize
-	}
-	return c
-}
-
 // Draw renderiza el gráfico en el documento con manejo de saltos de página
 func (c *docChart) Draw() error {
 	// Crear un archivo temporal para almacenar la imagen del gráfico
@@ -190,65 +209,43 @@ func (c *docChart) Draw() error {
 	widthInPixels := int(c.width * c.dpi / 72.0)
 	heightInPixels := int(c.height * c.dpi / 72.0)
 
-	// Calcular factor de escala y ajustar para elementos específicos
+	// Calcular factor de escala para ajustar elementos con el DPI
+	// NO aplicamos el factor de escala a los tamaños de fuente
+	// porque queremos que sean exactamente los definidos en FontConfig
 	scaleFactor := c.dpi / 72.0
 
-	// --- Cargar la fuente configurada en docpdf ---
-	var chartFont *truetype.Font // Usa *truetype.Font de go-chart
-	fontPath := ""
-	if c.doc != nil && c.doc.fontConfig.Family.Path != "" && c.doc.fontConfig.Family.Regular != "" {
-		fontPath = c.doc.fontConfig.Family.Path + c.doc.fontConfig.Family.Regular
-		// Leer el archivo de fuente usando os.ReadFile
-		fontBytes, errRead := os.ReadFile(fontPath)
-		if errRead != nil {
-			c.doc.log("Error reading chart font file '"+fontPath+"':", errRead, " - Using default chart font.")
-		} else {
-			// Parsear la fuente usando truetype.Parse
-			var errParse error
-			chartFont, errParse = truetype.Parse(fontBytes)
-			if errParse != nil {
-				c.doc.log("Error parsing chart font '"+fontPath+"':", errParse, " - Using default chart font.")
-				chartFont = nil // Fallback to default if parsing fails
-			}
-		}
-	} else {
-		c.doc.log("Chart font configuration not found in docpdf.Document. Using default chart font.")
-	}
-	// Si chartFont sigue siendo nil después de intentar cargar, usar la fuente por defecto de go-chart
-	if chartFont == nil {
-		var errDefault error
-		chartFont, errDefault = chart.GetDefaultFont()
+	// Asegurarnos de que fontbridge está inicializado correctamente
+	if fontbridge.SharedFontConfig.Font == nil {
+		// Intentar cargar la fuente predeterminada como última opción
+		defaultFont, errDefault := chart.GetDefaultFont()
 		if errDefault != nil {
-			// Esto sería muy inusual, pero manejarlo por si acaso
 			c.doc.log("FATAL: Could not load default chart font:", errDefault)
-			// Podríamos retornar el error aquí o dejar que el renderizado falle más adelante
-			return errDefault // Retornar error si ni la fuente por defecto carga
+			return errDefault
 		}
-	} else {
-		c.doc.log("Chart font configuration not found in docpdf.Document. Using default chart font.")
+		fontbridge.SharedFontConfig.Font = defaultFont
 	}
-	// --- Fin carga de fuente ---
 
 	// Crear el gráfico de barras
 	barChart := chart.BarChart{
 		Title:      c.title,
 		Width:      widthInPixels,
 		Height:     heightInPixels,
-		BarWidth:   int(float64(c.barWidth) * scaleFactor),   // Multiplicador extra removido
-		BarSpacing: int(float64(c.barSpacing) * scaleFactor), // Multiplicador extra removido
+		BarWidth:   int(float64(c.barWidth) * scaleFactor),
+		BarSpacing: int(float64(c.barSpacing) * scaleFactor),
 		Bars:       c.bars,
-		DPI:        c.dpi, // Usar el DPI configurado (150)
+		DPI:        c.dpi,
+		Font:       fontbridge.SharedFontConfig.Font, // Usar la fuente compartida
 	}
 
-	// Ajustar título
-	barChart.TitleStyle = chart.Style{
-		Font:     chartFont,                     // Aplicar fuente cargada
-		FontSize: c.fontSizeTitle * scaleFactor, // Multiplicador extra removido
-		Padding: chart.Box{
-			Top:    int(10 * scaleFactor), // Padding ajustado para DPI menor
-			Bottom: int(5 * scaleFactor),
-		},
+	// Aplicar estilos desde fontbridge - Sin escalar los tamaños de fuente
+	titleStyle := chart.Style{}
+	fontbridge.ApplyToChartStyle(&titleStyle, "title")
+	// NO multiplicamos el tamaño de fuente por scaleFactor
+	titleStyle.Padding = chart.Box{
+		Top:    int(10 * scaleFactor),
+		Bottom: int(5 * scaleFactor),
 	}
+	barChart.TitleStyle = titleStyle
 
 	// Reservar más espacio para las etiquetas del eje X
 	barChart.Height = int(float64(barChart.Height) * 0.9) // Reducir altura para dar más espacio a etiquetas
@@ -275,49 +272,48 @@ func (c *docChart) Draw() error {
 
 	// Configuración de ejes
 	if !c.xAxisStyle.Hidden {
-		xStyle := chart.Style{
-			Font:                chartFont, // Aplicar fuente cargada
-			Hidden:              false,
-			FontSize:            c.fontSizeLabels * scaleFactor, // Multiplicador extra removido
-			StrokeWidth:         c.strokeWidth,
-			StrokeColor:         c.xAxisStyle.StrokeColor,
-			FontColor:           c.xAxisStyle.FontColor,
-			TextRotationDegrees: 0,
-			Padding: chart.Box{
-				Top:    int(5 * scaleFactor),
-				Bottom: int(20 * scaleFactor), // Más espacio para las etiquetas
-			},
+		xStyle := chart.Style{}
+		fontbridge.ApplyToChartStyle(&xStyle, "axis")
+		// NO multiplicamos el tamaño de fuente por scaleFactor
+		xStyle.Hidden = false
+		xStyle.StrokeWidth = c.strokeWidth
+		xStyle.StrokeColor = c.xAxisStyle.StrokeColor
+		xStyle.Padding = chart.Box{
+			Top:    int(5 * scaleFactor),
+			Bottom: int(20 * scaleFactor), // Más espacio para las etiquetas
 		}
 		barChart.XAxis = xStyle
 	}
 
 	if !c.yAxisStyle.Hidden {
+		yStyle := chart.Style{}
+		fontbridge.ApplyToChartStyle(&yStyle, "axis")
+		// NO multiplicamos el tamaño de fuente por scaleFactor
+		yStyle.Hidden = false
+		yStyle.StrokeWidth = c.strokeWidth
+		yStyle.Padding = chart.Box{
+			Left:  int(5 * scaleFactor),
+			Right: int(5 * scaleFactor),
+		}
 		barChart.YAxis = chart.YAxis{
-			// NumberOfTicks: 7, // Campo removido
-			Style: chart.Style{
-				Font:        chartFont, // Aplicar fuente cargada
-				Hidden:      false,
-				FontSize:    c.fontSizeLabels * scaleFactor, // Multiplicador extra removido
-				StrokeWidth: c.strokeWidth,
-				Padding: chart.Box{
-					Left:  int(5 * scaleFactor), // Padding ajustado para DPI menor
-					Right: int(5 * scaleFactor),
-				},
-			},
+			Style: yStyle,
 		}
 	}
 
-	// Ajustar tamaño de fuente para las etiquetas de las barras (si se muestran)
-	// for i := range c.bars {
-	// 	c.bars[i].Style.FontSize = c.fontSizeLabels * scaleFactor // Ajustado: usar scaleFactor directamente
-	// }
+	// Aplicar estilo para las etiquetas de las barras
+	for i := range c.bars {
+		valueStyle := chart.Style{}
+		fontbridge.ApplyToChartStyle(&valueStyle, "value")
+		// NO multiplicamos el tamaño de fuente por scaleFactor
+		c.bars[i].Style = valueStyle
+	}
 
 	// Ajustar el espacio total del gráfico
 	barChart.Background.Padding = chart.Box{
-		Top:    int(10 * scaleFactor), // Padding ajustado para DPI menor
+		Top:    int(10 * scaleFactor),
 		Left:   int(10 * scaleFactor),
 		Right:  int(10 * scaleFactor),
-		Bottom: int(15 * scaleFactor), // Padding ajustado para DPI menor
+		Bottom: int(15 * scaleFactor),
 	}
 
 	// Renderizar el gráfico
@@ -390,8 +386,6 @@ func (c *docChart) Draw() error {
 		if !c.hasPos {
 			c.doc.newLineBreakBasedOnDefaultFont(y + c.height)
 		}
-		// Restablecer la posición X al margen izquierdo ya que este es un elemento de bloque
-		c.doc.SetX(c.doc.margins.Left)
 		c.doc.inlineMode = false
 	}
 
