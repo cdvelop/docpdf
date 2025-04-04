@@ -1,11 +1,11 @@
 package docpdf
 
 import (
-	"io/ioutil"
 	"os"
 
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/drawing"
+	"github.com/cdvelop/docpdf/freetype/truetype"
 )
 
 // docChart representa un gráfico que se añadirá al documento
@@ -180,7 +180,7 @@ func (c *docChart) FontSize(titleSize, labelsSize float64) *docChart {
 // Draw renderiza el gráfico en el documento con manejo de saltos de página
 func (c *docChart) Draw() error {
 	// Crear un archivo temporal para almacenar la imagen del gráfico
-	tmpFile, err := ioutil.TempFile("", "chart-*.png")
+	tmpFile, err := os.CreateTemp("", "chart-*.png")
 	if err != nil {
 		return err
 	}
@@ -192,6 +192,42 @@ func (c *docChart) Draw() error {
 
 	// Calcular factor de escala y ajustar para elementos específicos
 	scaleFactor := c.dpi / 72.0
+
+	// --- Cargar la fuente configurada en docpdf ---
+	var chartFont *truetype.Font // Usa *truetype.Font de go-chart
+	fontPath := ""
+	if c.doc != nil && c.doc.fontConfig.Family.Path != "" && c.doc.fontConfig.Family.Regular != "" {
+		fontPath = c.doc.fontConfig.Family.Path + c.doc.fontConfig.Family.Regular
+		// Leer el archivo de fuente usando os.ReadFile
+		fontBytes, errRead := os.ReadFile(fontPath)
+		if errRead != nil {
+			c.doc.log("Error reading chart font file '"+fontPath+"':", errRead, " - Using default chart font.")
+		} else {
+			// Parsear la fuente usando truetype.Parse
+			var errParse error
+			chartFont, errParse = truetype.Parse(fontBytes)
+			if errParse != nil {
+				c.doc.log("Error parsing chart font '"+fontPath+"':", errParse, " - Using default chart font.")
+				chartFont = nil // Fallback to default if parsing fails
+			}
+		}
+	} else {
+		c.doc.log("Chart font configuration not found in docpdf.Document. Using default chart font.")
+	}
+	// Si chartFont sigue siendo nil después de intentar cargar, usar la fuente por defecto de go-chart
+	if chartFont == nil {
+		var errDefault error
+		chartFont, errDefault = chart.GetDefaultFont()
+		if errDefault != nil {
+			// Esto sería muy inusual, pero manejarlo por si acaso
+			c.doc.log("FATAL: Could not load default chart font:", errDefault)
+			// Podríamos retornar el error aquí o dejar que el renderizado falle más adelante
+			return errDefault // Retornar error si ni la fuente por defecto carga
+		}
+	} else {
+		c.doc.log("Chart font configuration not found in docpdf.Document. Using default chart font.")
+	}
+	// --- Fin carga de fuente ---
 
 	// Crear el gráfico de barras
 	barChart := chart.BarChart{
@@ -206,6 +242,7 @@ func (c *docChart) Draw() error {
 
 	// Ajustar título
 	barChart.TitleStyle = chart.Style{
+		Font:     chartFont,                     // Aplicar fuente cargada
 		FontSize: c.fontSizeTitle * scaleFactor, // Multiplicador extra removido
 		Padding: chart.Box{
 			Top:    int(10 * scaleFactor), // Padding ajustado para DPI menor
@@ -239,6 +276,7 @@ func (c *docChart) Draw() error {
 	// Configuración de ejes
 	if !c.xAxisStyle.Hidden {
 		xStyle := chart.Style{
+			Font:                chartFont, // Aplicar fuente cargada
 			Hidden:              false,
 			FontSize:            c.fontSizeLabels * scaleFactor, // Multiplicador extra removido
 			StrokeWidth:         c.strokeWidth,
@@ -257,6 +295,7 @@ func (c *docChart) Draw() error {
 		barChart.YAxis = chart.YAxis{
 			// NumberOfTicks: 7, // Campo removido
 			Style: chart.Style{
+				Font:        chartFont, // Aplicar fuente cargada
 				Hidden:      false,
 				FontSize:    c.fontSizeLabels * scaleFactor, // Multiplicador extra removido
 				StrokeWidth: c.strokeWidth,

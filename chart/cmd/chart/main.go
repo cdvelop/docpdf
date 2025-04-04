@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 
@@ -31,12 +31,12 @@ func main() {
 	var err error
 	if *inputPath != "" {
 		if *inputPath == "-" {
-			rawData, err = ioutil.ReadAll(os.Stdin)
+			rawData, err = io.ReadAll(os.Stdin)
 			if err != nil {
 				log.FatalErr(err)
 			}
 		} else {
-			rawData, err = ioutil.ReadFile(*inputPath)
+			rawData, err = os.ReadFile(*inputPath)
 			if err != nil {
 				log.FatalErr(err)
 			}
@@ -133,7 +133,7 @@ func main() {
 			log.FatalErr(err)
 		}
 	} else {
-		output, err = ioutil.TempFile("", "*.png")
+		output, err = os.CreateTemp("", "*.png")
 		if err != nil {
 			log.FatalErr(err)
 		}
