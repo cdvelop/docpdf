@@ -188,6 +188,12 @@ func (doc *Document) AddPage() {
 	if doc.footer != nil {
 		doc.footer.currentPage = doc.numOfPagesObj
 	}
+
+	// Respetar el SpaceAfter del encabezado para el contenido inicial de la página
+	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.numOfPagesObj > 1) {
+		// Ajustar la posición Y inicial para incluir el espacio después del encabezado
+		doc.SetY(doc.margins.Top + doc.fontConfig.PageHeader.SpaceAfter)
+	}
 }
 
 // AddPageWithOption añade una nueva página con opciones y actualiza el contador de páginas para el header y footer
@@ -201,6 +207,12 @@ func (doc *Document) AddPageWithOption(opt pageOption) {
 	}
 	if doc.footer != nil {
 		doc.footer.currentPage = doc.numOfPagesObj
+	}
+
+	// Respetar el SpaceAfter del encabezado para el contenido inicial de la página
+	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.numOfPagesObj > 1) {
+		// Ajustar la posición Y inicial para incluir el espacio después del encabezado
+		doc.SetY(doc.margins.Top + doc.fontConfig.PageHeader.SpaceAfter)
 	}
 }
 

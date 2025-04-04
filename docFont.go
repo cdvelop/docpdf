@@ -144,7 +144,7 @@ func defaultFontConfig() FontConfig {
 			LineSpacing: 1.0,
 			Alignment:   Center | Top,
 			SpaceBefore: 0,
-			SpaceAfter:  3,
+			SpaceAfter:  12,
 		},
 		PageFooter: TextStyle{
 			Size:        9,
