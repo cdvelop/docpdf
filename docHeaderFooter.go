@@ -95,27 +95,32 @@ func (hf *headerFooter) draw() {
 	// Save current position and drawing settings
 	prevX, prevY := hf.doc.GetX(), hf.doc.GetY()
 
-	// Determine Y position based on whether this is a header or footer
-	var y float64
-	if hf.isHeader {
-		// position header in top margin area
-		y = hf.doc.margins.Top / 2
-	} else {
-		// position footer in bottom margin area
-		pageHeight := hf.doc.config.PageSize.H
-		y = pageHeight - (hf.doc.margins.Bottom / 2) - hf.doc.fontConfig.PageFooter.Size
-	}
-
-	// Calculate column widths (3 equal sections)
-	sectionWidth := hf.doc.contentAreaWidth / 3
-
-	// Set font for header/footer
+	// Determinar el estilo de fuente para usar sus propiedades de espaciado
 	var fontStyle TextStyle
 	if hf.isHeader {
 		fontStyle = hf.doc.fontConfig.PageHeader
 	} else {
 		fontStyle = hf.doc.fontConfig.PageFooter
 	}
+
+	// Determine Y position based on whether this is a header or footer
+	var y float64
+	if hf.isHeader {
+		// Posicionar el encabezado respetando el margen superior del documento
+		// y agregando el SpaceBefore para mantener distancia adecuada
+		y = hf.doc.margins.Top + fontStyle.SpaceBefore
+	} else {
+		// Posicionar el pie de página respetando el margen inferior del documento
+		// y considerando SpaceBefore y SpaceAfter para mantener distancia adecuada
+		pageHeight := hf.doc.config.PageSize.H
+		// Calculamos la posición para que quede dentro del margen inferior
+		y = pageHeight - hf.doc.margins.Bottom - fontStyle.Size - fontStyle.SpaceAfter
+	}
+
+	// Calculate column widths (3 equal sections)
+	sectionWidth := hf.doc.contentAreaWidth / 3
+
+	// Set font for header/footer
 	hf.doc.SetFont(hf.FontName, "", fontStyle.Size)
 
 	// Set a flag to prevent recursion during drawing the header/footer
@@ -139,24 +144,24 @@ func (hf *headerFooter) draw() {
 	// Draw left content - también dibujar si tiene paginación configurada
 	if hf.Left.Text != "" || hf.Left.IsImage || hf.Left.WithPage || hf.Left.WithTotalPages {
 		x := hf.doc.margins.Left
-		hf.drawContent(hf.Left, x, y, sectionWidth, Left)
+		hf.drawContent(hf.Left, x, y, sectionWidth, Left, fontStyle)
 	}
 
 	// Draw center content - también dibujar si tiene paginación configurada
 	if hf.Center.Text != "" || hf.Center.IsImage || hf.Center.WithPage || hf.Center.WithTotalPages {
 		x := hf.doc.margins.Left + sectionWidth
-		hf.drawContent(hf.Center, x, y, sectionWidth, Center)
+		hf.drawContent(hf.Center, x, y, sectionWidth, Center, fontStyle)
 	}
 
 	// Draw right content - también dibujar si tiene paginación configurada
 	if hf.Right.Text != "" || hf.Right.IsImage || hf.Right.WithPage || hf.Right.WithTotalPages {
 		x := hf.doc.margins.Left + 2*sectionWidth
-		hf.drawContent(hf.Right, x, y, sectionWidth, Right)
+		hf.drawContent(hf.Right, x, y, sectionWidth, Right, fontStyle)
 	}
 }
 
 // drawContent draws a single content item (text or image) in the header/footer
-func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width float64, align position) {
+func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width float64, align position, fontStyle TextStyle) {
 	doc := hf.doc
 
 	if content.IsImage {
@@ -224,12 +229,6 @@ func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width flo
 		}
 
 		// Create text builder
-		var fontStyle TextStyle
-		if hf.isHeader {
-			fontStyle = doc.fontConfig.PageHeader
-		} else {
-			fontStyle = doc.fontConfig.PageFooter
-		}
 		builder := doc.newTextBuilder(text, fontStyle, hf.FontName)
 		builder.positioning = fixedPosition
 
@@ -253,18 +252,11 @@ func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width flo
 		// Draw the text
 		builder.Draw()
 
-		// Si es encabezado, necesitamos ajustar la posición de inicio del contenido
-		// pero sin modificar directamente los márgenes del documento
-		if hf.isHeader && fontStyle.SpaceAfter > 0 {
-			// En lugar de modificar doc.margins.Top, creamos un espacio adicional
-			// Si estamos en la primera página, aplicamos un espacio adicional después del encabezado
-			if doc.numOfPagesObj == 1 {
-				// Añadir espacio después del encabezado (solo en la primera página para la inicialización)
-				// Usamos SetY para establecer la posición correcta para el primer elemento
-				topWithOffset := doc.margins.Top + fontStyle.SpaceAfter
-				doc.SetY(topWithOffset)
-			}
-			// Para otras páginas, este ajuste se maneja en el método AddPage
+		// Aplicar espaciado adicional solo en la primera página si es necesario
+		if hf.isHeader && doc.numOfPagesObj == 1 && fontStyle.SpaceAfter > 0 {
+			// Para el encabezado en la primera página, ajustamos la posición Y inicial del contenido
+			topWithOffset := doc.margins.Top + fontStyle.SpaceAfter
+			doc.SetY(topWithOffset)
 		}
 
 		// Restore position
