@@ -253,16 +253,18 @@ func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width flo
 		// Draw the text
 		builder.Draw()
 
-		// Si es encabezado, aplicar el espacio después
-		// Esto ajusta la posición de inicio del contenido que aparece después del encabezado
-		if hf.isHeader {
-			// Guardar la posición original antes de restaurarla
-			originalY := doc.margins.Top
-			// Calcular la nueva posición Y sumando el espacio después al margen superior
-			newY := originalY + fontStyle.SpaceAfter
-			// Establecer el nuevo margen superior temporalmente
-			doc.margins.Top = newY
-			// Esta modificación temporal se aplicará a todo contenido nuevo hasta el siguiente cambio de página
+		// Si es encabezado, necesitamos ajustar la posición de inicio del contenido
+		// pero sin modificar directamente los márgenes del documento
+		if hf.isHeader && fontStyle.SpaceAfter > 0 {
+			// En lugar de modificar doc.margins.Top, creamos un espacio adicional
+			// Si estamos en la primera página, aplicamos un espacio adicional después del encabezado
+			if doc.numOfPagesObj == 1 {
+				// Añadir espacio después del encabezado (solo en la primera página para la inicialización)
+				// Usamos SetY para establecer la posición correcta para el primer elemento
+				topWithOffset := doc.margins.Top + fontStyle.SpaceAfter
+				doc.SetY(topWithOffset)
+			}
+			// Para otras páginas, este ajuste se maneja en el método AddPage
 		}
 
 		// Restore position

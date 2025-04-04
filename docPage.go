@@ -27,7 +27,44 @@ func (doc *Document) ensureElementFits(height float64, minBottomMargin ...float6
 
 	// Check if we need to add a page
 	if height > availableSpace {
+		// Guardar el estado actual de la fuente antes de añadir la página
+		currentFont := doc.curr.FontFontCount
+		currentFontSize := doc.curr.FontSize
+		currentFontStyle := doc.curr.FontStyle
+		currentFontType := doc.curr.FontType
+		currentIndexOfFontObj := doc.curr.IndexOfFontObj
+		currentCharSpacing := doc.curr.CharSpacing
+
+		// Guardar el actual modo de color del texto y valor de grayFill
+		currentTextMode := doc.curr.txtColorMode
+		currentGrayFill := doc.curr.grayFill
+
+		// Si hay una estructura para el color de texto actual, guardarla
+		var currentTxtColor iCacheColorText
+		if doc.curr.txtColor != nil {
+			currentTxtColor = doc.curr.txtColor
+		}
+
+		// Añadir nueva página
 		doc.AddPage()
+
+		// Restaurar el estado de la fuente después de añadir la página
+		doc.curr.FontFontCount = currentFont
+		doc.curr.FontSize = currentFontSize
+		doc.curr.FontStyle = currentFontStyle
+		doc.curr.FontType = currentFontType
+		doc.curr.IndexOfFontObj = currentIndexOfFontObj
+		doc.curr.CharSpacing = currentCharSpacing
+
+		// Restaurar el modo de color y el grayFill
+		doc.curr.txtColorMode = currentTextMode
+		doc.curr.grayFill = currentGrayFill
+
+		// Restaurar el color del texto si existía
+		if currentTxtColor != nil {
+			doc.curr.txtColor = currentTxtColor
+		}
+
 		return doc.curr.Y // Return the top margin position of the new page
 	}
 
