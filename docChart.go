@@ -21,15 +21,14 @@ type docChart struct {
 	valign    int
 
 	// Propiedades específicas para BarChart
-	title        string
-	barWidth     int
-	barSpacing   int
-	bars         []chart.Value
-	xAxisStyle   chart.Style
-	yAxisStyle   chart.Style
-	background   chart.Style
-	canvas       chart.Style
-	colorPalette chart.ColorPalette
+	title      string
+	barWidth   int
+	barSpacing int
+	bars       []chart.Value
+	xAxisStyle chart.Style
+	yAxisStyle chart.Style
+	background chart.Style
+	canvas     chart.Style
 
 	// Propiedades para control de calidad
 	dpi         float64 // Resolución del gráfico en DPI (dots per inch)
@@ -62,7 +61,7 @@ func (doc *Document) AddBarChart() *docChart {
 		fontbridge.InitFromDocConfig(
 			doc.fontConfig.Family.Path,
 			doc.fontConfig.Family.Regular,
-			float64(doc.fontConfig.Header1.Size),
+			float64(doc.fontConfig.Header2.Size),
 			float64(doc.fontConfig.Normal.Size),
 			float64(doc.fontConfig.Footnote.Size),
 			titleColor,
