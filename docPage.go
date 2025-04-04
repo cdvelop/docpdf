@@ -22,8 +22,20 @@ func (doc *Document) ensureElementFits(height float64, minBottomMargin ...float6
 	// Get current Y position
 	currentY := doc.curr.Y
 
-	// Calculate available space
-	availableSpace := doc.curr.pageSize.H - currentY - bottomMargin
+	// Calculate header/footer space if they exist
+	headerSpace := 0.0
+	footerSpace := 0.0
+
+	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.numOfPagesObj > 1) {
+		headerSpace = doc.fontConfig.PageHeader.Size + doc.fontConfig.PageHeader.SpaceAfter
+	}
+
+	if doc.footer != nil && doc.footer.initialized && (!doc.footer.hideOnFirstPage || doc.numOfPagesObj > 1) {
+		footerSpace = doc.fontConfig.PageFooter.Size + doc.fontConfig.PageFooter.SpaceBefore
+	}
+
+	// Calculate available space considering header/footer
+	availableSpace := doc.curr.pageSize.H - currentY - bottomMargin - (headerSpace + footerSpace)
 
 	// Check if we need to add a page
 	if height > availableSpace {
