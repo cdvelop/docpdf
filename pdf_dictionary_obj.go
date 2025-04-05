@@ -37,7 +37,7 @@ func (p *pdfDictionaryObj) protection() *pdfProtection {
 	return p.pdfProtection
 }
 
-func (p *pdfDictionaryObj) write(w io.Writer, objID int) error {
+func (p *pdfDictionaryObj) write(w writer, objID int) error {
 	b, err := p.makeFont()
 	if err != nil {
 		//log.Panicf("%s", err.Error())

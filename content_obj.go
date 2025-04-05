@@ -22,7 +22,7 @@ func (c *contentObj) init(funcGetRoot func() *pdfEngine) {
 	c.getRoot = funcGetRoot
 }
 
-func (c *contentObj) write(w io.Writer, objID int) error {
+func (c *contentObj) write(w writer, objID int) error {
 	buff := getBuffer()
 	defer putBuffer(buff)
 
@@ -495,7 +495,7 @@ func (c *catalogObj) getType() string {
 	return "Catalog"
 }
 
-func (c *catalogObj) write(w io.Writer, objID int) error {
+func (c *catalogObj) write(w writer, objID int) error {
 	io.WriteString(w, "<<\n")
 	fmt.Fprintf(w, "  /Type /%s\n", c.getType())
 	io.WriteString(w, "  /Pages 2 0 R\n")

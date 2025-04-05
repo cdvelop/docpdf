@@ -24,7 +24,7 @@ func (d *deviceRGBObj) getType() string {
 }
 
 // สร้าง ข้อมูลใน pdf
-func (d *deviceRGBObj) write(w io.Writer, objID int) error {
+func (d *deviceRGBObj) write(w writer, objID int) error {
 
 	io.WriteString(w, "<<\n")
 	fmt.Fprintf(w, "/Length %d\n", len(d.data))

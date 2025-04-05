@@ -3,34 +3,28 @@ package docpdf
 import (
 	"bytes"
 	"io"
-	"os"
 	"strconv"
 )
 
 type (
 	countingWriter struct {
 		offset int64
-		writer io.Writer
+		writer writer
 	}
 )
 
-// WritePdf : write pdf file
-func (gp *pdfEngine) WritePdf(pdfPath string) error {
-	return os.WriteFile(pdfPath, gp.GetBytesPdf(), 0644)
-}
+// WritePdfFile : write pdf file if err occurred it will be logged
+func (gp *pdfEngine) WritePdfFile() {
+	data, err := gp.GetBytesPdfReturnErr()
+	if err != nil {
+		gp.log(err)
+		return
+	}
 
-// WriteTo implements the io.WriterTo interface and can
-// be used to stream the PDF as it is compiled to an io.Writer.
-func (gp *pdfEngine) WriteTo(w io.Writer) (n int64, err error) {
-	return gp.compilePdf(w)
-}
-
-// Write streams the pdf as it is compiled to an io.Writer
-//
-// Deprecated: use the WriteTo method instead.
-func (gp *pdfEngine) Write(w io.Writer) error {
-	_, err := gp.compilePdf(w)
-	return err
+	err = gp.fileWrite.FileWrite(data)
+	if err != nil {
+		gp.log(err)
+	}
 }
 
 func (gp *pdfEngine) Read(p []byte) (int, error) {
@@ -48,7 +42,7 @@ func (gp *pdfEngine) Close() error {
 	return nil
 }
 
-func (gp *pdfEngine) compilePdf(w io.Writer) (n int64, err error) {
+func (gp *pdfEngine) compilePdf(w writer) (n int64, err error) {
 	gp.prepare()
 	err = gp.Close()
 	if err != nil {
@@ -74,7 +68,7 @@ func (gp *pdfEngine) compilePdf(w io.Writer) (n int64, err error) {
 	return writer.offset, nil
 }
 
-func newCountingWriter(w io.Writer) *countingWriter {
+func newCountingWriter(w writer) *countingWriter {
 	return &countingWriter{writer: w}
 }
 

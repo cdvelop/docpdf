@@ -3,7 +3,6 @@ package chart
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"math"
 	"strings"
 
@@ -221,13 +220,13 @@ func (vr *vectorRenderer) ClearTextRotation() {
 }
 
 // Save saves the renderer's contents to a writer.
-func (vr *vectorRenderer) Save(w io.Writer) error {
+func (vr *vectorRenderer) Save(w writer) error {
 	vr.c.End()
 	_, err := w.Write(vr.b.Bytes())
 	return err
 }
 
-func newCanvas(w io.Writer) *canvas {
+func newCanvas(w writer) *canvas {
 	return &canvas{
 		w:   w,
 		dpi: DefaultDPI,
@@ -235,7 +234,7 @@ func newCanvas(w io.Writer) *canvas {
 }
 
 type canvas struct {
-	w         io.Writer
+	w         writer
 	dpi       float64
 	textTheta *float64
 	width     int

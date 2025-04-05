@@ -74,7 +74,7 @@ func (egs extGState) getType() string {
 	return "extGState"
 }
 
-func (egs extGState) write(w io.Writer, objID int) error {
+func (egs extGState) write(w writer, objID int) error {
 	content := "<<\n"
 	content += "\t/Type /extGState\n"
 

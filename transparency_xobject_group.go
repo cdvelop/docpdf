@@ -54,7 +54,7 @@ func (s transparencyXObjectGroup) getType() string {
 	return "XObject"
 }
 
-func (s transparencyXObjectGroup) write(w io.Writer, objId int) error {
+func (s transparencyXObjectGroup) write(w writer, objId int) error {
 	streamBuff := getBuffer()
 	defer putBuffer(streamBuff)
 

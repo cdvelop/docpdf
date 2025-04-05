@@ -38,7 +38,7 @@ func (i *imageObj) protection() *pdfProtection {
 	return i.pdfProtection
 }
 
-func (i *imageObj) write(w io.Writer, objID int) error {
+func (i *imageObj) write(w writer, objID int) error {
 	data := i.imginfo.data
 
 	if i.IsMask {

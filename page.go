@@ -23,7 +23,7 @@ func (p *pagesObj) init(funcGetRoot func() *pdfEngine) {
 	p.getRoot = funcGetRoot
 }
 
-func (p *pagesObj) write(w io.Writer, objID int) error {
+func (p *pagesObj) write(w writer, objID int) error {
 
 	io.WriteString(w, "<<\n")
 	fmt.Fprintf(w, "  /Type /%s\n", p.getType())
@@ -83,7 +83,7 @@ func (p *pageObj) setOption(opt pageOption) {
 	p.pageOption = opt
 }
 
-func (p *pageObj) write(w io.Writer, objID int) error {
+func (p *pageObj) write(w writer, objID int) error {
 	io.WriteString(w, "<<\n")
 	fmt.Fprintf(w, "  /Type /%s\n", p.getType())
 	io.WriteString(w, "  /Parent 2 0 R\n")
@@ -123,7 +123,7 @@ func (p *pageObj) write(w io.Writer, objID int) error {
 	return nil
 }
 
-func (p *pageObj) writeExternalLink(w io.Writer, l linkOption, objID int) error {
+func (p *pageObj) writeExternalLink(w writer, l linkOption, objID int) error {
 	protection := p.getRoot().protection()
 	url := l.url
 	if protection != nil {
@@ -143,7 +143,7 @@ func (p *pageObj) writeExternalLink(w io.Writer, l linkOption, objID int) error 
 	return err
 }
 
-func (p *pageObj) writeInternalLink(w io.Writer, l linkOption, anchors map[string]anchorOption) error {
+func (p *pageObj) writeInternalLink(w writer, l linkOption, anchors map[string]anchorOption) error {
 	a, ok := anchors[l.anchor]
 	if !ok {
 		return nil

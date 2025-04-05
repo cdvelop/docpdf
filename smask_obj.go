@@ -64,7 +64,7 @@ func (s sMask) getType() string {
 	return "Mask"
 }
 
-func (s sMask) write(w io.Writer, objID int) error {
+func (s sMask) write(w writer, objID int) error {
 	if s.TransparencyXObjectGroupIndex != 0 {
 		content := "<<\n"
 		content += "\t/Type /Mask\n"

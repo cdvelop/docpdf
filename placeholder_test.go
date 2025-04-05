@@ -13,7 +13,7 @@ func TestPlaceHolderText(t *testing.T) {
 		return
 	}
 
-	pdf := pdfEngine{}
+	pdf := setupDefaultA4PDF("placeholder_text.pdf", t)
 	pdf.Start(config{PageSize: *PageSizeA4})
 	err = pdf.AddTTFFont("LiberationSerif-Regular", "./test/res/LiberationSerif-Regular.ttf")
 	if err != nil {
@@ -56,7 +56,7 @@ func TestPlaceHolderText(t *testing.T) {
 		return
 	}
 
-	pdf.WritePdf("./test/out/placeholder_text.pdf")
+	pdf.WritePdfFile()
 }
 
 func TestPlaceHolderText2(t *testing.T) {
@@ -66,7 +66,7 @@ func TestPlaceHolderText2(t *testing.T) {
 		return
 	}
 
-	pdf := pdfEngine{}
+	pdf := setupDefaultA4PDF("placeholder_text_2.pdf", t)
 	pdf.Start(config{PageSize: *PageSizeA4})
 	err = pdf.AddTTFFont("LiberationSerif-Regular", "./test/res/LiberationSerif-Regular.ttf")
 	if err != nil {
@@ -124,5 +124,5 @@ func TestPlaceHolderText2(t *testing.T) {
 		return
 	}
 
-	pdf.WritePdf("./test/out/placeholder_text_2.pdf")
+	pdf.WritePdfFile()
 }

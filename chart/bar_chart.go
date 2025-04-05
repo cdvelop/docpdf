@@ -3,7 +3,6 @@ package chart
 import (
 	"errors"
 	"fmt"
-	"io"
 	"math"
 
 	"github.com/cdvelop/docpdf/freetype/truetype"
@@ -89,8 +88,8 @@ func (bc BarChart) GetBarWidth() int {
 	return bc.BarWidth
 }
 
-// Render renders the chart with the given renderer to the given io.Writer.
-func (bc BarChart) Render(rp RendererProvider, w io.Writer) error {
+// Render renders the chart with the given renderer to the given writer.
+func (bc BarChart) Render(rp RendererProvider, w writer) error {
 	if len(bc.Bars) == 0 {
 		return errors.New("please provide at least one bar")
 	}

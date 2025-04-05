@@ -70,7 +70,7 @@ func TestNewDocument(t *testing.T) {
 			logOutput = append(logOutput, a...)
 		}
 
-		doc := NewDocument(logger)
+		doc := NewDocument(fw(""), logger)
 
 		if doc == nil {
 			t.Fatal("Expected document to be created")
@@ -96,7 +96,7 @@ func TestNewDocument(t *testing.T) {
 			Path:    "custom/",
 		}
 
-		doc := NewDocument(func(a ...any) {}, customFont)
+		doc := NewDocument(fw(""), func(a ...any) {}, customFont)
 
 		if doc.fontConfig.Family != customFont {
 			t.Errorf("got font = %v, want %v", doc.fontConfig.Family, customFont)
@@ -115,7 +115,7 @@ func TestNewDocument(t *testing.T) {
 			Italic:  "nonexistent/font-italic.ttf",
 		}
 
-		NewDocument(logger, customFont)
+		NewDocument(fw(""), logger, customFont)
 
 		if len(logOutput) == 0 {
 			t.Error("Expected logger to capture font loading error")
@@ -138,7 +138,7 @@ func TestNewDocument(t *testing.T) {
 			Path:    fontPublicPath,
 		}
 
-		doc := NewDocument(logger, oneCustomFont)
+		doc := NewDocument(fw(""), logger, oneCustomFont)
 
 		expectedFont := Font{
 			Regular: "regular.ttf",
@@ -166,7 +166,7 @@ func TestFontAutoDetection(t *testing.T) {
 		}
 
 		// Create document with empty font config to trigger default path detection
-		doc := NewDocument(logger)
+		doc := NewDocument(fw(""), logger)
 
 		// We're simulating that only one font exists in the default path
 		// by manually modifying the font config before loadFonts is called
@@ -208,7 +208,7 @@ func TestFontAutoDetection(t *testing.T) {
 		}
 
 		// Create document with empty font config to trigger default path detection
-		doc := NewDocument(logger)
+		doc := NewDocument(fw(""), logger)
 
 		// We're simulating that only the bold font exists
 		doc.fontConfig.Family = Font{
@@ -251,7 +251,7 @@ func TestFontAutoDetection(t *testing.T) {
 		}
 
 		// Create document with empty font config to trigger default path detection
-		doc := NewDocument(logger)
+		doc := NewDocument(fw(""), logger)
 
 		// We're simulating that only the italic font exists
 		doc.fontConfig.Family = Font{

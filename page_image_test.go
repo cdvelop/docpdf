@@ -10,7 +10,7 @@ import (
 func TestPageWithImage(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
+	doc := NewDocument(fw(fmt.Sprintf("test/pagination/page_image-%s.pdf", time.Now().Format("01-02-15-04-05"))), func(a ...any) {
 		t.Log(a...)
 	})
 
@@ -36,9 +36,6 @@ func TestPageWithImage(t *testing.T) {
 		y += imgHeight
 	}
 
-	err = pdf.WritePdf(fmt.Sprintf("test/pagination/page_image-%s.pdf", time.Now().Format("01-02-15-04-05")))
-	if err != nil {
-		log.Fatalln(err)
-	}
+	pdf.WritePdfFile()
 
 }

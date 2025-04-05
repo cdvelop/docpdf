@@ -21,7 +21,7 @@ func (e *encryptionObj) getType() string {
 	return "Encryption"
 }
 
-func (e *encryptionObj) write(w io.Writer, objID int) error {
+func (e *encryptionObj) write(w writer, objID int) error {
 	io.WriteString(w, "<<\n")
 	io.WriteString(w, "/Filter /Standard\n")
 	io.WriteString(w, "/V 1\n")

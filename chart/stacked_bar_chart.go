@@ -3,7 +3,6 @@ package chart
 import (
 	"errors"
 	"fmt"
-	"io"
 	"math"
 
 	"github.com/cdvelop/docpdf/freetype/truetype"
@@ -95,8 +94,8 @@ func (sbc StackedBarChart) GetBarSpacing() int {
 	return sbc.BarSpacing
 }
 
-// Render renders the chart with the given renderer to the given io.Writer.
-func (sbc StackedBarChart) Render(rp RendererProvider, w io.Writer) error {
+// Render renders the chart with the given renderer to the given writer.
+func (sbc StackedBarChart) Render(rp RendererProvider, w writer) error {
 	if len(sbc.Bars) == 0 {
 		return errors.New("please provide at least one bar")
 	}

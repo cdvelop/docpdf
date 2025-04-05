@@ -8,6 +8,26 @@ docpdf is a Go library that allows you to generate PDF documents with an intuiti
 
 The main focus of this library is to compile into a compact binary size using TinyGo for frontend usage, as standard Go binaries tend to be large. This makes it ideal for web applications where binary size matters.
 
+## Writer Interface
+
+The library now uses a `Writer` interface for PDF output, which makes it compatible with WebAssembly environments by removing direct dependencies on the `os` package:
+
+
+```go
+// This allows you to use any type that implements the:
+type writer interface {
+	Write(p []byte) (n int, err error)
+}
+// interface to save your PDF documents
+```
+
+```go
+// Using a file writer (for backend/desktop applications)
+fileWrite := &fileWrite{filePath: "output.pdf"}
+doc := NewDocument(fileWrite, fmt.Println)
+
+```
+
 ### TinyGo Compatibility Checklist
 
 The following standard libraries will be replaced or modified as they are not 100% compatible with TinyGo, in order to reduce the binary size:
@@ -18,7 +38,7 @@ The following standard libraries will be replaced or modified as they are not 10
 - [ ] fmt
 - [ ] golang.org/x/image
 - [ ] io
-- [ ] os
+- [x] os (removed direct dependency by using Writer interface)
 - [ ] path/filepath
 - [ ] sort
 - [ ] strings
@@ -31,22 +51,22 @@ The library offers multiple ways to specify page sizes for your documents:
 
 1. **Using predefined page sizes**:
    ```go
-   doc := NewDocument(fmt.Println, PageSizeA4)  // Use A4 page size
-   doc := NewDocument(fmt.Println, PageSizeLetter)  // Use Letter page size
+   doc := NewDocument(fw, fmt.Println, PageSizeA4)  // Use A4 page size
+   doc := NewDocument(fw, fmt.Println, PageSizeLetter)  // Use Letter page size
    ```
 
 2. **Using the new PageSize struct with unit specification**:
    ```go
    // Create an A4 page size (210mm x 297mm) with millimeter units
-   doc := NewDocument(fmt.Println, PageSize{Width: 210, Height: 297, Unit: UnitMM})
+   doc := NewDocument(fw,fmt.Println, PageSize{Width: 210, Height: 297, Unit: UnitMM})
    
    // Create a US Letter page size (8.5in x 11in) with inch units
-   doc := NewDocument(fmt.Println, PageSize{Width: 8.5, Height: 11, Unit: UnitIN})
+   doc := NewDocument(fw,fmt.Println, PageSize{Width: 8.5, Height: 11, Unit: UnitIN})
    ```
 
 3. **Combining page size with other options**:
    ```go
-   doc := NewDocument(fmt.Println, 
+   doc := NewDocument(fw,fmt.Println, 
       PageSize{Width: 210, Height: 297, Unit: UnitMM},  // A4 size
       Margins{Left: 15, Top: 10, Right: 10, Bottom: 10}  // Custom margins
    )
@@ -63,7 +83,7 @@ This example shows the main features of the library:
 
 ```go
 	// Create a simple document with default settings
-	doc := NewDocument(func(a ...any) {
+	doc := NewDocument(fw, func(a ...any) {
 		// Simple logger that does nothing for this test
 		t.Log(a...)
 	})
@@ -206,7 +226,7 @@ This example shows the main features of the library:
 			Width:    0.5,
 			RGBColor: RGBColor{R: 180, G: 180, B: 220},
 		},
-		FillColor: RGBColor{R: 255, G: 255, B: 255},
+		FillColor: RGBColor{R: 255, G: 255, 255},
 		TextColor: RGBColor{R: 50, G: 50, B: 80},
 		Font:      FontRegular,
 		FontSize:  11,
@@ -256,7 +276,7 @@ This example shows the main features of the library:
 	outFilePath := filepath.Join(outDir, "doc_test.pdf")
 
 	// Save the document to the specified location
-	err = doc.WritePdf(outFilePath)
+	err = doc.WritePdfFile(outFilePath)
 ```
 
 ## Acknowledgements

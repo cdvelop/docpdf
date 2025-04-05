@@ -48,7 +48,11 @@ func TestTableColumnWidths(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Create a new document for this test
-			doc := NewDocument(func(a ...any) {
+
+			// Create a PDF for visual inspection
+			outFilePath := filepath.Join(outDir, "table_"+tc.name+".pdf")
+
+			doc := NewDocument(fw(outFilePath), func(a ...any) {
 				t.Log(a...)
 			})
 
@@ -81,19 +85,14 @@ func TestTableColumnWidths(t *testing.T) {
 				validateAutoWidths(t, table, actualWidths)
 			}
 
-			// Create a PDF for visual inspection
-			outFilePath := filepath.Join(outDir, "table_"+tc.name+".pdf")
 			table.Draw()
-			err := doc.WritePdf(outFilePath)
-			if err != nil {
-				t.Fatalf("Error writing PDF: %v", err)
-			}
+			doc.WritePdfFile()
 		})
 	}
 
 	// Test mixing width types (should ensure consistent approach)
 	t.Run("Mixing_Width_Types", func(t *testing.T) {
-		doc := NewDocument(func(a ...any) {
+		doc := NewDocument(fw("table_mixed_widths.pdf"), func(a ...any) {
 			t.Log(a...)
 		})
 
@@ -123,12 +122,9 @@ func TestTableColumnWidths(t *testing.T) {
 		}
 
 		// Create a PDF for visual inspection
-		outFilePath := filepath.Join(outDir, "table_mixed_widths.pdf")
 		table.Draw()
-		err := doc.WritePdf(outFilePath)
-		if err != nil {
-			t.Fatalf("Error writing PDF: %v", err)
-		}
+		doc.WritePdfFile()
+
 	})
 }
 

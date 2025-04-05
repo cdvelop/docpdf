@@ -2,9 +2,25 @@ package docpdf
 
 import (
 	"os"
-	"path/filepath"
+	"path"
 	"testing"
 )
+
+type fileWriteTest struct {
+	filePath string
+}
+
+// fileWriteTest is a test implementation of the fileWrite interface
+// filename eg: "doc_test.pdf"
+func fw(fileName string) *fileWriteTest {
+	return &fileWriteTest{
+		filePath: path.Join("test/out", fileName),
+	}
+}
+
+func (fw *fileWriteTest) FileWrite(data []byte) error {
+	return os.WriteFile(fw.filePath, data, 0644)
+}
 
 func TestDocumentAPIUsage(t *testing.T) {
 	// Create a simple document with default settings
@@ -12,7 +28,7 @@ func TestDocumentAPIUsage(t *testing.T) {
 	// search default fonts in the directory "fonts/" and names are "regular.ttf", "bold.ttf", "italic.ttf"
 	// if only one file "regular.ttf" exists, it will be used as regular, bold and italic
 	// the defaul pagesize is letter (8.5 x 11 inches)
-	doc := NewDocument(func(a ...any) {
+	doc := NewDocument(fw("doc_test.pdf"), func(a ...any) {
 		// Simple logger that does nothing for this test
 		t.Log(a...)
 	})
@@ -194,84 +210,56 @@ func TestDocumentAPIUsage(t *testing.T) {
 	// add page for checking page header and footer
 	doc.AddPage()
 
-	// Create output directory if it doesn't exist
-	outDir := "test/out"
-	err := os.MkdirAll(outDir, 0755)
-	if err != nil {
-		t.Fatalf("Error creating output directory: %v", err)
-	}
-
-	// Set the output file path
-	outFilePath := filepath.Join(outDir, "doc_test.pdf")
-
 	// Save the document to the specified location
-	err = doc.WritePdf(outFilePath)
-	if err != nil {
-		t.Fatalf("Error writing PDF: %v", err)
-	}
+	doc.WritePdfFile()
 
-	absPath, _ := filepath.Abs(outFilePath)
-	t.Logf("PDF created successfully at: %s", absPath)
 }
 
 func TestPageSizeOptions(t *testing.T) {
-	// Test directory setup
-	outDir := "test/out"
-	err := os.MkdirAll(outDir, 0755)
-	if err != nil {
-		t.Fatalf("Error creating output directory: %v", err)
-	}
 
 	// Test 1: Using predefined page size (PageSizeA4)
 	t.Run("PredefinedPageSize", func(t *testing.T) {
-		doc := NewDocument(func(a ...any) {
+
+		doc := NewDocument(fw("test_predefined_pagesize.pdf"), func(a ...any) {
 			t.Log(a...)
 		}, PageSizeA4)
 
 		doc.AddText("This document uses predefined PageSizeA4").Bold().AlignCenter().Draw()
 
-		outFilePath := filepath.Join(outDir, "test_predefined_pagesize.pdf")
-		err := doc.WritePdf(outFilePath)
-		if err != nil {
-			t.Fatalf("Error writing PDF: %v", err)
-		}
+		doc.WritePdfFile()
+
 	})
 
 	// Test 2: Using custom PageSize with mm units
 	t.Run("CustomPageSizeWithUnits", func(t *testing.T) {
 		// Create custom A5 size in mm (148mm x 210mm)
-		doc := NewDocument(func(a ...any) {
+		doc := NewDocument(fw("test_custom_pagesize.pdf"), func(a ...any) {
 			t.Log(a...)
 		}, PageSize{Width: 148, Height: 210, Unit: UnitMM})
 
 		doc.AddText("This document uses custom PageSize (A5 in mm)").Bold().AlignCenter().Draw()
 
-		outFilePath := filepath.Join(outDir, "test_custom_pagesize.pdf")
-		err := doc.WritePdf(outFilePath)
-		if err != nil {
-			t.Fatalf("Error writing PDF: %v", err)
-		}
+		doc.WritePdfFile()
+
 	})
 
 	// Test 3: Using custom PageSize with inches
 	t.Run("CustomPageSizeInches", func(t *testing.T) {
 		// Create custom size in inches (8.5 x 11 inches - US Letter)
-		doc := NewDocument(func(a ...any) {
+		doc := NewDocument(fw("test_custom_pagesize_inches.pdf"), func(a ...any) {
 			t.Log(a...)
 		}, PageSize{Width: 8.5, Height: 11, Unit: UnitIN})
 
 		doc.AddText("This document uses custom PageSize (Letter in inches)").Bold().AlignCenter().Draw()
 
-		outFilePath := filepath.Join(outDir, "test_custom_pagesize_inches.pdf")
-		err := doc.WritePdf(outFilePath)
-		if err != nil {
-			t.Fatalf("Error writing PDF: %v", err)
-		}
+		doc.WritePdfFile()
+
 	})
 
 	// Test 4: Combining PageSize with other options
 	t.Run("CombinedOptions", func(t *testing.T) {
-		doc := NewDocument(func(a ...any) {
+
+		doc := NewDocument(fw("test_combined_options.pdf"), func(a ...any) {
 			t.Log(a...)
 		},
 			// Custom page size (A4 landscape in mm)
@@ -282,10 +270,7 @@ func TestPageSizeOptions(t *testing.T) {
 
 		doc.AddText("This document combines custom PageSize with custom margins").Bold().AlignCenter().Draw()
 
-		outFilePath := filepath.Join(outDir, "test_combined_options.pdf")
-		err := doc.WritePdf(outFilePath)
-		if err != nil {
-			t.Fatalf("Error writing PDF: %v", err)
-		}
+		doc.WritePdfFile()
+
 	})
 }

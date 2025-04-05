@@ -2,7 +2,6 @@ package docpdf
 
 import (
 	"fmt"
-	"io"
 	"strings"
 )
 
@@ -18,7 +17,7 @@ func (o annotObj) getType() string {
 	return "Annot"
 }
 
-func (o annotObj) write(w io.Writer, objID int) error {
+func (o annotObj) write(w writer, objID int) error {
 	if o.url != "" {
 		return o.writeExternalLink(w, o.linkOption, objID)
 	} else {
@@ -26,7 +25,7 @@ func (o annotObj) write(w io.Writer, objID int) error {
 	}
 }
 
-func (o annotObj) writeExternalLink(w io.Writer, l linkOption, objID int) error {
+func (o annotObj) writeExternalLink(w writer, l linkOption, objID int) error {
 	protection := o.GetRoot().protection()
 	url := l.url
 	if protection != nil {
@@ -46,7 +45,7 @@ func (o annotObj) writeExternalLink(w io.Writer, l linkOption, objID int) error 
 	return err
 }
 
-func (o annotObj) writeInternalLink(w io.Writer, l linkOption) error {
+func (o annotObj) writeInternalLink(w writer, l linkOption) error {
 	a, ok := o.GetRoot().anchors[l.anchor]
 	if !ok {
 		return nil

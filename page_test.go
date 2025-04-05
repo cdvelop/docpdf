@@ -24,7 +24,7 @@ func GetFont(doc *Document, fontPath string) (err error) {
 func TestSetY(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
+	doc := NewDocument(fw(fmt.Sprintf("pagination/page_sety-%s.pdf", time.Now().Format("01-02-15-04-05"))), func(a ...any) {
 		t.Log(a...)
 	})
 
@@ -54,16 +54,14 @@ func TestSetY(t *testing.T) {
 		y += 20
 	}
 
-	err = pdf.WritePdf(fmt.Sprintf("test/pagination/page_sety-%s.pdf", time.Now().Format("01-02-15-04-05")))
-	if err != nil {
-		t.Fatal(err)
-	}
+	pdf.WritePdfFile()
+
 }
 
 func TestSetNewY(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
+	doc := NewDocument(fw(fmt.Sprintf("pagination/page_setnewy-%s.pdf", time.Now().Format("01-02-15-04-05"))), func(a ...any) {
 		t.Log(a...)
 	})
 
@@ -95,16 +93,14 @@ func TestSetNewY(t *testing.T) {
 		y += 20
 	}
 
-	err = pdf.WritePdf(fmt.Sprintf("test/pagination/page_setnewy-%s.pdf", time.Now().Format("01-02-15-04-05")))
-	if err != nil {
-		t.Fatal(err)
-	}
+	pdf.WritePdfFile()
+
 }
 
 func TestSetNewXY(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
+	doc := NewDocument(fw(fmt.Sprintf("pagination/page_setnewxy-%s.pdf", time.Now().Format("01-02-15-04-05"))), func(a ...any) {
 		t.Log(a...)
 	})
 
@@ -136,16 +132,14 @@ func TestSetNewXY(t *testing.T) {
 		y += 20
 	}
 
-	err = pdf.WritePdf(fmt.Sprintf("test/pagination/page_setnewxy-%s.pdf", time.Now().Format("01-02-15-04-05")))
-	if err != nil {
-		t.Fatal(err)
-	}
+	pdf.WritePdfFile()
+
 }
 
 func TestSetNewYX(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
+	doc := NewDocument(fw(fmt.Sprintf("test/pagination/page_setnewyx-%s.pdf", time.Now().Format("01-02-15-04-05"))), func(a ...any) {
 		t.Log(a...)
 	})
 
@@ -177,16 +171,14 @@ func TestSetNewYX(t *testing.T) {
 		y += 20
 	}
 
-	err = pdf.WritePdf(fmt.Sprintf("test/pagination/page_setnewyx-%s.pdf", time.Now().Format("01-02-15-04-05")))
-	if err != nil {
-		t.Fatal(err)
-	}
+	pdf.WritePdfFile()
+
 }
 
 func TestSetNewYCheckHeight(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
+	doc := NewDocument(fw(""), func(a ...any) {
 		t.Log(a...)
 	})
 
@@ -218,7 +210,7 @@ func TestSetNewYCheckHeight(t *testing.T) {
 
 func TestLineBreak(t *testing.T) {
 	var err error
-	doc := NewDocument(func(a ...any) {
+	doc := NewDocument(fw("pagination/page_linebreak.pdf"), func(a ...any) {
 		t.Log(a...)
 	})
 
@@ -260,8 +252,6 @@ func TestLineBreak(t *testing.T) {
 		}
 	}
 
-	err = pdf.WritePdf("test/pagination/page_linebreak.pdf")
-	if err != nil {
-		t.Fatal(err)
-	}
+	pdf.WritePdfFile()
+
 }

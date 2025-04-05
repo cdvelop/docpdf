@@ -3,7 +3,6 @@ package chart
 import (
 	"errors"
 	"fmt"
-	"io"
 
 	"github.com/cdvelop/docpdf/freetype/truetype"
 )
@@ -65,8 +64,8 @@ func (pc DonutChart) GetHeight() int {
 	return pc.Height
 }
 
-// Render renders the chart with the given renderer to the given io.Writer.
-func (pc DonutChart) Render(rp RendererProvider, w io.Writer) error {
+// Render renders the chart with the given renderer to the given writer.
+func (pc DonutChart) Render(rp RendererProvider, w writer) error {
 	if len(pc.Values) == 0 {
 		return errors.New("please provide at least one value")
 	}

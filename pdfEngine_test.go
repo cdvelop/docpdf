@@ -15,7 +15,7 @@ func BenchmarkPdfWithImageHolder(b *testing.B) {
 		return
 	}
 
-	pdf := pdfEngine{}
+	pdf := pdfBenchEngine("image_bench.pdf", b)
 	pdf.Start(config{PageSize: *PageSizeA4})
 	pdf.AddPage()
 	err = pdf.AddTTFFont("LiberationSerif-Regular", "./test/res/LiberationSerif-Regular.ttf")
@@ -48,7 +48,7 @@ func BenchmarkPdfWithImageHolder(b *testing.B) {
 	pdf.SetXY(250, 200)
 	pdf.Cell(nil, "gopher and gopher")
 
-	pdf.WritePdf("./test/out/image_bench.pdf")
+	pdf.WritePdfFile()
 }
 
 func TestPdfWithImageHolder(t *testing.T) {
@@ -58,7 +58,7 @@ func TestPdfWithImageHolder(t *testing.T) {
 		return
 	}
 
-	pdf := setupDefaultA4PDF(t)
+	pdf := setupDefaultA4PDF("image_test.pdf", t)
 	pdf.AddPage()
 
 	bytesOfImg, err := os.ReadFile("./test/res/PNG_transparency_demonstration_1.png")
@@ -88,7 +88,7 @@ func TestPdfWithImageHolder(t *testing.T) {
 	pdf.SetXY(250, 200)
 	pdf.Cell(nil, "gopher and gopher")
 
-	pdf.WritePdf("./test/out/image_test.pdf")
+	pdf.WritePdfFile()
 }
 
 func TestPdfWithImageHolderGif(t *testing.T) {
@@ -98,7 +98,7 @@ func TestPdfWithImageHolderGif(t *testing.T) {
 		return
 	}
 
-	pdf := setupDefaultA4PDF(t)
+	pdf := setupDefaultA4PDF("image_test_gif.pdf", t)
 	pdf.AddPage()
 
 	bytesOfImg, err := os.ReadFile("./test/res/gopher03.gif")
@@ -128,11 +128,11 @@ func TestPdfWithImageHolderGif(t *testing.T) {
 	pdf.SetXY(250, 200)
 	pdf.Cell(nil, "gopher and gopher")
 
-	pdf.WritePdf("./test/out/image_test_gif.pdf")
+	pdf.WritePdfFile()
 }
 
 func TestRetrievingNumberOfPdfPage(t *testing.T) {
-	pdf := setupDefaultA4PDF(t)
+	pdf := setupDefaultA4PDF("number_of_pages_test.pdf", t)
 	if pdf.GetNumberOfPages() != 0 {
 		t.Error("Invalid starting number of pages, should be 0")
 		return
@@ -175,11 +175,11 @@ func TestRetrievingNumberOfPdfPage(t *testing.T) {
 		return
 	}
 
-	pdf.WritePdf("./test/out/number_of_pages_test.pdf")
+	pdf.WritePdfFile()
 }
 
 func TestImageCrop(t *testing.T) {
-	pdf := setupDefaultA4PDF(t)
+	pdf := setupDefaultA4PDF("image_crop.pdf", t)
 	if pdf.GetNumberOfPages() != 0 {
 		t.Error("Invalid starting number of pages, should be 0")
 		return
@@ -237,7 +237,7 @@ func TestImageCrop(t *testing.T) {
 		return
 	}
 
-	pdf.WritePdf("./test/out/image_crop.pdf")
+	pdf.WritePdfFile()
 }
 
 func BenchmarkAddTTFFontByReader(b *testing.B) {
@@ -340,11 +340,11 @@ func TestReuseFontData(t *testing.T) {
 		return
 	}
 
-	if err := writeFile("./test/out/result1_by_parsed_ttf_font.pdf", rst1, 0644); err != nil {
+	if err := writeFile("result1_by_parsed_ttf_font.pdf", rst1, 0644); err != nil {
 		t.Error(err)
 		return
 	}
-	if err := writeFile("./test/out/result2_by_parsed_ttf_font.pdf", rst1, 0644); err != nil {
+	if err := writeFile("result2_by_parsed_ttf_font.pdf", rst1, 0644); err != nil {
 		t.Error(err)
 		return
 	}
@@ -391,7 +391,7 @@ func TestWhiteTransparent(t *testing.T) {
 		return
 	}
 	// create pdf.
-	pdf := pdfEngine{}
+	pdf := setupDefaultA4PDF("white_transparent.pdf", t)
 	pdf.Start(config{PageSize: *PageSizeA4})
 	pdf.AddPage()
 
@@ -437,11 +437,7 @@ func TestWhiteTransparent(t *testing.T) {
 	}
 
 	//pdf.SetNoCompression()
-	err = pdf.WritePdf("./test/out/white_transparent.pdf")
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	pdf.WritePdfFile()
 
 }
 
@@ -452,7 +448,7 @@ func TestRectangle(t *testing.T) {
 		return
 	}
 	// create pdf.
-	pdf := pdfEngine{}
+	pdf := setupDefaultA4PDF("rectangle_with_round_corner.pdf", t)
 	pdf.Start(config{PageSize: *PageSizeA4})
 	pdf.AddPage()
 
@@ -483,11 +479,8 @@ func TestRectangle(t *testing.T) {
 		return
 	}
 
-	err = pdf.WritePdf("./test/out/rectangle_with_round_corner.pdf")
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	pdf.WritePdfFile()
+
 }
 
 func TestWhiteTransparent195(t *testing.T) {
@@ -497,7 +490,7 @@ func TestWhiteTransparent195(t *testing.T) {
 		return
 	}
 	// create pdf.
-	pdf := pdfEngine{}
+	pdf := setupDefaultA4PDF("white_transparent195.pdf", t)
 	pdf.Start(config{PageSize: *PageSizeA4})
 	pdf.AddPage()
 
@@ -548,11 +541,8 @@ func TestWhiteTransparent195(t *testing.T) {
 	// }
 
 	pdf.SetNoCompression()
-	err = pdf.WritePdf("./test/out/white_transparent195.pdf")
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	pdf.WritePdfFile()
+
 }
 
 func TestClearValue(t *testing.T) {
@@ -562,7 +552,7 @@ func TestClearValue(t *testing.T) {
 		return
 	}
 
-	pdf := pdfEngine{}
+	pdf := setupDefaultA4PDF("test_clear_value.pdf", t)
 	pdf.Start(config{PageSize: *PageSizeA4, Protection: pdfProtectionConfig{
 		UseProtection: true,
 		OwnerPass:     []byte("123456"),
@@ -604,7 +594,7 @@ func TestClearValue(t *testing.T) {
 	pdf.SetInfo(PdfInfo{
 		Title: "xx",
 	})
-	pdf.WritePdf("./test/out/test_clear_value.pdf")
+	pdf.WritePdfFile()
 
 	//reset
 	pdf.Start(config{PageSize: *PageSizeA4})
@@ -657,7 +647,7 @@ func TestTextColor(t *testing.T) {
 	}
 
 	// create pdf.
-	pdf := pdfEngine{}
+	pdf := setupDefaultA4PDF("colored_text.pdf", t)
 	pdf.Start(config{PageSize: *PageSizeA4})
 	pdf.AddPage()
 	err = pdf.AddTTFFont("LiberationSerif", "./test/res/LiberationSerif-Regular.ttf")
@@ -680,11 +670,8 @@ func TestTextColor(t *testing.T) {
 	pdf.Br(20)
 	pdf.Cell(nil, "b")
 
-	err = pdf.WritePdf("./test/out/colored_text.pdf")
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	pdf.WritePdfFile()
+
 }
 
 func TestAddHeaderFooter(t *testing.T) {
@@ -695,7 +682,7 @@ func TestAddHeaderFooter(t *testing.T) {
 	}
 
 	// create pdf.
-	pdf := pdfEngine{}
+	pdf := setupDefaultA4PDF("header_footer.pdf", t)
 	pdf.Start(config{PageSize: *PageSizeA4})
 
 	err = pdf.AddTTFFont("LiberationSerif-Regular", "./test/res/LiberationSerif-Regular.ttf")
@@ -726,11 +713,8 @@ func TestAddHeaderFooter(t *testing.T) {
 	pdf.SetY(400)
 	pdf.Text("page 2 content")
 
-	err = pdf.WritePdf("./test/out/header_footer.pdf")
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	pdf.WritePdfFile()
+
 }
 
 func TestImportPagesFromFile(t *testing.T) {
@@ -741,10 +725,11 @@ func TestImportPagesFromFile(t *testing.T) {
 	}
 
 	// Primero, crear un PDF simple para posteriormente importarlo
-	samplePdfPath := "./test/out/sample_pdf_for_import.pdf"
+	samplePdfPath := "sample_pdf_for_import.pdf"
+	samplePdfFullPath := "test/out/" + samplePdfPath
 
 	// Crear el PDF de prueba
-	samplePdf := pdfEngine{}
+	samplePdf := setupDefaultA4PDF(samplePdfPath, t)
 	samplePdf.Start(config{PageSize: *PageSizeA4})
 	samplePdf.AddPage()
 
@@ -771,17 +756,13 @@ func TestImportPagesFromFile(t *testing.T) {
 	samplePdf.SetXY(50, 50)
 	samplePdf.Cell(nil, "Página 3")
 
-	err = samplePdf.WritePdf(samplePdfPath)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	samplePdf.WritePdfFile()
 
 	// Ahora importar el PDF creado anteriormente
-	pdf := pdfEngine{}
+	pdf := setupDefaultA4PDF("imported_pdf.pdf", t)
 	pdf.Start(config{PageSize: *PageSizeA4})
 
-	err = pdf.ImportPagesFromSource(samplePdfPath, "/MediaBox")
+	err = pdf.ImportPagesFromSource(samplePdfFullPath, "/MediaBox")
 	if err != nil {
 		t.Error(err)
 		return
@@ -832,9 +813,6 @@ func TestImportPagesFromFile(t *testing.T) {
 		return
 	}
 
-	err = pdf.WritePdf("./test/out/open-existing-pdf.pdf")
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	pdf.WritePdfFile()
+
 }

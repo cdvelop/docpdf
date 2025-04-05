@@ -3,7 +3,6 @@ package chart
 import (
 	"image"
 	"image/png"
-	"io"
 	"math"
 
 	"github.com/cdvelop/docpdf/drawing"
@@ -221,7 +220,7 @@ func (rr *rasterRenderer) ClearTextRotation() {
 }
 
 // Save implements the interface method.
-func (rr *rasterRenderer) Save(w io.Writer) error {
+func (rr *rasterRenderer) Save(w writer) error {
 	if typed, isTyped := w.(RGBACollector); isTyped {
 		typed.SetRGBA(rr.i)
 		return nil

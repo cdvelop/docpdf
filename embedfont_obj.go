@@ -22,7 +22,7 @@ func (e *embedFontObj) protection() *pdfProtection {
 	return e.getRoot().protection()
 }
 
-func (e *embedFontObj) write(w io.Writer, objID int) error {
+func (e *embedFontObj) write(w writer, objID int) error {
 	b, err := os.ReadFile(e.zfontpath)
 	if err != nil {
 		return err

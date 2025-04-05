@@ -1,8 +1,6 @@
 package chart
 
 import (
-	"io"
-
 	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 )
@@ -85,5 +83,9 @@ type Renderer interface {
 	ClearTextRotation()
 
 	// Save writes the image to the given writer.
-	Save(w io.Writer) error
+	Save(w writer) error
+}
+
+type writer interface {
+	Write(p []byte) (n int, err error)
 }

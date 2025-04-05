@@ -21,7 +21,7 @@ func (pr *procSetObj) init(funcGetRoot func() *pdfEngine) {
 	pr.ExtGStates = make([]extGS, 0)
 }
 
-func (pr *procSetObj) write(w io.Writer, objID int) error {
+func (pr *procSetObj) write(w writer, objID int) error {
 	content := "<<\n"
 	content += "\t/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]\n"
 

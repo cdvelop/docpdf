@@ -12,7 +12,7 @@ type RGBACollector interface {
 	SetRGBA(i *image.RGBA)
 }
 
-// ImageWriter is a special type of io.Writer that produces a final image.
+// ImageWriter is a special type of writer that produces a final image.
 type ImageWriter struct {
 	rgba     *image.RGBA
 	contents *bytes.Buffer

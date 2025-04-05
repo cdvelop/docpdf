@@ -24,7 +24,7 @@ func (ci *cidFontObj) getType() string {
 	return "CIDFont"
 }
 
-func (ci *cidFontObj) write(w io.Writer, objID int) error {
+func (ci *cidFontObj) write(w writer, objID int) error {
 	io.WriteString(w, "<<\n")
 	fmt.Fprintf(w, "/BaseFont /%s\n", createEmbeddedFontSubsetName(ci.PtrToSubsetFontObj.GetFamily()))
 	io.WriteString(w, "/CIDSystemInfo\n")

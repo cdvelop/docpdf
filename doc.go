@@ -17,22 +17,26 @@ type Document struct {
 }
 
 // NewDocument creates a new PDF document with configurable settings
-// Accepts optional configurations including:
+// Accepts:
+//   - fileWrite: Writer interface for writing PDF output: FileWrite(data []byte) error
+//   - log: Function for logging: func(a ...any)
+//   - configs: Optional configurations including:
 //   - FontConfig: Custom font configuration
-//   - Font: Custom font family
+//   - Font: Custom font family default path "fonts/" defaults names: normal.ttf, bold.ttf, italic.ttf
 //   - Margins: Custom margins in millimeters (more intuitive than points)
 //   - PageSize: Custom page size with desired units
-//   - *Rect: Predefined page size (like PageSizeLetter, PageSizeA4, etc.)
+//   - *Rect: custom page size eg: Rect{Width: 210, Height: 297, Unit: UnitMM}
 //
 // Examples:
-//   - NewDocument(fmt.Println, Margins{Left: 15, Top: 10, Right: 10, Bottom: 10})
-//   - NewDocument(fmt.Println, PageSize{Width: 210, Height: 297, Unit: UnitMM}) // A4 size in mm
-//   - NewDocument(fmt.Println, PageSizeA4) // Using predefined page size
-func NewDocument(logPrint func(a ...any), configs ...any) *Document {
+//   - NewDocument(fw, fmt.Println, Margins{Left: 15, Top: 10, Right: 10, Bottom: 10})
+//   - NewDocument(fw, fmt.Println, PageSize{Width: 210, Height: 297, Unit: UnitMM}) // A4 size in mm
+//   - NewDocument(fw, fmt.Println, PageSizeA4) // Using predefined page size
+func NewDocument(fw fileWrite, log func(a ...any), configs ...any) *Document {
 
 	doc := &Document{
 		pdfEngine: &pdfEngine{
-			log: logPrint,
+			fileWrite: fw,
+			log:       log,
 		},
 		fontConfig:      defaultFontConfig(),
 		inlineMode:      false,

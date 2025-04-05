@@ -33,7 +33,7 @@ func (u *unicodeMap) getType() string {
 	return "Unicode"
 }
 
-func (u *unicodeMap) write(w io.Writer, objID int) error {
+func (u *unicodeMap) write(w writer, objID int) error {
 	//stream
 	//characterToGlyphIndex := u.PtrToSubsetFontObj.CharacterToGlyphIndex
 	prefix :=

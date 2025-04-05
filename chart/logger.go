@@ -2,7 +2,6 @@ package chart
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"time"
 )
@@ -71,15 +70,15 @@ func Debugf(log Logger, format string, arguments ...interface{}) {
 // LoggerOption mutates a stdout logger.
 type LoggerOption = func(*StdoutLogger)
 
-//OptLoggerStdout sets the Stdout writer.
-func OptLoggerStdout(wr io.Writer) LoggerOption {
+// OptLoggerStdout sets the Stdout writer.
+func OptLoggerStdout(wr writer) LoggerOption {
 	return func(stl *StdoutLogger) {
 		stl.Stdout = wr
 	}
 }
 
 // OptLoggerStderr sets the Stdout writer.
-func OptLoggerStderr(wr io.Writer) LoggerOption {
+func OptLoggerStderr(wr writer) LoggerOption {
 	return func(stl *StdoutLogger) {
 		stl.Stderr = wr
 	}
@@ -88,8 +87,8 @@ func OptLoggerStderr(wr io.Writer) LoggerOption {
 // StdoutLogger is a basic logger.
 type StdoutLogger struct {
 	TimeFormat string
-	Stdout     io.Writer
-	Stderr     io.Writer
+	Stdout     writer
+	Stderr     writer
 }
 
 // Info writes an info message.

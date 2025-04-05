@@ -15,7 +15,7 @@ func (e *encodingObj) init(funcGetRoot func() *pdfEngine) {
 func (e *encodingObj) getType() string {
 	return "Encoding"
 }
-func (e *encodingObj) write(w io.Writer, objID int) error {
+func (e *encodingObj) write(w writer, objID int) error {
 	io.WriteString(w, "<</Type /Encoding /BaseEncoding /WinAnsiEncoding /Differences [")
 	io.WriteString(w, e.font.GetDiff())
 	io.WriteString(w, "]>>\n")

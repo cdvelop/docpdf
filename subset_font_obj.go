@@ -34,7 +34,7 @@ func (s *subsetFontObj) init(funcGetRoot func() *pdfEngine) {
 
 }
 
-func (s *subsetFontObj) write(w io.Writer, objID int) error {
+func (s *subsetFontObj) write(w writer, objID int) error {
 	//me.AddChars("จ")
 	io.WriteString(w, "<<\n")
 	fmt.Fprintf(w, "/BaseFont /%s\n", createEmbeddedFontSubsetName(s.Family))

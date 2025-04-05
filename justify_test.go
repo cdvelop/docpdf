@@ -12,7 +12,7 @@ func TestJustify(t *testing.T) {
 		return
 	}
 
-	pdf := setupDefaultA4PDF(t)
+	pdf := setupDefaultA4PDF("justify_test.pdf", t)
 	pdf.AddPage()
 
 	// Test parseTextForJustification
@@ -102,9 +102,6 @@ func TestJustify(t *testing.T) {
 		return
 	}
 
-	err = pdf.WritePdf("./test/out/justify_test.pdf")
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	pdf.WritePdfFile()
+
 }

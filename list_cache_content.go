@@ -1,7 +1,5 @@
 package docpdf
 
-import "io"
-
 type listCacheContent struct {
 	caches []iCacheContent
 }
@@ -59,7 +57,7 @@ func (l *listCacheContent) appendContentText(cache cacheContentText, text string
 	return x, y, nil
 }
 
-func (l *listCacheContent) write(w io.Writer, protection *pdfProtection) error {
+func (l *listCacheContent) write(w writer, protection *pdfProtection) error {
 	for _, cache := range l.caches {
 		if err := cache.write(w, protection); err != nil {
 			return err

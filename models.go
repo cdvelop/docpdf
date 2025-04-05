@@ -2,7 +2,6 @@ package docpdf
 
 import (
 	"bytes"
-	"io"
 	"time"
 )
 
@@ -19,7 +18,7 @@ type linkOption struct {
 
 // PdfInfo Document Information Dictionary
 type PdfInfo struct {
-	Title        string    // The document’s title
+	Title        string    // The document's title
 	Author       string    // The name of the person who created the document
 	Subject      string    // The subject of the document
 	Creator      string    // If the document was converted to PDF from another format, the name of the application which created the original document
@@ -27,11 +26,20 @@ type PdfInfo struct {
 	CreationDate time.Time // The date and time the document was created, in human-readable form
 }
 
+// Writer is an interface for PDF writing operations
+type fileWrite interface {
+	FileWrite(data []byte) error
+}
+
+type writer interface {
+	Write(p []byte) (n int, err error)
+}
+
 // iObj inteface for all pdf object
 type iObj interface {
 	init(func() *pdfEngine)
 	getType() string
-	write(w io.Writer, objID int) error
+	write(w writer, objID int) error
 }
 
 // Margins type.
@@ -97,6 +105,9 @@ type pdfEngine struct {
 
 	// Placeholder text
 	placeHolderTexts map[string]([]placeHolderTextInfo)
+
+	// Writer interface for PDF output
+	fileWrite fileWrite
 
 	// Log function for debugging
 	log func(...any)
@@ -210,7 +221,7 @@ type defaultUnitConfig struct {
 }
 
 type iCacheContent interface {
-	write(w io.Writer, protection *pdfProtection) error
+	write(w writer, protection *pdfProtection) error
 }
 
 type iCacheColorText interface {

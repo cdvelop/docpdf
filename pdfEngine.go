@@ -1066,7 +1066,7 @@ func (gp *pdfEngine) prepare() {
 	}
 }
 
-func (gp *pdfEngine) xref(w io.Writer, xrefbyteoffset int64, linelens []int64, i int) error {
+func (gp *pdfEngine) xref(w writer, xrefbyteoffset int64, linelens []int64, i int) error {
 	io.WriteString(w, "xref\n")
 	io.WriteString(w, "0 "+strconv.Itoa(i+1)+"\n")
 	io.WriteString(w, "0000000000 65535 f \n")
@@ -1097,7 +1097,7 @@ func (gp *pdfEngine) xref(w io.Writer, xrefbyteoffset int64, linelens []int64, i
 	return nil
 }
 
-func (gp *pdfEngine) writeInfo(w io.Writer) {
+func (gp *pdfEngine) writeInfo(w writer) {
 	var zerotime time.Time
 	io.WriteString(w, "/Info <<\n")
 

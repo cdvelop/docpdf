@@ -132,7 +132,7 @@ func formatFloatTrim(floatval float64) (formatted string) {
 	return strconv.FormatFloat(roundedFontSize, 'f', -1, 64)
 }
 
-func (c *cacheContentText) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentText) write(w writer, protection *pdfProtection) error {
 	x, err := c.calX()
 	if err != nil {
 		return err
@@ -201,7 +201,7 @@ func (c *cacheContentText) write(w io.Writer, protection *pdfProtection) error {
 	return nil
 }
 
-func (c *cacheContentText) drawBorder(w io.Writer) error {
+func (c *cacheContentText) drawBorder(w writer) error {
 
 	//stream.WriteString(fmt.Sprintf("%.2f w\n", 0.1))
 	lineOffset := c.lineWidth * 0.5
@@ -254,7 +254,7 @@ func (c *cacheContentText) drawBorder(w io.Writer) error {
 	return nil
 }
 
-func (c *cacheContentText) underline(w io.Writer) error {
+func (c *cacheContentText) underline(w writer) error {
 	if c.fontSubset == nil {
 		return newErr("error AppendUnderline not found font")
 	}

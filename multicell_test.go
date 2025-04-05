@@ -11,7 +11,7 @@ func TestSplitTextWithOptions(t *testing.T) {
 		return
 	}
 
-	pdf := setupDefaultA4PDF(t)
+	pdf := setupDefaultA4PDF("", t)
 
 	var splitTextTests = []struct {
 		name string
@@ -95,7 +95,7 @@ func TestMultiCell(t *testing.T) {
 		return
 	}
 
-	pdf := setupDefaultA4PDF(t)
+	pdf := setupDefaultA4PDF("multicell_test.pdf", t)
 	pdf.AddPage()
 
 	// Texto simple para MultiCell
@@ -114,11 +114,8 @@ func TestMultiCell(t *testing.T) {
 		return
 	}
 
-	err = pdf.WritePdf("./test/out/multicell_test.pdf")
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	pdf.WritePdfFile()
+
 }
 
 // TestMultiCellWithOption prueba la funcionalidad de MultiCellWithOption
@@ -129,7 +126,7 @@ func TestMultiCellWithOption(t *testing.T) {
 		return
 	}
 
-	pdf := setupDefaultA4PDF(t)
+	pdf := setupDefaultA4PDF("multicell_with_option_test.pdf", t)
 	pdf.AddPage()
 
 	rect := &Rect{W: 200, H: 100}
@@ -156,11 +153,8 @@ func TestMultiCellWithOption(t *testing.T) {
 		return
 	}
 
-	err = pdf.WritePdf("./test/out/multicell_with_option_test.pdf")
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	pdf.WritePdfFile()
+
 }
 
 // TestIsFitMultiCell prueba la función IsFitMultiCell
@@ -171,7 +165,7 @@ func TestIsFitMultiCell(t *testing.T) {
 		return
 	}
 
-	pdf := setupDefaultA4PDF(t)
+	pdf := setupDefaultA4PDF("", t)
 
 	// Crear un rectángulo lo suficientemente grande para contener el texto
 	rectGrande := &Rect{W: 200, H: 100}
@@ -210,7 +204,7 @@ func TestIsFitMultiCellWithNewline(t *testing.T) {
 		return
 	}
 
-	pdf := setupDefaultA4PDF(t)
+	pdf := setupDefaultA4PDF("", t)
 
 	// Texto con saltos de línea
 	textoConSaltos := "First line\nSecond line\nThird line"

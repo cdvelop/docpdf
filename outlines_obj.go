@@ -26,7 +26,7 @@ func (o *outlinesObj) getType() string {
 	return "Outlines"
 }
 
-func (o *outlinesObj) write(w io.Writer, objID int) error {
+func (o *outlinesObj) write(w writer, objID int) error {
 	content := "<<\n"
 	content += fmt.Sprintf("\t/Type /%s\n", o.getType())
 	content += fmt.Sprintf("\t/Count %d\n", o.count)
@@ -129,7 +129,7 @@ func (o *outlineObj) getType() string {
 	return "Outline"
 }
 
-//func (o *outlineObj) write(w io.Writer, objID int) error {
+//func (o *outlineObj) write(w writer, objID int) error {
 //	io.WriteString(w, "<<\n")
 //	fmt.Fprintf(w, "  /Parent %d 0 R\n", o.parent)
 //	if o.prev >= 0 {
@@ -144,7 +144,7 @@ func (o *outlineObj) getType() string {
 //	return nil
 //}
 
-func (o *outlineObj) write(w io.Writer, objID int) error {
+func (o *outlineObj) write(w writer, objID int) error {
 	io.WriteString(w, "<<\n")
 	fmt.Fprintf(w, "  /Parent %d 0 R\n", o.parent)
 	if o.prev >= 0 {

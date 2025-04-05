@@ -17,7 +17,7 @@ func (c *importedObj) getType() string {
 	return "Imported"
 }
 
-func (c *importedObj) write(w io.Writer, objID int) error {
+func (c *importedObj) write(w writer, objID int) error {
 	if c != nil {
 		io.WriteString(w, c.Data)
 	}

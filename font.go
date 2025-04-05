@@ -107,7 +107,7 @@ func (f *fontObj) init(funcGetRoot func() *pdfEngine) {
 	//me.CountOfFont = -1
 }
 
-func (f *fontObj) write(w io.Writer, objID int) error {
+func (f *fontObj) write(w writer, objID int) error {
 	baseFont := f.Family
 	if f.Font != nil {
 		baseFont = f.Font.GetName()
@@ -231,7 +231,7 @@ func (f *fontDescriptorObj) init(funcGetRoot func() *pdfEngine) {
 
 }
 
-func (f *fontDescriptorObj) write(w io.Writer, objID int) error {
+func (f *fontDescriptorObj) write(w writer, objID int) error {
 
 	fmt.Fprintf(w, "<</Type /FontDescriptor /FontName /%s ", f.font.GetName())
 	descs := f.font.GetDesc()
