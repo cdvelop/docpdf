@@ -157,3 +157,133 @@ func TestNewDocument(t *testing.T) {
 
 	})
 }
+
+func TestFontAutoDetection(t *testing.T) {
+	t.Run("Auto-detect single font in default path", func(t *testing.T) {
+		var logOutput []any
+		logger := func(a ...any) {
+			logOutput = append(logOutput, a...)
+		}
+
+		// Create document with empty font config to trigger default path detection
+		doc := NewDocument(logger)
+
+		// We're simulating that only one font exists in the default path
+		// by manually modifying the font config before loadFonts is called
+		// Set only the Regular font, clear the others
+		doc.fontConfig.Family = Font{
+			Regular: "regular.ttf",  // Only this font exists
+			Bold:    "",             // These will be set to Regular
+			Italic:  "",             // These will be set to Regular
+			Path:    fontPublicPath, // Use default path
+		}
+
+		// Reload fonts
+		err := doc.loadFonts()
+		if err != nil {
+			t.Errorf("Error loading fonts: %v", err)
+		}
+
+		// Verify all fonts are set to the single available font
+		expectedFont := Font{
+			Regular: "regular.ttf",
+			Bold:    "regular.ttf", // Should be copied from Regular
+			Italic:  "regular.ttf", // Should be copied from Regular
+			Path:    fontPublicPath,
+		}
+
+		if doc.fontConfig.Family != expectedFont {
+			t.Errorf("Font auto-detection failed, got: %v, want: %v", doc.fontConfig.Family, expectedFont)
+		}
+
+		if len(logOutput) != 0 {
+			t.Error("Expected no errors when auto-detecting single font", logOutput)
+		}
+	})
+
+	t.Run("Auto-detect bold font in default path", func(t *testing.T) {
+		var logOutput []any
+		logger := func(a ...any) {
+			logOutput = append(logOutput, a...)
+		}
+
+		// Create document with empty font config to trigger default path detection
+		doc := NewDocument(logger)
+
+		// We're simulating that only the bold font exists
+		doc.fontConfig.Family = Font{
+			Regular: "",             // This will be set to Bold
+			Bold:    "bold.ttf",     // Only this font exists
+			Italic:  "",             // This will be set to Bold
+			Path:    fontPublicPath, // Use default path
+		}
+
+		// Manually update Regular to use Bold since loadFonts expects Regular to be set
+		doc.fontConfig.Family.Regular = doc.fontConfig.Family.Bold
+
+		// Reload fonts
+		err := doc.loadFonts()
+		if err != nil {
+			t.Errorf("Error loading fonts: %v", err)
+		}
+
+		// Verify all fonts are set to the single available font
+		expectedFont := Font{
+			Regular: "bold.ttf",
+			Bold:    "bold.ttf",
+			Italic:  "bold.ttf", // Should be copied from Regular (which is Bold)
+			Path:    fontPublicPath,
+		}
+
+		if doc.fontConfig.Family != expectedFont {
+			t.Errorf("Font auto-detection failed, got: %v, want: %v", doc.fontConfig.Family, expectedFont)
+		}
+
+		if len(logOutput) != 0 {
+			t.Error("Expected no errors when auto-detecting single font", logOutput)
+		}
+	})
+
+	t.Run("Auto-detect italic font in default path", func(t *testing.T) {
+		var logOutput []any
+		logger := func(a ...any) {
+			logOutput = append(logOutput, a...)
+		}
+
+		// Create document with empty font config to trigger default path detection
+		doc := NewDocument(logger)
+
+		// We're simulating that only the italic font exists
+		doc.fontConfig.Family = Font{
+			Regular: "",             // This will be set to Italic
+			Bold:    "",             // This will be set to Italic
+			Italic:  "italic.ttf",   // Only this font exists
+			Path:    fontPublicPath, // Use default path
+		}
+
+		// Manually update Regular to use Italic since loadFonts expects Regular to be set
+		doc.fontConfig.Family.Regular = doc.fontConfig.Family.Italic
+
+		// Reload fonts
+		err := doc.loadFonts()
+		if err != nil {
+			t.Errorf("Error loading fonts: %v", err)
+		}
+
+		// Verify all fonts are set to the single available font
+		expectedFont := Font{
+			Regular: "italic.ttf",
+			Bold:    "italic.ttf", // Should be copied from Regular (which is Italic)
+			Italic:  "italic.ttf",
+			Path:    fontPublicPath,
+		}
+
+		if doc.fontConfig.Family != expectedFont {
+			t.Errorf("Font auto-detection failed, got: %v, want: %v", doc.fontConfig.Family, expectedFont)
+		}
+
+		if len(logOutput) != 0 {
+			t.Error("Expected no errors when auto-detecting single font", logOutput)
+		}
+	})
+}

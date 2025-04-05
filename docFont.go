@@ -14,13 +14,13 @@ type FontConfig struct {
 	PageFooter TextStyle
 }
 
-const fontPublicPath = "public/fonts/"
+const fontPublicPath = "fonts/"
 
 // Font represents font files for different styles
 type Font struct {
-	Regular string // Regular font file name eg: "Rubik-Regular.ttf"
-	Bold    string // Bold font file name eg: "Rubik-Bold.ttf"
-	Italic  string // Italic font file name eg: "Rubik-Italic.ttf"
+	Regular string // Regular font file name eg: "regular.ttf"
+	Bold    string // Bold font file name eg: "bold.ttf"
+	Italic  string // Italic font file name eg: "italic.ttf"
 	Path    string // Base path for fonts eg: "fonts/"
 }
 

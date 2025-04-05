@@ -8,6 +8,10 @@ import (
 
 func TestDocumentAPIUsage(t *testing.T) {
 	// Create a simple document with default settings
+
+	// search default fonts in the directory "fonts/" and names are "regular.ttf", "bold.ttf", "italic.ttf"
+	// if only one file "regular.ttf" exists, it will be used as regular, bold and italic
+	// the defaul pagesize is letter (8.5 x 11 inches)
 	doc := NewDocument(func(a ...any) {
 		// Simple logger that does nothing for this test
 		t.Log(a...)
@@ -67,10 +71,10 @@ func TestDocumentAPIUsage(t *testing.T) {
 		AddBar(120, "May").
 		AddBar(140, "Jun")
 
-	// Configurar el gráfico para mostrar los ejes
+	// Configure the chart to show axes
 	barChart.WithAxis(true, true)
 
-	// Renderizar el gráfico
+	// Render the chart
 	barChart.Draw()
 
 	// Add a footnote (in italic by default)
