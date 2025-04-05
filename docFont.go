@@ -14,12 +14,14 @@ type FontConfig struct {
 	PageFooter TextStyle
 }
 
+const fontPublicPath = "public/fonts/"
+
 // Font represents font files for different styles
 type Font struct {
-	Regular string
-	Bold    string
-	Italic  string
-	Path    string // Base path for fonts
+	Regular string // Regular font file name eg: "Rubik-Regular.ttf"
+	Bold    string // Bold font file name eg: "Rubik-Bold.ttf"
+	Italic  string // Italic font file name eg: "Rubik-Italic.ttf"
+	Path    string // Base path for fonts eg: "fonts/"
 }
 
 // loadFonts loads the fonts from the Font struct
@@ -48,13 +50,13 @@ func (d *Document) loadFonts() error {
 	}
 
 	if d.fontConfig.Family.Path == "" {
-		d.fontConfig.Family.Path = "fonts/"
+		d.fontConfig.Family.Path = fontPublicPath
 	}
 
 	return nil
 }
 
-// extracts the font name from the font path eg: "fonts/Rubik-Regular.ttf" => "Rubik-Regular"
+// extracts the font name from the font path eg: "public/fonts/regular.ttf" => "regular"
 func extractNameFromPath(path string) string {
 	if path == "" {
 		return ""
@@ -92,10 +94,10 @@ func (d *Document) setDefaultFont() {
 func defaultFontConfig() FontConfig {
 	return FontConfig{
 		Family: Font{
-			Regular: "Rubik-Regular.ttf",
-			Bold:    "Rubik-Bold.ttf",
-			Italic:  "Rubik-Italic.ttf",
-			Path:    "fonts/",
+			Regular: "regular.ttf",
+			Bold:    "bold.ttf",
+			Italic:  "italic.ttf",
+			Path:    fontPublicPath,
 		},
 
 		Normal: TextStyle{

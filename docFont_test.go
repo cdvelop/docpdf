@@ -77,10 +77,10 @@ func TestNewDocument(t *testing.T) {
 		}
 
 		expectedFont := Font{
-			Regular: "Rubik-Regular.ttf",
-			Bold:    "Rubik-Bold.ttf",
-			Italic:  "Rubik-Italic.ttf",
-			Path:    "fonts/",
+			Regular: "regular.ttf",
+			Bold:    "bold.ttf",
+			Italic:  "italic.ttf",
+			Path:    fontPublicPath,
 		}
 
 		if doc.fontConfig.Family != expectedFont {
@@ -134,17 +134,17 @@ func TestNewDocument(t *testing.T) {
 		}
 
 		oneCustomFont := Font{
-			Regular: "Rubik-Regular.ttf",
-			Path:    "fonts/",
+			Regular: "regular.ttf",
+			Path:    fontPublicPath,
 		}
 
 		doc := NewDocument(logger, oneCustomFont)
 
 		expectedFont := Font{
-			Regular: "Rubik-Regular.ttf",
-			Bold:    "Rubik-Regular.ttf",
-			Italic:  "Rubik-Regular.ttf",
-			Path:    "fonts/",
+			Regular: "regular.ttf",
+			Bold:    "regular.ttf",
+			Italic:  "regular.ttf",
+			Path:    fontPublicPath,
 		}
 
 		if len(logOutput) != 0 {

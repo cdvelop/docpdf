@@ -69,14 +69,14 @@ type VMetric struct {
 	AdvanceHeight, TopSideBearing fixedpoint.Int26_6
 }
 
-// A FormatError reports that the input is not a valid TrueType font.
+// A FormatError report that the input is not a valid TrueType font.
 type FormatError string
 
 func (e FormatError) Error() string {
 	return "freetype: invalid TrueType format: " + string(e)
 }
 
-// An UnsupportedError reports that the input uses a valid but unimplemented
+// An UnsupportedError report that the input uses a valid but unimplemented
 // TrueType feature.
 type UnsupportedError string
 

@@ -1,6 +1,8 @@
 package docpdf
 
-import "strconv"
+import (
+	"strconv"
+)
 
 type Document struct {
 	*pdfEngine

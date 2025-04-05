@@ -27,7 +27,7 @@ Introduction
   alike.  As a consequence, its main points are that:
 
     o We don't promise that this software works. However, we will be
-      interested in any kind of bug reports. (`as is' distribution)
+      interested in any kind of bug report. (`as is' distribution)
 
     o You can  use this software for whatever you  want, in parts or
       full form, without having to pay us. (`royalty-free' usage)
@@ -48,7 +48,7 @@ Introduction
   encourage you to use the following text:
 
    """
-    Portions of this software are copyright © <year> The FreeType
+    Portions of this software are copyright ï¿½ <year> The FreeType
     Project (www.freetype.org).  All rights reserved.
    """
 
