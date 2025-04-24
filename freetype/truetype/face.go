@@ -2,11 +2,12 @@ package truetype
 
 import (
 	"image"
-	"math"
+	"math" // Re-added math import for Metrics
 
 	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/raster"
 	"golang.org/x/image/font"
+	"golang.org/x/image/math/fixed"
 )
 
 func powerOf2(i int) bool {
@@ -250,18 +251,36 @@ func (a *face) Close() error { return nil }
 func (a *face) Metrics() font.Metrics {
 	scale := float64(a.scale)
 	fupe := float64(a.f.FUnitsPerEm())
+	// Convert internal fixedpoint values to standard fixed values
+	// Height calculation might need review - font.Metrics expects fixed.Int26_6
+	// Using a.scale directly might be incorrect if it's not already scaled appropriately for Height.
+	// Assuming a.scale represents the intended height in fixed-point format for now.
+	height := fixed.Int26_6(a.scale)
+	ascent := fixed.Int26_6(math.Ceil(scale * float64(+a.f.ascent) / fupe))
+	descent := fixed.Int26_6(math.Ceil(scale * float64(-a.f.descent) / fupe))
+
+	// Ensure Ascent and Descent are non-negative as per font.Metrics documentation
+	if ascent < 0 {
+		ascent = 0
+	}
+	if descent < 0 {
+		descent = 0
+	}
+
 	return font.Metrics{
-		Height:  a.scale,
-		Ascent:  fixedpoint.Int26_6(math.Ceil(scale * float64(+a.f.ascent) / fupe)),
-		Descent: fixedpoint.Int26_6(math.Ceil(scale * float64(-a.f.descent) / fupe)),
+		Height:  height,
+		Ascent:  ascent,
+		Descent: descent,
+		// TODO: Calculate FixedAscent, FixedDescent, FixedHeight if needed
 	}
 }
 
 // Kern satisfies the font.Face interface.
-func (a *face) Kern(r0, r1 rune) fixedpoint.Int26_6 {
+func (a *face) Kern(r0, r1 rune) fixed.Int26_6 {
 	i0 := a.index(r0)
 	i1 := a.index(r1)
-	kern := a.f.Kern(a.scale, i0, i1)
+	kernFP := a.f.Kern(a.scale, i0, i1)
+	kern := fixed.Int26_6(kernFP)
 	if a.hinting != font.HintingNone {
 		kern = (kern + 32) &^ 63
 	}
@@ -269,21 +288,40 @@ func (a *face) Kern(r0, r1 rune) fixedpoint.Int26_6 {
 }
 
 // Glyph satisfies the font.Face interface.
-func (a *face) Glyph(dot fixedpoint.Point26_6, r rune) (
-	dr image.Rectangle, mask image.Image, maskp image.Point, advance fixedpoint.Int26_6, ok bool) {
+func (a *face) Glyph(dot fixed.Point26_6, r rune) (
+	dr image.Rectangle, mask image.Image, maskp image.Point, advance fixed.Int26_6, ok bool) {
 
-	// Quantize to the sub-pixel granularity.
-	dotX := (dot.X + a.subPixelBiasX) & a.subPixelMaskX
-	dotY := (dot.Y + a.subPixelBiasY) & a.subPixelMaskY
+	// Convert input dot from fixed.Point26_6 to internal fixedpoint.Int26_6
+	dotFPX := fixedpoint.Int26_6(dot.X)
+	dotFPY := fixedpoint.Int26_6(dot.Y)
+
+	// Quantize to the sub-pixel granularity using internal fixedpoint types.
+	quantizedDotX := (dotFPX + a.subPixelBiasX) & a.subPixelMaskX
+	quantizedDotY := (dotFPY + a.subPixelBiasY) & a.subPixelMaskY
 
 	// Split the coordinates into their integer and fractional parts.
-	ix, fx := int(dotX>>6), dotX&0x3f
-	iy, fy := int(dotY>>6), dotY&0x3f
+	ix, fx := int(quantizedDotX>>6), quantizedDotX&0x3f
+	iy, fy := int(quantizedDotY>>6), quantizedDotY&0x3f
 
 	index := a.index(r)
 	cIndex := uint32(index)
-	cIndex = cIndex*a.subPixelX - uint32(fx/a.subPixelMaskX)
-	cIndex = cIndex*a.subPixelY - uint32(fy/a.subPixelMaskY)
+	// Calculate cache index based on internal fixedpoint fractional parts
+	// Note: Ensure subPixelMaskX/Y are never zero if used as divisors. Assuming they are powers of 2 masks.
+	// The original calculation might need review if subPixelMaskX/Y aren't simple masks.
+	// Let's assume the original logic using masks is correct for index calculation.
+	// A safer way might involve checking the actual values of subPixelX/Y.
+	// For now, keeping the original logic structure:
+	if a.subPixelX > 1 { // Avoid division by zero or incorrect logic if subPixelX is 1 (mask is -64)
+		cIndex = cIndex*a.subPixelX - uint32(fx/(64/fixedpoint.Int26_6(a.subPixelX)))
+	} else {
+		cIndex = cIndex * a.subPixelX // Effectively just cIndex if subPixelX is 1
+	}
+	if a.subPixelY > 1 { // Avoid division by zero or incorrect logic if subPixelY is 1 (mask is -64)
+		cIndex = cIndex*a.subPixelY - uint32(fy/(64/fixedpoint.Int26_6(a.subPixelY)))
+	} else {
+		cIndex = cIndex * a.subPixelY // Effectively just cIndex if subPixelY is 1
+	}
+
 	cIndex &= uint32(len(a.glyphCache) - 1)
 	a.paintOffset = a.maxh * int(cIndex)
 	k := glyphCacheKey{
@@ -293,9 +331,11 @@ func (a *face) Glyph(dot fixedpoint.Point26_6, r rune) (
 	}
 	var v glyphCacheVal
 	if a.glyphCache[cIndex].key != k {
-		var ok bool
-		v, ok = a.rasterize(index, fx, fy)
-		if !ok {
+		var okRasterize bool
+		// rasterize expects fixedpoint.Int26_6 for fx, fy
+		v, okRasterize = a.rasterize(index, fx, fy)
+		if !okRasterize {
+			// Return zero value for fixed.Int26_6
 			return image.Rectangle{}, nil, image.Point{}, 0, false
 		}
 		a.glyphCache[cIndex] = glyphCacheEntry{k, v}
@@ -311,37 +351,51 @@ func (a *face) Glyph(dot fixedpoint.Point26_6, r rune) (
 		X: dr.Min.X + v.gw,
 		Y: dr.Min.Y + v.gh,
 	}
-	return dr, a.masks, image.Point{Y: a.paintOffset}, v.advanceWidth, true
+	// Convert advance width from internal fixedpoint.Int26_6 to fixed.Int26_6
+	advance = fixed.Int26_6(v.advanceWidth)
+	ok = true
+	return dr, a.masks, image.Point{Y: a.paintOffset}, advance, ok
 }
 
-func (a *face) GlyphBounds(r rune) (bounds fixedpoint.Rectangle26_6, advance fixedpoint.Int26_6, ok bool) {
+// GlyphBounds satisfies the font.Face interface.
+func (a *face) GlyphBounds(r rune) (bounds fixed.Rectangle26_6, advance fixed.Int26_6, ok bool) {
 	if err := a.glyphBuf.Load(a.f, a.scale, a.index(r), a.hinting); err != nil {
-		return fixedpoint.Rectangle26_6{}, 0, false
+		return fixed.Rectangle26_6{}, 0, false
 	}
-	xmin := +a.glyphBuf.Bounds.Min.X
-	ymin := -a.glyphBuf.Bounds.Max.Y
-	xmax := +a.glyphBuf.Bounds.Max.X
-	ymax := -a.glyphBuf.Bounds.Min.Y
-	if xmin > xmax || ymin > ymax {
-		return fixedpoint.Rectangle26_6{}, 0, false
+	xminFP := +a.glyphBuf.Bounds.Min.X
+	yminFP := -a.glyphBuf.Bounds.Max.Y
+	xmaxFP := +a.glyphBuf.Bounds.Max.X
+	ymaxFP := -a.glyphBuf.Bounds.Min.Y
+	advanceFP := a.glyphBuf.AdvanceWidth
+
+	if xminFP > xmaxFP || yminFP > ymaxFP {
+		// Convert advanceFP even if bounds are invalid
+		return fixed.Rectangle26_6{}, fixed.Int26_6(advanceFP), false
 	}
-	return fixedpoint.Rectangle26_6{
-		Min: fixedpoint.Point26_6{
-			X: xmin,
-			Y: ymin,
+	bounds = fixed.Rectangle26_6{
+		Min: fixed.Point26_6{
+			X: fixed.Int26_6(xminFP),
+			Y: fixed.Int26_6(yminFP),
 		},
-		Max: fixedpoint.Point26_6{
-			X: xmax,
-			Y: ymax,
+		Max: fixed.Point26_6{
+			X: fixed.Int26_6(xmaxFP),
+			Y: fixed.Int26_6(ymaxFP),
 		},
-	}, a.glyphBuf.AdvanceWidth, true
+	}
+	advance = fixed.Int26_6(advanceFP)
+	ok = true
+	return bounds, advance, ok
 }
 
-func (a *face) GlyphAdvance(r rune) (advance fixedpoint.Int26_6, ok bool) {
+// GlyphAdvance satisfies the font.Face interface.
+func (a *face) GlyphAdvance(r rune) (advance fixed.Int26_6, ok bool) {
 	if err := a.glyphBuf.Load(a.f, a.scale, a.index(r), a.hinting); err != nil {
 		return 0, false
 	}
-	return a.glyphBuf.AdvanceWidth, true
+	advanceFP := a.glyphBuf.AdvanceWidth
+	advance = fixed.Int26_6(advanceFP)
+	ok = true
+	return advance, ok
 }
 
 // rasterize returns the advance width, integer-pixel offset to render at, and

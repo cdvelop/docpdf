@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cdvelop/docpdf/fixedpoint"
 	"golang.org/x/image/font"
+	"golang.org/x/image/math/fixed"
 )
 
 func BenchmarkDrawString(b *testing.B) {
@@ -37,7 +37,8 @@ func BenchmarkDrawString(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for j, line := range lines {
-			d.Dot = fixedpoint.P(0, (j*16)%600)
+			// Use fixed.P from the standard library instead of internal fixedpoint.P
+			d.Dot = fixed.P(0, (j*16)%600)
 			d.DrawString(line)
 		}
 	}
