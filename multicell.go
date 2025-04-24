@@ -2,6 +2,8 @@ package docpdf
 
 import (
 	"strings"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 // breakMode type for text break modes.
@@ -160,17 +162,17 @@ func (gp *pdfEngine) FillInPlaceHoldText(placeHolderName string, text string, al
 
 	infos, ok := gp.placeHolderTexts[placeHolderName]
 	if !ok {
-		return newErr("placeHolderName not found")
+		return errs.New("placeHolderName not found")
 	}
 
 	for _, info := range infos {
 		content, ok := gp.pdfObjs[info.indexOfContent].(*contentObj)
 		if !ok {
-			return newErr("gp.pdfObjs is not *contentObj")
+			return errs.New("gp.pdfObjs is not *contentObj")
 		}
 		contentText, ok := content.listCache.caches[info.indexInContent].(*cacheContentText)
 		if !ok {
-			return newErr("listCache.caches is not *cacheContentText")
+			return errs.New("listCache.caches is not *cacheContentText")
 		}
 		info.fontISubset.AddChars(text)
 		contentText.text = text
@@ -427,7 +429,7 @@ func (gp *pdfEngine) SplitTextWithOption(text string, width float64, opt *breakO
 	utf8Texts := []rune(text)
 	utf8TextsLen := len(utf8Texts) // utf8 string quantity
 	if utf8TextsLen == 0 {
-		return lineTexts, errEmptyString
+		return lineTexts, errs.EmptyString
 	}
 	separatorWidth, err := gp.MeasureTextWidth(opt.Separator)
 	if err != nil {

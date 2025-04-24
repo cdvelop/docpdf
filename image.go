@@ -6,6 +6,8 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 // imageCache is metadata for caching images.
@@ -148,7 +150,7 @@ func (gp *pdfEngine) maskHolder(img imageHolder, opts maskOptions) (int, error) 
 		return extGStateInd, nil
 	}
 
-	return 0, errUndefinedCacheContentImage
+	return 0, errs.UndefinedCacheContentImage
 }
 
 func (gp *pdfEngine) createTransparencyXObjectGroup(image *cacheContentImage, opts maskOptions) (int, error) {
@@ -305,7 +307,7 @@ func (gp *pdfEngine) ImageFrom(img image.Image, x float64, y float64, rect *Rect
 
 func (gp *pdfEngine) ImageFromWithOption(img image.Image, opts imageFromOption) error {
 	if img == nil {
-		return newErr("Invalid image")
+		return errs.New("Invalid image")
 	}
 
 	gp.unitsToPointsVar(&opts.X, &opts.Y)

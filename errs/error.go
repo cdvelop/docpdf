@@ -1,17 +1,9 @@
-package docpdf
+package errs
 
 import (
 	"bytes"
 	"strconv"
 )
-
-var errEmptyString = newErr("empty string")
-
-var errMissingFontFamily = newErr("font family not found")
-
-var errUndefinedCacheContentImage = newErr("cacheContentImage is undefined")
-
-var errInvalidRectangleCoordinates = newErr("Invalid coordinates for the rectangle")
 
 // errMessage representa un error simple para TinyGo
 type errMessage struct {
@@ -22,7 +14,7 @@ func (e *errMessage) Error() string {
 	return e.message
 }
 
-func newErr(args ...any) *errMessage {
+func New(args ...any) *errMessage {
 
 	var out bytes.Buffer
 	var space string

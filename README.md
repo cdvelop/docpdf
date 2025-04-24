@@ -25,30 +25,51 @@ The following standard libraries will be replaced or modified as they are not 10
 - [ ] sync
 - [ ] time
 
+## Getting Started
+
+Creating a new document is simple. A file writer function is optional but can be provided to customize how the PDF is saved:
+
+```go
+// Basic usage with default file writer (uses os.WriteFile in backend environments)
+doc := NewDocument()
+
+// With custom file writer
+doc := NewDocument(os.WriteFile)
+
+// For web applications (example using a fictional HTTP response interface)
+doc := NewDocument(func(filename string, data []byte) error {
+    resp.Header().Set("Content-Type", "application/pdf")
+    resp.Header().Set("Content-Disposition", "attachment; filename="+filename)
+    _, err := resp.Write(data)
+    return err
+})
+```
+
 ## Page Size Options
 
 The library offers multiple ways to specify page sizes for your documents:
 
 1. **Using predefined page sizes**:
    ```go
-   doc := NewDocument(fmt.Println, PageSizeA4)  // Use A4 page size
-   doc := NewDocument(fmt.Println, PageSizeLetter)  // Use Letter page size
+   doc := NewDocument(PageSizeA4)  // Use A4 page size
+   doc := NewDocument(PageSizeLetter)  // Use Letter page size
    ```
 
 2. **Using the new PageSize struct with unit specification**:
    ```go
    // Create an A4 page size (210mm x 297mm) with millimeter units
-   doc := NewDocument(fmt.Println, PageSize{Width: 210, Height: 297, Unit: UnitMM})
+   doc := NewDocument(PageSize{Width: 210, Height: 297, Unit: UnitMM})
    
    // Create a US Letter page size (8.5in x 11in) with inch units
-   doc := NewDocument(fmt.Println, PageSize{Width: 8.5, Height: 11, Unit: UnitIN})
+   doc := NewDocument(PageSize{Width: 8.5, Height: 11, Unit: UnitIN})
    ```
 
-3. **Combining page size with other options**:
+3. **Combining options**:
    ```go
-   doc := NewDocument(fmt.Println, 
+   doc := NewDocument(
       PageSize{Width: 210, Height: 297, Unit: UnitMM},  // A4 size
-      Margins{Left: 15, Top: 10, Right: 10, Bottom: 10}  // Custom margins
+      Margins{Left: 15, Top: 10, Right: 10, Bottom: 10},  // Custom margins
+      os.WriteFile  // Custom file writer (optional)
    )
    ```
 
@@ -62,11 +83,11 @@ The library offers multiple ways to specify page sizes for your documents:
 This example shows the main features of the library:
 
 ```go
-	// Create a simple document with default settings
-	doc := NewDocument(func(a ...any) {
-		// Simple logger that does nothing for this test
-		t.Log(a...)
-	})
+	// Create a document with default settings
+	doc := NewDocument()
+
+	// Or with custom file writer
+	// doc := NewDocument(os.WriteFile)
 
 	// Setup header and footer with the new API
 	doc.SetPageHeader().
@@ -128,135 +149,11 @@ This example shows the main features of the library:
 	// Renderizar el gráfico
 	barChart.Draw()
 
-	// Add a footnote (in italic by default)
-	doc.AddFootnote("This is a footnote.").AlignCenter().Draw()
-
-	// add gopher image as a right-aligned inline image
-	doc.AddImage("test/res/gopher-color.png").Height(50).Inline().AlignRight().Draw()
-	// Add level 3 header
-	doc.AddHeader3("Subsection 1.1: More examples").Draw()
-
-	// Add text with a border
-	doc.AddText("This text has a border around it.").WithBorder().Draw()
-
-	// Compare justified vs non-justified
-	doc.AddHeader1("Comparison: Normal Text vs Justified Text").Draw()
-
-	doc.AddText("NORMAL TEXT (left-aligned):").Bold().Draw()
-	// Normal text (left-aligned)
-	const multilineText = "This is a sample text that demonstrates normal text flow. The text continues across multiple lines to show how words wrap naturally at the margins. This creates a simple left-aligned paragraph that is easy to read. When text is not justified, it maintains consistent spacing between words while keeping a ragged right edge."
-	doc.AddText(multilineText).Draw()
-
-	// Justified text
-	doc.AddText("JUSTIFIED TEXT:").Bold().Draw()
-	doc.AddText(multilineText).Justify().Draw()
-
-	// Space between examples
-	doc.SpaceBefore(2)
-	// Add example of table usage
-	doc.AddHeader2("Section 2: Table Examples").Draw()
-	doc.AddText("This section demonstrates different table configuration options:").Draw()
-
-	// Define sample data sets that will be reused across all tables
-	productData := []map[string]any{
-		{"id": "001", "name": "Laptop Pro", "desc": "High-performance laptop", "qty": 2, "price": 1299.99, "discount": 10, "total": 2339.98},
-		{"id": "002", "name": "Wireless Mouse", "desc": "Ergonomic mouse", "qty": 5, "price": 24.99, "discount": 5, "total": 118.70},
-		{"id": "003", "name": "Monitor 27\"", "desc": "4K UHD display", "qty": 1, "price": 349.99, "discount": 15, "total": 297.49},
-		{"id": "004", "name": "USB-C Hub", "desc": "Multi-port adapter", "qty": 3, "price": 39.99, "discount": 0, "total": 119.97},
-	}
-
-	// Comprehensive table example with many API features combined
-	doc.AddHeader3("1. Comprehensive Table with Multiple Features").Draw()
-	doc.AddText("This example shows many table configuration options combined:").Draw()
-
-	// Create a table with extensive formatting options
-	comprehensiveTable := doc.NewTable(
-		"Code|CC,W:8%",                // Centered header and centered content, 8% width
-		"Product|W:15%",               // Default left alignment, 15% width
-		"Description|W:25%",           // Default left alignment, 25% width
-		"Quantity|HR,CR,S: pcs,W:13%", // Right-aligned header and content with "pcs" suffix, 13% width
-		"Price|CR,P:$,W:13%",          // Right-aligned content with "$" prefix, 13% width
-		"Discount|HR,CR,S:%,W:13%",    // Right-aligned header with "%" suffix, 13% width
-		"Total|CR,P:$,W:13%",          // Right-aligned content with "$" prefix, 13% width
-	)
-
-	// Customize header style
-	comprehensiveTable.HeaderStyle(CellStyle{
-		BorderStyle: BorderStyle{
-			Top:      false,
-			Left:     false,
-			Bottom:   false,
-			Right:    false,
-			Width:    1.0,
-			RGBColor: RGBColor{R: 50, G: 50, B: 150},
-		},
-		FillColor: RGBColor{R: 220, G: 230, B: 255},
-		TextColor: RGBColor{R: 20, G: 20, B: 100},
-		Font:      FontBold,
-		FontSize:  12,
-	})
-
-	// Customize cell style
-	comprehensiveTable.CellStyle(CellStyle{
-		BorderStyle: BorderStyle{
-			Top:      false,
-			Left:     true,
-			Bottom:   true,
-			Right:    true,
-			Width:    0.5,
-			RGBColor: RGBColor{R: 180, G: 180, B: 220},
-		},
-		FillColor: RGBColor{R: 255, G: 255, B: 255},
-		TextColor: RGBColor{R: 50, G: 50, B: 80},
-		Font:      FontRegular,
-		FontSize:  11,
-	})
-
-	// Add rows with data
-	for _, product := range productData {
-		comprehensiveTable.AddRow(
-			product["id"],
-			product["name"],
-			product["desc"],
-			product["qty"],
-			product["price"],
-			product["discount"],
-			product["total"],
-		)
-	}
-
-	comprehensiveTable.Draw()
-
-	// Keep only the right-aligned table example
-	doc.AddHeader3("2. Right-aligned Table Example").Draw()
-	doc.AddText("Table with right alignment:").Draw()
-
-	// Create a right-aligned table with specific column widths
-	rightTable := doc.NewTable("Code", "Product", "Price")
-	rightTable.AlignRight()
-
-	for _, product := range productData {
-		rightTable.AddRow(product["id"], product["name"], product["price"])
-	}
-	rightTable.Draw()
-
-	doc.AddText("This table is right-aligned.").AlignRight().Draw()
-
-	// add page for checking page header and footer
-	doc.AddPage()
-
-	// Create output directory if it doesn't exist
-	outDir := "test/out"
-	err := os.MkdirAll(outDir, 0755)
+	// Save the document to a file
+	err := doc.WritePdf("example_document.pdf")
 	if err != nil {
-		t.Fatalf("Error creating output directory: %v", err)
+		log.Fatalf("Error writing PDF: %v", err)
 	}
-
-	// Set the output file path
-	outFilePath := filepath.Join(outDir, "doc_test.pdf")
-
-	// Save the document to the specified location
-	err = doc.WritePdf(outFilePath)
 ```
 
 ## Acknowledgements

@@ -3,6 +3,8 @@ package docpdf
 import (
 	"log"
 	"testing"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 func TestKern01(t *testing.T) {
@@ -76,5 +78,5 @@ func kern01(font string, prefix string, leftRune rune, rightRune rune) (int, err
 		}
 	}
 
-	return 0, newErr("not found")
+	return 0, errs.New("not found")
 }

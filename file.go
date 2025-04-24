@@ -3,8 +3,9 @@ package docpdf
 import (
 	"bytes"
 	"io"
-	"os"
 	"strconv"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 type (
@@ -14,12 +15,28 @@ type (
 	}
 )
 
-// WritePdf : write pdf file
-func (gp *pdfEngine) WritePdf(pdfPath string) error {
-	return os.WriteFile(pdfPath, gp.GetBytesPdf(), 0644)
+// fileWriter is a function type for writing PDF data to a file
+type fileWriter func(filename string, data []byte) error
+
+// SetFileWriter sets a custom function for writing PDF files
+func (gp *pdfEngine) SetFileWriter(writer fileWriter) {
+	gp.fileWriter = writer
 }
 
-// WriteTo implements the io.WriterTo interface and can
+// WritePdf writes the PDF file to the specified path using the configured FileWriter
+func (gp *pdfEngine) WritePdf(pdfPath string) error {
+	// Get PDF bytes
+	data := gp.GetBytesPdf()
+
+	if len(data) == 0 {
+		return errs.ErrEmptyPdf
+	}
+
+	// Default behavior
+	return gp.fileWriter(pdfPath, data)
+}
+
+// WritePdf implements the io.WriterTo interface and can
 // be used to stream the PDF as it is compiled to an io.Writer.
 func (gp *pdfEngine) WriteTo(w io.Writer) (n int64, err error) {
 	return gp.compilePdf(w)
@@ -27,7 +44,7 @@ func (gp *pdfEngine) WriteTo(w io.Writer) (n int64, err error) {
 
 // Write streams the pdf as it is compiled to an io.Writer
 //
-// Deprecated: use the WriteTo method instead.
+// Deprecated: use the WritePdf method instead.
 func (gp *pdfEngine) Write(w io.Writer) error {
 	_, err := gp.compilePdf(w)
 	return err

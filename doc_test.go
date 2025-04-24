@@ -7,10 +7,10 @@ import (
 )
 
 func TestDocumentAPIUsage(t *testing.T) {
-	// Create a simple document with default settings
-	doc := NewDocument(func(a ...any) {
-		// Simple logger that does nothing for this test
-		t.Log(a...)
+	// Create a simple document with fileWriter function
+	doc := NewDocument(func(filename string, data []byte) error {
+		// For testing, we'll write to the specified file
+		return os.WriteFile(filename, data, 0644)
 	})
 
 	// Setup header and footer with the new API
@@ -218,11 +218,14 @@ func TestPageSizeOptions(t *testing.T) {
 		t.Fatalf("Error creating output directory: %v", err)
 	}
 
+	// Common fileWriter for all tests
+	fileWriter := func(filename string, data []byte) error {
+		return os.WriteFile(filename, data, 0644)
+	}
+
 	// Test 1: Using predefined page size (PageSizeA4)
 	t.Run("PredefinedPageSize", func(t *testing.T) {
-		doc := NewDocument(func(a ...any) {
-			t.Log(a...)
-		}, PageSizeA4)
+		doc := NewDocument(fileWriter, PageSizeA4)
 
 		doc.AddText("This document uses predefined PageSizeA4").Bold().AlignCenter().Draw()
 
@@ -236,9 +239,7 @@ func TestPageSizeOptions(t *testing.T) {
 	// Test 2: Using custom PageSize with mm units
 	t.Run("CustomPageSizeWithUnits", func(t *testing.T) {
 		// Create custom A5 size in mm (148mm x 210mm)
-		doc := NewDocument(func(a ...any) {
-			t.Log(a...)
-		}, PageSize{Width: 148, Height: 210, Unit: UnitMM})
+		doc := NewDocument(fileWriter, PageSize{Width: 148, Height: 210, Unit: UnitMM})
 
 		doc.AddText("This document uses custom PageSize (A5 in mm)").Bold().AlignCenter().Draw()
 
@@ -252,9 +253,7 @@ func TestPageSizeOptions(t *testing.T) {
 	// Test 3: Using custom PageSize with inches
 	t.Run("CustomPageSizeInches", func(t *testing.T) {
 		// Create custom size in inches (8.5 x 11 inches - US Letter)
-		doc := NewDocument(func(a ...any) {
-			t.Log(a...)
-		}, PageSize{Width: 8.5, Height: 11, Unit: UnitIN})
+		doc := NewDocument(fileWriter, PageSize{Width: 8.5, Height: 11, Unit: UnitIN})
 
 		doc.AddText("This document uses custom PageSize (Letter in inches)").Bold().AlignCenter().Draw()
 
@@ -267,9 +266,7 @@ func TestPageSizeOptions(t *testing.T) {
 
 	// Test 4: Combining PageSize with other options
 	t.Run("CombinedOptions", func(t *testing.T) {
-		doc := NewDocument(func(a ...any) {
-			t.Log(a...)
-		},
+		doc := NewDocument(fileWriter,
 			// Custom page size (A4 landscape in mm)
 			PageSize{Width: 297, Height: 210, Unit: UnitMM},
 			// Custom margins

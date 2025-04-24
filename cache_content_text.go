@@ -5,6 +5,8 @@ import (
 	"io"
 	"math"
 	"strconv"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 const defaultCoefLineHeight = float64(1)
@@ -17,7 +19,7 @@ const contentTypeCell = 0
 // contentTypeText text
 const contentTypeText = 1
 
-var errContentTypeNotFound = newErr("contentType not found")
+var errContentTypeNotFound = errs.New("contentType not found")
 
 type cacheContentText struct {
 	//---setup---
@@ -256,7 +258,7 @@ func (c *cacheContentText) drawBorder(w io.Writer) error {
 
 func (c *cacheContentText) underline(w io.Writer) error {
 	if c.fontSubset == nil {
-		return newErr("error AppendUnderline not found font")
+		return errs.New("error AppendUnderline not found font")
 	}
 
 	coefLineHeight := defaultCoefLineHeight

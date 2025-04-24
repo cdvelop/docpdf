@@ -1,6 +1,7 @@
 package docpdf
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -8,6 +9,10 @@ import (
 func TestTableColumnWidths(t *testing.T) {
 	// Create output directory if it doesn't exist
 	outDir := "test/out"
+	err := os.MkdirAll(outDir, 0755)
+	if err != nil {
+		t.Fatalf("Error creating output directory: %v", err)
+	}
 
 	// Test cases for different width configurations
 	testCases := []struct {
@@ -44,13 +49,16 @@ func TestTableColumnWidths(t *testing.T) {
 		},
 	}
 
+	// Create a common fileWriter function
+	fileWriter := func(filename string, data []byte) error {
+		return os.WriteFile(filename, data, 0644)
+	}
+
 	// Run test for each case
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Create a new document for this test
-			doc := NewDocument(func(a ...any) {
-				t.Log(a...)
-			})
+			doc := NewDocument(fileWriter)
 
 			// Create table with the test headers
 			table := doc.NewTable(tc.headers...)
@@ -93,9 +101,7 @@ func TestTableColumnWidths(t *testing.T) {
 
 	// Test mixing width types (should ensure consistent approach)
 	t.Run("Mixing_Width_Types", func(t *testing.T) {
-		doc := NewDocument(func(a ...any) {
-			t.Log(a...)
-		})
+		doc := NewDocument(fileWriter)
 
 		// Test mixing percentage and fixed widths (should convert all to percentage)
 		headers := []string{

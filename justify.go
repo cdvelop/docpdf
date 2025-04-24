@@ -3,6 +3,8 @@ package docpdf
 import (
 	"strings"
 	"unicode"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 // justifiedText representa un texto justificado con sus espacios ajustados
@@ -17,13 +19,13 @@ type justifiedText struct {
 func parseTextForJustification(gp *pdfEngine, text string, width float64) (*justifiedText, error) {
 	// Si el texto está vacío o no tiene espacios, no hay nada que justificar
 	if text == "" {
-		return nil, errEmptyString
+		return nil, errs.EmptyString
 	}
 
 	// Ignorar espacios iniciales y finales
 	text = strings.TrimSpace(text)
 	if text == "" {
-		return nil, errEmptyString
+		return nil, errs.EmptyString
 	}
 
 	// Dividir el texto en palabras

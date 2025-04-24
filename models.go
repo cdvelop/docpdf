@@ -41,6 +41,8 @@ type Margins struct {
 
 // pdfEngine : core library for generating PDF
 type pdfEngine struct {
+	// FileWriter function for custom file writing logic
+	fileWriter fileWriter
 
 	// Page margins
 	margins Margins

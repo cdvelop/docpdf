@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"testing"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 func BenchmarkPdfWithImageHolder(b *testing.B) {
@@ -365,7 +367,7 @@ func writeFile(name string, data []byte, perm os.FileMode) error {
 func generatePDFBytesByAddTTFFontData(pdf *pdfEngine, fontData []byte) ([]byte, error) {
 	pdf.Start(config{PageSize: *PageSizeA4})
 	if pdf.GetNumberOfPages() != 0 {
-		return nil, newErr("Invalid starting number of pages, should be 0")
+		return nil, errs.New("Invalid starting number of pages, should be 0")
 	}
 
 	if err := pdf.AddTTFFontData("LiberationSerif-Regular", fontData); err != nil {

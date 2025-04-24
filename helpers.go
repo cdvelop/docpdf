@@ -1,5 +1,7 @@
 package docpdf
 
+import "github.com/cdvelop/docpdf/errs"
+
 // convertNumericToFloat64 : accept numeric types, return float64-value
 func convertNumericToFloat64(size interface{}) (fontSize float64, err error) {
 	switch size := size.(type) {
@@ -28,7 +30,7 @@ func convertNumericToFloat64(size interface{}) (fontSize float64, err error) {
 	case uint8:
 		return float64(size), nil
 	default:
-		return 0.0, newErr("fontSize must be of type (u)int* or float*, not", size)
+		return 0.0, errs.New("fontSize must be of type (u)int* or float*, not", size)
 	}
 }
 

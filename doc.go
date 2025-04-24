@@ -1,6 +1,10 @@
 package docpdf
 
-import "strconv"
+import (
+	"strconv"
+
+	"github.com/cdvelop/docpdf/errs"
+)
 
 type Document struct {
 	*pdfEngine
@@ -15,23 +19,34 @@ type Document struct {
 }
 
 // NewDocument creates a new PDF document with configurable settings
-// Accepts optional configurations including:
+// Accepts optional configurations:
+//
+// Optional configurations include:
 //   - FontConfig: Custom font configuration
 //   - Font: Custom font family
 //   - Margins: Custom margins in millimeters (more intuitive than points)
 //   - PageSize: Custom page size with desired units
 //   - *Rect: Predefined page size (like PageSizeLetter, PageSizeA4, etc.)
+//   - func(string, []byte) error: Custom file writer function (if not provided, defaults to env.SetupDefaultFileWriter())
 //
 // Examples:
-//   - NewDocument(fmt.Println, Margins{Left: 15, Top: 10, Right: 10, Bottom: 10})
-//   - NewDocument(fmt.Println, PageSize{Width: 210, Height: 297, Unit: UnitMM}) // A4 size in mm
-//   - NewDocument(fmt.Println, PageSizeA4) // Using predefined page size
-func NewDocument(logPrint func(a ...any), configs ...any) *Document {
+//   - NewDocument() // Uses default file writer
+//   - NewDocument(os.WriteFile) // Custom file writer
+//   - NewDocument(Margins{Left: 15, Top: 10, Right: 10, Bottom: 10})
+//   - NewDocument(PageSize{Width: 210, Height: 297, Unit: UnitMM}) // A4 size in mm
+//   - NewDocument(PageSizeA4) // Using predefined page size
+//   - NewDocument(os.WriteFile, PageSizeA4, Margins{Left: 20, Top: 10, Right: 20, Bottom: 10})
+//
+// For web applications:
+//   - NewDocument(func(filename string, data []byte) error {
+//     response.Header().Set("Content-Type", "application/pdf")
+//     _, err := response.Write(data)
+//     return err
+//     })
+func NewDocument(configs ...any) *Document {
 
 	doc := &Document{
-		pdfEngine: &pdfEngine{
-			log: logPrint,
-		},
+		pdfEngine:       &pdfEngine{},
 		fontConfig:      defaultFontConfig(),
 		inlineMode:      false,
 		lastInlineWidth: 0,
@@ -41,17 +56,19 @@ func NewDocument(logPrint func(a ...any), configs ...any) *Document {
 	leftMargin := 42.52   // 1.5 cm in points
 	otherMargins := 28.35 // 1 cm in points
 
-	// Start with default page configuration (will be overridden if PageSize is provided)
-	doc.Start(config{
-		PageSize: *PageSizeLetter,
-	})
-
-	// Set default margins explicitly
-	doc.SetMargins(leftMargin, otherMargins, otherMargins, otherMargins)
+	// Default page size (will be used if no PageSize is provided)
+	defaultPageSize := PageSizeLetter
 
 	// Process all configurations in one place
 	for _, v := range configs {
 		switch v := v.(type) {
+		case func(string, []byte) error:
+			// Set custom file writer if provided
+			doc.fileWriter = v
+
+		case func(...any):
+			// Custom logger
+			doc.log = v
 		case FontConfig:
 			doc.fontConfig = v
 		case Font:
@@ -66,16 +83,21 @@ func NewDocument(logPrint func(a ...any), configs ...any) *Document {
 			)
 		case PageSize:
 			// User provided a custom page size with specific units
-			doc.Start(config{
-				PageSize: *v.ToRect(),
-			})
+			// User provided a custom page size with specific units
+			defaultPageSize = v.ToRect()
 		case *Rect:
 			// User provided a predefined page size (like PageSizeLetter, PageSizeA4, etc.)
-			doc.Start(config{
-				PageSize: *v,
-			})
+			defaultPageSize = v
 		}
 	}
+
+	// Start with default page configuration (will be overridden if PageSize is provided)
+	doc.Start(config{
+		PageSize: *defaultPageSize,
+	})
+
+	// Set default margins explicitly
+	doc.SetMargins(leftMargin, otherMargins, otherMargins, otherMargins)
 
 	err := doc.loadFonts()
 	if err != nil {
@@ -173,7 +195,7 @@ func (gp *pdfEngine) SetPage(pageno int) error {
 		}
 	}
 
-	return newErr("invalid page number")
+	return errs.New("invalid page number")
 }
 
 // AddPage añade una nueva página y actualiza el contador de páginas para el header y footer

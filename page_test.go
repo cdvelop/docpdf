@@ -24,8 +24,9 @@ func GetFont(doc *Document, fontPath string) (err error) {
 func TestSetY(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
-		t.Log(a...)
+	doc := NewDocument(func(filename string, data []byte) error {
+		// Use proper fileWriter function that writes to file
+		return os.WriteFile(filename, data, 0644)
 	})
 
 	pdf := doc.PdfEngine()
@@ -63,8 +64,8 @@ func TestSetY(t *testing.T) {
 func TestSetNewY(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
-		t.Log(a...)
+	doc := NewDocument(func(filename string, data []byte) error {
+		return os.WriteFile(filename, data, 0644)
 	})
 
 	pdf := doc.PdfEngine()
@@ -104,8 +105,8 @@ func TestSetNewY(t *testing.T) {
 func TestSetNewXY(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
-		t.Log(a...)
+	doc := NewDocument(func(filename string, data []byte) error {
+		return os.WriteFile(filename, data, 0644)
 	})
 
 	pdf := doc.PdfEngine()
@@ -145,8 +146,8 @@ func TestSetNewXY(t *testing.T) {
 func TestSetNewYX(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
-		t.Log(a...)
+	doc := NewDocument(func(filename string, data []byte) error {
+		return os.WriteFile(filename, data, 0644)
 	})
 
 	pdf := doc.PdfEngine()
@@ -186,8 +187,8 @@ func TestSetNewYX(t *testing.T) {
 func TestSetNewYCheckHeight(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
-		t.Log(a...)
+	doc := NewDocument(func(filename string, data []byte) error {
+		return os.WriteFile(filename, data, 0644)
 	})
 
 	pdf := doc.PdfEngine()
@@ -218,8 +219,9 @@ func TestSetNewYCheckHeight(t *testing.T) {
 
 func TestLineBreak(t *testing.T) {
 	var err error
-	doc := NewDocument(func(a ...any) {
-		t.Log(a...)
+
+	doc := NewDocument(func(filename string, data []byte) error {
+		return os.WriteFile(filename, data, 0644)
 	})
 
 	pdf := doc.PdfEngine()

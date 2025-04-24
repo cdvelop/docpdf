@@ -6,6 +6,8 @@ import (
 	"io"
 	"strconv"
 	"strings"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 // Regular - font style regular
@@ -176,7 +178,7 @@ func (gp *pdfEngine) SetFontWithStyle(family string, style int, size interface{}
 	}
 
 	if !found {
-		return errMissingFontFamily
+		return errs.MissingFontFamily
 	}
 
 	return nil

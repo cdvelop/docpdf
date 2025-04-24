@@ -3,6 +3,8 @@ package docpdf
 import (
 	"strings"
 	"testing"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 func TestJustify(t *testing.T) {
@@ -45,8 +47,8 @@ func TestJustify(t *testing.T) {
 	// Test with empty text
 	t.Run("EmptyText", func(t *testing.T) {
 		_, err := parseTextForJustification(pdf, "", 200.0)
-		if err != errEmptyString {
-			t.Errorf("Empty text should return errEmptyString, but got: %v", err)
+		if err != errs.EmptyString {
+			t.Errorf("Empty text should return errs.EmptyString, but got: %v", err)
 		}
 	})
 

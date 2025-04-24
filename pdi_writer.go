@@ -10,6 +10,8 @@ import (
 	"math"
 	"os"
 	"strconv"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 type pdfWriter struct {
@@ -78,7 +80,7 @@ func newPdfWriter(filename string, log func(a ...any)) (*pdfWriter, error) {
 		var err error
 		f, err := os.Create(filename)
 		if err != nil {
-			return nil, newErr(err, "Unable to create filename: ", filename)
+			return nil, errs.New(err, "Unable to create filename: ", filename)
 		}
 		writer.f = f
 		writer.w = bufio.NewWriter(f)
@@ -126,7 +128,7 @@ func (this *pdfWriter) ImportPage(reader *pdfReader, pageno int, boxName string)
 	// Get all page boxes
 	pageBoxes, err := reader.getPageBoxes(1, this.k)
 	if err != nil {
-		return -1, newErr(err, "Failed to get page boxes")
+		return -1, errs.New(err, "Failed to get page boxes")
 	}
 
 	// If requested box name does not exist for this page, use an alternate box
@@ -141,17 +143,17 @@ func (this *pdfWriter) ImportPage(reader *pdfReader, pageno int, boxName string)
 	// If the requested box name or an alternate box name cannot be found, trigger an error
 	// TODO: Improve error handling
 	if _, ok := pageBoxes[boxName]; !ok {
-		return -1, newErr("box not found: " + boxName)
+		return -1, errs.New("box not found: " + boxName)
 	}
 
 	pageResources, err := reader.getPageResources(pageno)
 	if err != nil {
-		return -1, newErr(err, "Failed to get page resources")
+		return -1, errs.New(err, "Failed to get page resources")
 	}
 
 	content, err := reader.getContent(pageno)
 	if err != nil {
-		return -1, newErr(err, "Failed to get content")
+		return -1, errs.New(err, "Failed to get content")
 	}
 
 	// Set template values
@@ -169,7 +171,7 @@ func (this *pdfWriter) ImportPage(reader *pdfReader, pageno int, boxName string)
 	// Set template rotation
 	rotation, err := reader.getPageRotation(pageno)
 	if err != nil {
-		return -1, newErr(err, "Failed to get page rotation")
+		return -1, errs.New(err, "Failed to get page rotation")
 	}
 	angle := rotation.Int % 360
 
@@ -359,7 +361,7 @@ func (this *pdfWriter) PutFormXobjects(reader *pdfReader) (map[string]*pdfObject
 	for i := 0; i < len(this.tpls); i++ {
 		tpl := this.tpls[i]
 		if tpl == nil {
-			return nil, newErr("Template is nil")
+			return nil, errs.New("Template is nil")
 		}
 		var p string
 		if compress {
@@ -451,7 +453,7 @@ func (this *pdfWriter) PutFormXobjects(reader *pdfReader) (map[string]*pdfObject
 		if tpl.Resources != nil {
 			this.writeValue(tpl.Resources) // "n" will be changed
 		} else {
-			return nil, newErr("Template resources are empty")
+			return nil, errs.New("Template resources are empty")
 		}
 
 		nN := this.n // remember new "n"
@@ -471,7 +473,7 @@ func (this *pdfWriter) PutFormXobjects(reader *pdfReader) (map[string]*pdfObject
 		// then from dependencies of those resources).
 		err = this.putImportedObjects(reader)
 		if err != nil {
-			return nil, newErr(err, "Failed to put imported objects")
+			return nil, errs.New(err, "Failed to put imported objects")
 		}
 	}
 
@@ -500,7 +502,7 @@ func (this *pdfWriter) putImportedObjects(reader *pdfReader) error {
 
 			nObj, err = reader.resolveObject(v)
 			if err != nil {
-				return newErr(err, "Unable to resolve object")
+				return errs.New(err, "Unable to resolve object")
 			}
 
 			// New object with "NewId" field

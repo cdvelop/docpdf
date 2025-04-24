@@ -3,6 +3,8 @@ package docpdf
 import (
 	"fmt"
 	"sync"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 type blendModeType string
@@ -129,6 +131,6 @@ func defineBlendModeType(bmType string) (blendModeType, error) {
 	case string(colorDodge):
 		return colorDodge, nil
 	default:
-		return "", newErr("blend mode is unknown")
+		return "", errs.New("blend mode is unknown")
 	}
 }

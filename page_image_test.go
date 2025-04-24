@@ -2,7 +2,7 @@ package docpdf
 
 import (
 	"fmt"
-	"log"
+	"os"
 	"testing"
 	"time"
 )
@@ -10,8 +10,9 @@ import (
 func TestPageWithImage(t *testing.T) {
 	var err error
 
-	doc := NewDocument(func(a ...any) {
-		t.Log(a...)
+	doc := NewDocument(func(filename string, data []byte) error {
+		// Use proper fileWriter function that writes to file
+		return os.WriteFile(filename, data, 0644)
 	})
 
 	pdf := doc.PdfEngine()
@@ -31,14 +32,13 @@ func TestPageWithImage(t *testing.T) {
 		y = pdf.GetY()
 		err = pdf.Image("test/res/gopher01.jpg", x, y, imgRect)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 		y += imgHeight
 	}
 
 	err = pdf.WritePdf(fmt.Sprintf("test/pagination/page_image-%s.pdf", time.Now().Format("01-02-15-04-05")))
 	if err != nil {
-		log.Fatalln(err)
+		t.Fatal(err)
 	}
-
 }

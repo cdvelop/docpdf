@@ -1,4 +1,4 @@
-package docpdf
+package errs
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 
 func TestErrAllTypes(t *testing.T) {
 	// Llamada al método newErr con varios tipos
-	e := newErr(
+	e := New(
 		"stringTest",
 		[]string{"array", "of", "strings"},
 		rune(':'), // Solo se une sin espacio adicional

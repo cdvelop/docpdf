@@ -63,18 +63,11 @@ func TestExtractFontName(t *testing.T) {
 		})
 	}
 }
+
 func TestNewDocument(t *testing.T) {
 	t.Run("Default settings", func(t *testing.T) {
-		var logOutput []any
-		logger := func(a ...any) {
-			logOutput = append(logOutput, a...)
-		}
 
-		doc := NewDocument(logger)
-
-		if doc == nil {
-			t.Fatal("Expected document to be created")
-		}
+		doc := NewDocument()
 
 		expectedFont := Font{
 			Regular: "Rubik-Regular.ttf",
@@ -96,26 +89,30 @@ func TestNewDocument(t *testing.T) {
 			Path:    "custom/",
 		}
 
-		doc := NewDocument(func(a ...any) {}, customFont)
+		doc := NewDocument(customFont)
 
 		if doc.fontConfig.Family != customFont {
 			t.Errorf("got font = %v, want %v", doc.fontConfig.Family, customFont)
 		}
 	})
-
 	t.Run("Logger captures errors", func(t *testing.T) {
 		var logOutput []any
-		logger := func(a ...any) {
+
+		// Create a custom logger to capture log output
+		customLogger := func(a ...any) {
 			logOutput = append(logOutput, a...)
 		}
 
+		// Create a custom font that doesn't exist
 		customFont := Font{
 			Regular: "nonexistent/font.ttf",
 			Bold:    "nonexistent/font-bold.ttf",
 			Italic:  "nonexistent/font-italic.ttf",
+			Path:    "",
 		}
 
-		NewDocument(logger, customFont)
+		// Create a document with custom logger and the nonexistent font
+		NewDocument(customLogger, customFont)
 
 		if len(logOutput) == 0 {
 			t.Error("Expected logger to capture font loading error")
@@ -129,16 +126,20 @@ func TestNewDocument(t *testing.T) {
 
 	t.Run("Load only one font", func(t *testing.T) {
 		var logOutput []any
-		logger := func(a ...any) {
+
+		// Create a document with custom logger
+		doc := NewDocument(func(a ...any) {
 			logOutput = append(logOutput, a...)
-		}
+		})
 
 		oneCustomFont := Font{
 			Regular: "Rubik-Regular.ttf",
 			Path:    "fonts/",
 		}
 
-		doc := NewDocument(logger, oneCustomFont)
+		// Manually set the font and trigger loading
+		doc.fontConfig.Family = oneCustomFont
+		doc.loadFonts()
 
 		expectedFont := Font{
 			Regular: "Rubik-Regular.ttf",
@@ -154,6 +155,5 @@ func TestNewDocument(t *testing.T) {
 		if doc.fontConfig.Family != expectedFont {
 			t.Errorf("got font = %v, want %v", doc.fontConfig.Family, expectedFont)
 		}
-
 	})
 }

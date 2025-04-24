@@ -13,6 +13,9 @@ import (
 	"os"      // tinygo OK
 	"strconv" // tinygo OK
 	"time"    // NO tinygo supported
+
+	"github.com/cdvelop/docpdf/env"
+	"github.com/cdvelop/docpdf/errs"
 )
 
 const subsetFont = "SubsetFont"
@@ -298,6 +301,16 @@ func (gp *pdfEngine) StartWithImporter(config config, importer *importer) {
 
 func (gp *pdfEngine) start(config config, importer ...*importer) {
 
+	// setup log function
+	if gp.log == nil {
+		gp.log = env.SetupDefaultLogger()
+	}
+
+	// setup file writer
+	if gp.fileWriter == nil {
+		gp.fileWriter = env.SetupDefaultFileWriter()
+	}
+
 	gp.config = config
 	gp.init(importer...)
 	//init all basic obj
@@ -426,7 +439,7 @@ func (gp *pdfEngine) ImportPagesFromSource(source interface{}, box string) error
 		// Set source stream for fpdi
 		gp.fpdi.SetSourceStream(v)
 	default:
-		return newErr("source type not supported")
+		return errs.New("source type not supported")
 	}
 
 	// Get number of pages from source file
@@ -441,7 +454,7 @@ func (gp *pdfEngine) ImportPagesFromSource(source interface{}, box string) error
 		// Get the size of the page
 		size, ok := sizes[pageno][box]
 		if !ok {
-			return newErr("can not get page size")
+			return errs.New("can not get page size")
 		}
 
 		// Add a new page to the document
@@ -657,7 +670,7 @@ func (gp *pdfEngine) KernOverride(family string, fn funcKernOverride) error {
 		}
 		i++
 	}
-	return errMissingFontFamily
+	return errs.MissingFontFamily
 }
 
 func (c *currentPdf) setTextColor(color iCacheColorText) {
@@ -831,7 +844,7 @@ func (gp *pdfEngine) Polygon(points []point, style string) {
 //		pdf.Rectangle(196.6, 336.8, 398.3, 379.3, "DF", 3, 10)
 func (gp *pdfEngine) Rectangle(x0 float64, y0 float64, x1 float64, y1 float64, style string, radius float64, radiusPointNum int) error {
 	if x1 <= x0 || y1 <= y0 {
-		return errInvalidRectangleCoordinates
+		return errs.InvalidRectangleCoordinates
 	}
 	if radiusPointNum <= 0 || radius <= 0 {
 		//draw rectangle without round corner
@@ -845,7 +858,7 @@ func (gp *pdfEngine) Rectangle(x0 float64, y0 float64, x1 float64, y1 float64, s
 	} else {
 
 		if radius > (x1-x0) || radius > (y1-y0) {
-			return errInvalidRectangleCoordinates
+			return errs.InvalidRectangleCoordinates
 		}
 
 		degrees := []float64{}

@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/cdvelop/docpdf/errs"
 	"github.com/cdvelop/docpdf/fontmaker/core"
 )
 
 // errCharNotFound char not found
-var errCharNotFound = newErr("char not found")
+var errCharNotFound = errs.New("char not found")
 
 // errGlyphNotFound font file not contain glyph
-var errGlyphNotFound = newErr("glyph not found")
+var errGlyphNotFound = errs.New("glyph not found")
 
 // subsetFontObj pdf subsetFont object
 type subsetFontObj struct {
