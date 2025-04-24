@@ -8,6 +8,28 @@ docpdf is a Go library that allows you to generate PDF documents with an intuiti
 
 The main focus of this library is to compile into a compact binary size using TinyGo for frontend usage, as standard Go binaries tend to be large. This makes it ideal for web applications where binary size matters.
 
+### Font Convention
+
+By default, `docpdf` expects the following font files in the `fonts/` directory (relative to your application's execution path or as specified in `Font.Path`):
+
+*   `regular.ttf`: For the normal text style.
+*   `bold.ttf`: For the bold text style.
+*   `italic.ttf`: For the italic text style.
+
+You can override these defaults by providing a custom `Font` configuration when creating the document:
+
+```go
+customFont := docpdf.Font{
+    Regular: "MyCustomFont-Regular.ttf",
+    Bold:    "MyCustomFont-Bold.ttf",
+    Italic:  "MyCustomFont-Italic.ttf",
+    Path:    "assets/fonts/", // Optional: specify a different path
+}
+doc := docpdf.NewDocument(customFont)
+```
+
+If you only provide `Regular`, the library will use the regular font for bold and italic styles as well.
+
 ### TinyGo Compatibility Checklist
 
 The following standard libraries will be replaced or modified as they are not 100% compatible with TinyGo, in order to reduce the binary size:
@@ -130,7 +152,7 @@ This example shows the main features of the library:
 	// Create and add a bar chart using the new API instead of static image
 	barChart := doc.AddBarChart().
 		Title("Monthly Sales").
-		Height(320).
+		Height(320).	
 		AlignCenter().
 		BarWidth(50).
 		BarSpacing(10)

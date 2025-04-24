@@ -16,10 +16,18 @@ type FontConfig struct {
 
 // Font represents font files for different styles
 type Font struct {
+	// Regular specifies the filename for the regular font style.
+	// It's recommended to name this file "regular.ttf".
 	Regular string
-	Bold    string
-	Italic  string
-	Path    string // Base path for fonts
+	// Bold specifies the filename for the bold font style.
+	// It's recommended to name this file "bold.ttf".
+	Bold string
+	// Italic specifies the filename for the italic font style.
+	// It's recommended to name this file "italic.ttf".
+	Italic string
+	// Path specifies the base directory where the font files are located.
+	// Defaults to "fonts/".
+	Path string // Base path for fonts
 }
 
 // loadFonts loads the fonts from the Font struct
@@ -92,9 +100,10 @@ func (d *Document) setDefaultFont() {
 func defaultFontConfig() FontConfig {
 	return FontConfig{
 		Family: Font{
-			Regular: "Rubik-Regular.ttf",
-			Bold:    "Rubik-Bold.ttf",
-			Italic:  "Rubik-Italic.ttf",
+			// Use standardized filenames for default fonts
+			Regular: "regular.ttf",
+			Bold:    "bold.ttf",
+			Italic:  "italic.ttf",
 			Path:    "fonts/",
 		},
 

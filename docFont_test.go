@@ -69,10 +69,11 @@ func TestNewDocument(t *testing.T) {
 
 		doc := NewDocument()
 
+		// Updated expected default font names
 		expectedFont := Font{
-			Regular: "Rubik-Regular.ttf",
-			Bold:    "Rubik-Bold.ttf",
-			Italic:  "Rubik-Italic.ttf",
+			Regular: "regular.ttf",
+			Bold:    "bold.ttf",
+			Italic:  "italic.ttf",
 			Path:    "fonts/",
 		}
 
@@ -127,31 +128,28 @@ func TestNewDocument(t *testing.T) {
 	t.Run("Load only one font", func(t *testing.T) {
 		var logOutput []any
 
+		oneCustomFont := Font{
+			Regular: "LiberationSerif-Regular.ttf", // Use a different name for clarity
+			Path:    "test/res/",
+		}
 		// Create a document with custom logger
 		doc := NewDocument(func(a ...any) {
 			logOutput = append(logOutput, a...)
-		})
+		}, oneCustomFont)
 
-		oneCustomFont := Font{
-			Regular: "Rubik-Regular.ttf",
-			Path:    "fonts/",
-		}
-
-		// Manually set the font and trigger loading
-		doc.fontConfig.Family = oneCustomFont
-		doc.loadFonts()
-
+		// The expected result after NewDocument applies the fallback logic
 		expectedFont := Font{
-			Regular: "Rubik-Regular.ttf",
-			Bold:    "Rubik-Regular.ttf",
-			Italic:  "Rubik-Regular.ttf",
-			Path:    "fonts/",
+			Regular: oneCustomFont.Regular,
+			Bold:    oneCustomFont.Regular, // Should fallback to regular
+			Italic:  oneCustomFont.Regular, // Should fallback to regular
+			Path:    oneCustomFont.Path,
 		}
 
 		if len(logOutput) != 0 {
 			t.Error("Expected no errors when loading only one font", logOutput)
 		}
 
+		// Compare the actual font config set by NewDocument with the expected one
 		if doc.fontConfig.Family != expectedFont {
 			t.Errorf("got font = %v, want %v", doc.fontConfig.Family, expectedFont)
 		}
