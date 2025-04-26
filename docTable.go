@@ -351,13 +351,7 @@ func (doc *Document) NewStyledCell(content string, style CellStyle) styledCell {
 
 // Draw renders the table on the document
 func (t *docTable) Draw() error {
-	// Calculate total height of table
-	totalHeight := t.rowHeight * float64(len(t.rows)+1) // +1 for header row
-
-	// Check if table fits on current page
-	y := t.doc.ensureElementFits(totalHeight, t.doc.fontConfig.Normal.SpaceAfter)
-
-	// Calculate starting X position - no recalculation of widths
+	// Calculate starting X position
 	x := t.calculatePosition()
 
 	// Colección para guardar información de los encabezados para dibujar sus bordes al final
@@ -367,10 +361,25 @@ func (t *docTable) Draw() error {
 	}
 	headers := []headerInfo{}
 
-	// Draw header row (sin bordes por ahora, solo contenido y fondo)
+	// Obtenemos la posición Y inicial, considerando el espacio disponible en la página actual
+	y := t.doc.curr.Y
+
+	// Verificar si al menos la cabecera cabe en la página actual
+	headerHeight := t.rowHeight
+	bottomMargin := t.doc.margins.Bottom
+
+	// Calcular espacio disponible en la página actual
+	availableSpace := t.doc.curr.pageSize.H - y - bottomMargin
+
+	// Si ni siquiera la cabecera cabe, ir a una nueva página
+	if headerHeight > availableSpace {
+		t.doc.AddPage()
+		y = t.doc.curr.Y
+	}
+
+	// Dibujar encabezado
 	currentX := x
 	for _, col := range t.columns {
-		// Guardamos información del encabezado para dibujar los bordes después
 		headers = append(headers, headerInfo{
 			x:      currentX,
 			y:      y,
@@ -379,37 +388,41 @@ func (t *docTable) Draw() error {
 			style:  t.headerStyle,
 		})
 
-		// Dibujar contenido y fondo de la celda de encabezado usando la alineación especificada
 		t.drawCellContent(
 			currentX,
 			y,
 			col.width,
 			t.rowHeight,
 			col.header,
-			col.headerAlign, // Use header-specific alignment
+			col.headerAlign,
 			t.headerStyle,
 		)
 		currentX += col.width
 	}
 
-	// Draw data rows
-	for rowIndex, row := range t.rows {
-		currentY := y + ((float64(rowIndex) + 1) * t.rowHeight)
-		currentX = x
+	currentY := y + headerHeight
 
-		// Check if this row fits on the current page
-		if currentY+t.rowHeight > t.doc.curr.pageSize.H-t.doc.margins.Bottom {
+	// Dibujar los bordes de los encabezados
+	for _, h := range headers {
+		t.drawCellBorder(h.x, h.y, h.width, h.height, h.style.BorderStyle)
+	}
+	// Dibujar filas de datos
+	for _, row := range t.rows {
+		// Verificar si la fila actual cabe en la página actual
+		availableSpace = t.doc.curr.pageSize.H - currentY - bottomMargin
+
+		// Si esta fila no cabe en la página actual, crear una nueva página
+		if t.rowHeight > availableSpace {
 			t.doc.AddPage()
-			currentY = t.doc.margins.Top
+			currentY = t.doc.curr.Y
 
 			// Limpiar la lista de encabezados para la nueva página
 			headers = []headerInfo{}
 
-			// Redraw the header row on the new page (solo contenido y fondo)
+			// Redibujar la fila de encabezados en la nueva página
 			headerY := currentY
 			headerX := x
 			for _, col := range t.columns {
-				// Guardamos información del encabezado para dibujar los bordes después
 				headers = append(headers, headerInfo{
 					x:      headerX,
 					y:      headerY,
@@ -418,36 +431,39 @@ func (t *docTable) Draw() error {
 					style:  t.headerStyle,
 				})
 
-				// Dibujar contenido y fondo de la celda de encabezado usando la alineación especificada
 				t.drawCellContent(
 					headerX,
 					headerY,
 					col.width,
 					t.rowHeight,
 					col.header,
-					col.headerAlign, // Use header-specific alignment
+					col.headerAlign,
 					t.headerStyle,
 				)
 				headerX += col.width
 			}
 
-			// Adjust currentY to start below the header
+			// Dibujar los bordes de los encabezados
+			for _, h := range headers {
+				t.drawCellBorder(h.x, h.y, h.width, h.height, h.style.BorderStyle)
+			}
+
+			// Ajustar currentY para empezar debajo del encabezado
 			currentY += t.rowHeight
 		}
 
+		// Dibujar la fila actual
+		currentX = x
 		for colIndex, cell := range row {
-			// Use column width, handle case where row has fewer cells than columns
 			if colIndex < len(t.columns) {
 				cellWidth := t.columns[colIndex].width
 				cellAlign := t.columns[colIndex].align
 
-				// Determine which style to use
 				style := t.cellStyle
 				if cell.useCellStyle {
 					style = cell.cellStyle
 				}
 
-				// Dibujar celda completa (contenido, fondo y bordes)
 				t.drawCell(
 					currentX,
 					currentY,
@@ -461,15 +477,13 @@ func (t *docTable) Draw() error {
 				currentX += cellWidth
 			}
 		}
+
+		// Avanzar a la siguiente fila
+		currentY += t.rowHeight
 	}
 
-	// Ahora dibujamos los bordes de los encabezados al final
-	for _, h := range headers {
-		t.drawCellBorder(h.x, h.y, h.width, h.height, h.style.BorderStyle)
-	}
-
-	// Update document position to after the table
-	t.doc.SetY(y + totalHeight + t.doc.fontConfig.Normal.SpaceAfter)
+	// Actualizar la posición del documento para que sea después de la tabla
+	t.doc.SetY(currentY + t.doc.fontConfig.Normal.SpaceAfter)
 
 	return nil
 }

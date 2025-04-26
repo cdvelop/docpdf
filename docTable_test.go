@@ -3,8 +3,80 @@ package docpdf
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 )
+
+func TestLargeTablePagination(t *testing.T) {
+	// Create a simple document with fileWriter function
+	doc := NewDocument()
+
+	// Setup header and footer
+	doc.SetPageHeader().
+		SetLeftText("Table Pagination Test").
+		SetCenterText("Multi-page Table Example").
+		SetRightText("Page"). // The footer will add the page number
+		ShowOnFirstPage()
+
+	doc.SetPageFooter().
+		WithPageTotal(Right).
+		ShowOnFirstPage()
+
+	// Add a title
+	doc.AddHeader1("Table Pagination Test").AlignCenter().Draw()
+	doc.AddText("This example tests table pagination across multiple pages").Draw()
+	doc.SpaceBefore(1)
+
+	// Create a table with many rows to force pagination
+	largeTable := doc.NewTable(
+		"Index|W:10%",
+		"Name|W:25%",
+		"Description|W:35%",
+		"Value 1|CR,W:15%",
+		"Value 2|CR,W:15%",
+	)
+
+	// Add many rows to force pagination
+	for i := 1; i <= 100; i++ {
+		desc := "Description for item " + strconv.Itoa(i) + " - This is a longer text to test how the table handles multi-line content in cells"
+		if i%5 == 0 {
+			desc += " with even more additional text to make this particular row taller than others"
+		}
+
+		largeTable.AddRow(
+			i,
+			"Item Name "+strconv.Itoa(i),
+			desc,
+			i*10,
+			i*5,
+		)
+	}
+
+	// Draw the large table - should paginate automatically
+	largeTable.Draw()
+
+	// Add some text after the table
+	doc.AddText("This text should appear after the entire table").Bold().Draw()
+
+	// Create output directory if it doesn't exist
+	outDir := "test/out"
+	err := os.MkdirAll(outDir, 0755)
+	if err != nil {
+		t.Fatalf("Error creating output directory: %v", err)
+	}
+
+	// Set the output file path
+	outFilePath := filepath.Join(outDir, "table_large_pagination_test.pdf")
+
+	// Save the document to the specified location
+	err = doc.WritePdf(outFilePath)
+	if err != nil {
+		t.Fatalf("Error writing PDF: %v", err)
+	}
+
+	absPath, _ := filepath.Abs(outFilePath)
+	t.Logf("Large table pagination test PDF created successfully at: %s", absPath)
+}
 
 func TestTableColumnWidths(t *testing.T) {
 	// Create output directory if it doesn't exist
