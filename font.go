@@ -151,7 +151,7 @@ func (f *fontObj) SetIndexObjEncoding(index int) {
 // SetFontWithStyle : set font style support Regular or Underline
 // for Bold|Italic should be loaded appropriate fonts with same styles defined
 // size MUST be uint*, int* or float64*
-func (gp *pdfEngine) SetFontWithStyle(family string, style int, size interface{}) error {
+func (gp *pdfEngine) SetFontWithStyle(family string, style int, size any) error {
 	fontSize, err := convertNumericToFloat64(size)
 	if err != nil {
 		return err
@@ -187,7 +187,7 @@ func (gp *pdfEngine) SetFontWithStyle(family string, style int, size interface{}
 // SetFont : set font style support "" or "U"
 // for "B" and "I" should be loaded appropriate fonts with same styles defined
 // size MUST be uint*, int* or float64*
-func (gp *pdfEngine) SetFont(family string, style string, size interface{}) error {
+func (gp *pdfEngine) SetFont(family string, style string, size any) error {
 	return gp.SetFontWithStyle(family, getConvertedStyle(style), size)
 }
 

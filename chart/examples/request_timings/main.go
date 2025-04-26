@@ -103,7 +103,7 @@ func drawChart(log chart.Logger) http.HandlerFunc {
 				TickStyle: chart.Style{
 					TextRotationDegrees: 45.0,
 				},
-				ValueFormatter: func(v interface{}) string {
+				ValueFormatter: func(v any) string {
 					return fmt.Sprintf("%d ms", int(v.(float64)))
 				},
 			},

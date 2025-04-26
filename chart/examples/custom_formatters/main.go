@@ -18,7 +18,7 @@ func main() {
 
 	graph := chart.Chart{
 		YAxis: chart.YAxis{
-			ValueFormatter: func(v interface{}) string {
+			ValueFormatter: func(v any) string {
 				if vf, isFloat := v.(float64); isFloat {
 					return fmt.Sprintf("%0.6f", vf)
 				}

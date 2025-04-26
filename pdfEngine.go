@@ -423,7 +423,7 @@ func (gp *pdfEngine) UseImportedTemplate(tplid int, x float64, y float64, w floa
 
 // ImportPagesFromSource imports pages from a source pdf.
 // The source can be a file path, byte slice, or (*)io.ReadSeeker.
-func (gp *pdfEngine) ImportPagesFromSource(source interface{}, box string) error {
+func (gp *pdfEngine) ImportPagesFromSource(source any, box string) error {
 	switch v := source.(type) {
 	case string:
 		// Set source file for fpdi

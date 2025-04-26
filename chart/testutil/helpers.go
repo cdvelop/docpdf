@@ -8,7 +8,7 @@ import (
 )
 
 // AssertNil asserts an argument is nil.
-func AssertNil(t *testing.T, actual interface{}) {
+func AssertNil(t *testing.T, actual any) {
 	t.Helper()
 	if !isNil(actual) {
 		t.Errorf("assertion failed; expected actual to be nil")
@@ -17,7 +17,7 @@ func AssertNil(t *testing.T, actual interface{}) {
 }
 
 // AssertNotNil asserts an argument is not nil.
-func AssertNotNil(t *testing.T, actual interface{}, message ...interface{}) {
+func AssertNotNil(t *testing.T, actual any, message ...any) {
 	t.Helper()
 	if isNil(actual) {
 		t.Error("assertion failed; expected actual to not be nil")
@@ -29,7 +29,7 @@ func AssertNotNil(t *testing.T, actual interface{}, message ...interface{}) {
 }
 
 // AssertEqual asserts two arguments are equal.
-func AssertEqual(t *testing.T, expected, actual interface{}, message ...interface{}) {
+func AssertEqual(t *testing.T, expected, actual any, message ...any) {
 	t.Helper()
 	if !equal(expected, actual) {
 		t.Errorf("assertion failed; expected %v to equal %v", actual, expected)
@@ -41,7 +41,7 @@ func AssertEqual(t *testing.T, expected, actual interface{}, message ...interfac
 }
 
 // AssertNotEqual asserts two arguments are not equal.
-func AssertNotEqual(t *testing.T, expected, actual interface{}, message ...interface{}) {
+func AssertNotEqual(t *testing.T, expected, actual any, message ...any) {
 	t.Helper()
 	if equal(expected, actual) {
 		t.Errorf("assertion failed; expected %v to not equal %v", actual, expected)
@@ -53,19 +53,19 @@ func AssertNotEqual(t *testing.T, expected, actual interface{}, message ...inter
 }
 
 // AssertZero asserts an argument is zero.
-func AssertZero(t *testing.T, actual interface{}, message ...interface{}) {
+func AssertZero(t *testing.T, actual any, message ...any) {
 	t.Helper()
 	AssertEqual(t, 0, actual)
 }
 
 // AssertNotZero asserts an argument is not zero.
-func AssertNotZero(t *testing.T, actual interface{}, message ...interface{}) {
+func AssertNotZero(t *testing.T, actual any, message ...any) {
 	t.Helper()
 	AssertNotEqual(t, 0, actual)
 }
 
 // AssertTrue asserts an argument is true.
-func AssertTrue(t *testing.T, arg bool, message ...interface{}) {
+func AssertTrue(t *testing.T, arg bool, message ...any) {
 	t.Helper()
 	if !arg {
 		t.Errorf("assertion failed; expected actual to be true")
@@ -77,7 +77,7 @@ func AssertTrue(t *testing.T, arg bool, message ...interface{}) {
 }
 
 // AssertFalse asserts an argument is false.
-func AssertFalse(t *testing.T, arg bool, message ...interface{}) {
+func AssertFalse(t *testing.T, arg bool, message ...any) {
 	t.Helper()
 	if arg {
 		t.Errorf("assertion failed; expected actual to be false")
@@ -91,7 +91,7 @@ func AssertFalse(t *testing.T, arg bool, message ...interface{}) {
 // AssertInDelta asserts a two arguments are within a delta of eachother.
 //
 // This delta will be determined absolute, and the delta should always be positive.
-func AssertInDelta(t *testing.T, from, to, delta float64, message ...interface{}) {
+func AssertInDelta(t *testing.T, from, to, delta float64, message ...any) {
 	t.Helper()
 	if diff := math.Abs(from - to); diff > delta {
 		t.Errorf("assertion failed; expected absolute difference of %f and %f to be %f", from, to, delta)
@@ -103,7 +103,7 @@ func AssertInDelta(t *testing.T, from, to, delta float64, message ...interface{}
 }
 
 // AssertEmpty asserts an argument is empty.
-func AssertEmpty(t *testing.T, arg interface{}, message ...interface{}) {
+func AssertEmpty(t *testing.T, arg any, message ...any) {
 	t.Helper()
 	if getLength(arg) != 0 {
 		t.Errorf("assertion failed; expected actual to be empty")
@@ -115,7 +115,7 @@ func AssertEmpty(t *testing.T, arg interface{}, message ...interface{}) {
 }
 
 // AssertNotEmpty asserts an argument is not empty.
-func AssertNotEmpty(t *testing.T, arg interface{}, message ...interface{}) {
+func AssertNotEmpty(t *testing.T, arg any, message ...any) {
 	t.Helper()
 	if getLength(arg) == 0 {
 		t.Errorf("assertion failed; expected actual to not be empty")
@@ -127,7 +127,7 @@ func AssertNotEmpty(t *testing.T, arg interface{}, message ...interface{}) {
 }
 
 // AssertLen asserts an argument has a given length.
-func AssertLen(t *testing.T, arg interface{}, length int, message ...interface{}) {
+func AssertLen(t *testing.T, arg any, length int, message ...any) {
 	t.Helper()
 	if getLength(arg) != length {
 		t.Errorf("assertion failed; expected actual to have length %d", length)
@@ -139,7 +139,7 @@ func AssertLen(t *testing.T, arg interface{}, length int, message ...interface{}
 }
 
 // AssertContains asserts an argument contains a given substring.
-func AssertContains(t *testing.T, s, substr string, message ...interface{}) {
+func AssertContains(t *testing.T, s, substr string, message ...any) {
 	t.Helper()
 	if !strings.Contains(s, substr) {
 		t.Errorf("assertion failed; expected actual to contain %q", substr)
@@ -151,7 +151,7 @@ func AssertContains(t *testing.T, s, substr string, message ...interface{}) {
 }
 
 // AssertNotContains asserts an argument does not contain a given substring.
-func AssertNotContains(t *testing.T, s, substr string, message ...interface{}) {
+func AssertNotContains(t *testing.T, s, substr string, message ...any) {
 	t.Helper()
 	if strings.Contains(s, substr) {
 		t.Errorf("assertion failed; expected actual to not contain %q", substr)
@@ -162,7 +162,7 @@ func AssertNotContains(t *testing.T, s, substr string, message ...interface{}) {
 	}
 }
 
-func equal(expected, actual interface{}) bool {
+func equal(expected, actual any) bool {
 	if expected == nil && actual == nil {
 		return true
 	}
@@ -182,7 +182,7 @@ func equal(expected, actual interface{}) bool {
 	return reflect.DeepEqual(expected, actual)
 }
 
-func isNil(object interface{}) bool {
+func isNil(object any) bool {
 	if object == nil {
 		return true
 	}
@@ -195,7 +195,7 @@ func isNil(object interface{}) bool {
 	return false
 }
 
-func getLength(object interface{}) int {
+func getLength(object any) int {
 	if object == nil {
 		return 0
 	} else if object == "" {

@@ -26,18 +26,18 @@ func NewLogger(options ...LoggerOption) Logger {
 
 // Logger is a type that implements the logging interface.
 type Logger interface {
-	Info(...interface{})
-	Infof(string, ...interface{})
-	Debug(...interface{})
-	Debugf(string, ...interface{})
+	Info(...any)
+	Infof(string, ...any)
+	Debug(...any)
+	Debugf(string, ...any)
 	Err(error)
 	FatalErr(error)
-	Error(...interface{})
-	Errorf(string, ...interface{})
+	Error(...any)
+	Errorf(string, ...any)
 }
 
 // Info logs an info message if the logger is set.
-func Info(log Logger, arguments ...interface{}) {
+func Info(log Logger, arguments ...any) {
 	if log == nil {
 		return
 	}
@@ -45,7 +45,7 @@ func Info(log Logger, arguments ...interface{}) {
 }
 
 // Infof logs an info message if the logger is set.
-func Infof(log Logger, format string, arguments ...interface{}) {
+func Infof(log Logger, format string, arguments ...any) {
 	if log == nil {
 		return
 	}
@@ -53,7 +53,7 @@ func Infof(log Logger, format string, arguments ...interface{}) {
 }
 
 // Debug logs an debug message if the logger is set.
-func Debug(log Logger, arguments ...interface{}) {
+func Debug(log Logger, arguments ...any) {
 	if log == nil {
 		return
 	}
@@ -61,7 +61,7 @@ func Debug(log Logger, arguments ...interface{}) {
 }
 
 // Debugf logs an debug message if the logger is set.
-func Debugf(log Logger, format string, arguments ...interface{}) {
+func Debugf(log Logger, format string, arguments ...any) {
 	if log == nil {
 		return
 	}
@@ -71,7 +71,7 @@ func Debugf(log Logger, format string, arguments ...interface{}) {
 // LoggerOption mutates a stdout logger.
 type LoggerOption = func(*StdoutLogger)
 
-//OptLoggerStdout sets the Stdout writer.
+// OptLoggerStdout sets the Stdout writer.
 func OptLoggerStdout(wr io.Writer) LoggerOption {
 	return func(stl *StdoutLogger) {
 		stl.Stdout = wr
@@ -93,56 +93,56 @@ type StdoutLogger struct {
 }
 
 // Info writes an info message.
-func (l *StdoutLogger) Info(arguments ...interface{}) {
-	l.Println(append([]interface{}{"[INFO]"}, arguments...)...)
+func (l *StdoutLogger) Info(arguments ...any) {
+	l.Println(append([]any{"[INFO]"}, arguments...)...)
 }
 
 // Infof writes an info message.
-func (l *StdoutLogger) Infof(format string, arguments ...interface{}) {
-	l.Println(append([]interface{}{"[INFO]"}, fmt.Sprintf(format, arguments...))...)
+func (l *StdoutLogger) Infof(format string, arguments ...any) {
+	l.Println(append([]any{"[INFO]"}, fmt.Sprintf(format, arguments...))...)
 }
 
 // Debug writes an debug message.
-func (l *StdoutLogger) Debug(arguments ...interface{}) {
-	l.Println(append([]interface{}{"[DEBUG]"}, arguments...)...)
+func (l *StdoutLogger) Debug(arguments ...any) {
+	l.Println(append([]any{"[DEBUG]"}, arguments...)...)
 }
 
 // Debugf writes an debug message.
-func (l *StdoutLogger) Debugf(format string, arguments ...interface{}) {
-	l.Println(append([]interface{}{"[DEBUG]"}, fmt.Sprintf(format, arguments...))...)
+func (l *StdoutLogger) Debugf(format string, arguments ...any) {
+	l.Println(append([]any{"[DEBUG]"}, fmt.Sprintf(format, arguments...))...)
 }
 
 // Error writes an error message.
-func (l *StdoutLogger) Error(arguments ...interface{}) {
-	l.Println(append([]interface{}{"[ERROR]"}, arguments...)...)
+func (l *StdoutLogger) Error(arguments ...any) {
+	l.Println(append([]any{"[ERROR]"}, arguments...)...)
 }
 
 // Errorf writes an error message.
-func (l *StdoutLogger) Errorf(format string, arguments ...interface{}) {
-	l.Println(append([]interface{}{"[ERROR]"}, fmt.Sprintf(format, arguments...))...)
+func (l *StdoutLogger) Errorf(format string, arguments ...any) {
+	l.Println(append([]any{"[ERROR]"}, fmt.Sprintf(format, arguments...))...)
 }
 
 // Err writes an error message.
 func (l *StdoutLogger) Err(err error) {
 	if err != nil {
-		l.Println(append([]interface{}{"[ERROR]"}, err.Error())...)
+		l.Println(append([]any{"[ERROR]"}, err.Error())...)
 	}
 }
 
 // FatalErr writes an error message and exits.
 func (l *StdoutLogger) FatalErr(err error) {
 	if err != nil {
-		l.Println(append([]interface{}{"[FATAL]"}, err.Error())...)
+		l.Println(append([]any{"[FATAL]"}, err.Error())...)
 		os.Exit(1)
 	}
 }
 
 // Println prints a new message.
-func (l *StdoutLogger) Println(arguments ...interface{}) {
-	fmt.Fprintln(l.Stdout, append([]interface{}{time.Now().UTC().Format(l.TimeFormat)}, arguments...)...)
+func (l *StdoutLogger) Println(arguments ...any) {
+	fmt.Fprintln(l.Stdout, append([]any{time.Now().UTC().Format(l.TimeFormat)}, arguments...)...)
 }
 
 // Errorln prints a new message.
-func (l *StdoutLogger) Errorln(arguments ...interface{}) {
-	fmt.Fprintln(l.Stderr, append([]interface{}{time.Now().UTC().Format(l.TimeFormat)}, arguments...)...)
+func (l *StdoutLogger) Errorln(arguments ...any) {
+	fmt.Fprintln(l.Stderr, append([]any{time.Now().UTC().Format(l.TimeFormat)}, arguments...)...)
 }

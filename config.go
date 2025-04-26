@@ -83,7 +83,7 @@ type pdfProtectionConfig struct {
 }
 
 // getUnitConfigurator extrae la configuración de unidades de diferentes tipos de entrada
-func getUnitConfigurator(unit interface{}) unitConfigurator {
+func getUnitConfigurator(unit any) unitConfigurator {
 	switch t := unit.(type) {
 	case int:
 		return defaultUnitConfig{Unit: t}
@@ -100,7 +100,7 @@ func getUnitConfigurator(unit interface{}) unitConfigurator {
 //   - u: El valor a convertir
 // Retorna:
 //   - El valor equivalente en puntos
-func unitsToPoints(unit interface{}, u float64) float64 {
+func unitsToPoints(unit any, u float64) float64 {
 	return unitsToPointsCfg(getUnitConfigurator(unit), u)
 }
 
@@ -139,7 +139,7 @@ func unitsToPointsCfg(unitCfg unitConfigurator, u float64) float64 {
 //   - u: El valor en puntos a convertir
 // Retorna:
 //   - El valor equivalente en el sistema de unidades especificado
-func pointsToUnits(unit interface{}, u float64) float64 {
+func pointsToUnits(unit any, u float64) float64 {
 	return pointsToUnitsCfg(getUnitConfigurator(unit), u)
 }
 
@@ -176,7 +176,7 @@ func pointsToUnitsCfg(unitCfg unitConfigurator, u float64) float64 {
 // Parámetros:
 //   - unit: Entero representando tipo de unidad o una interfaz unitConfigurator
 //   - u: Punteros a valores a convertir (modificados en el lugar)
-func unitsToPointsVar(unit interface{}, u ...*float64) {
+func unitsToPointsVar(unit any, u ...*float64) {
 	unitsToPointsVarCfg(getUnitConfigurator(unit), u...)
 }
 
@@ -196,7 +196,7 @@ func unitsToPointsVarCfg(unitCfg unitConfigurator, u ...*float64) {
 // Parámetros:
 //   - unit: Entero representando tipo de unidad o una interfaz unitConfigurator
 //   - u: Punteros a valores a convertir (modificados en el lugar)
-func pointsToUnitsVar(unit interface{}, u ...*float64) {
+func pointsToUnitsVar(unit any, u ...*float64) {
 	pointsToUnitsVarCfg(getUnitConfigurator(unit), u...)
 }
 

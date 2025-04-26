@@ -20,7 +20,7 @@ func main() {
 	graph := chart.Chart{
 		XAxis: chart.XAxis{
 			TickPosition: chart.TickPositionBetweenTicks,
-			ValueFormatter: func(v interface{}) string {
+			ValueFormatter: func(v any) string {
 				typed := v.(float64)
 				typedDate := chart.TimeFromFloat64(typed)
 				return fmt.Sprintf("%d-%d\n%d", typedDate.Month(), typedDate.Day(), typedDate.Year())

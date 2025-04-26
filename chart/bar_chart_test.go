@@ -206,7 +206,7 @@ func TestBarChartGetValueFormatters(t *testing.T) {
 	testutil.AssertNotNil(t, vf)
 	testutil.AssertEqual(t, "1234.00", vf(1234.0))
 
-	bc.YAxis.ValueFormatter = func(_ interface{}) string { return "test" }
+	bc.YAxis.ValueFormatter = func(_ any) string { return "test" }
 	testutil.AssertEqual(t, "test", bc.getValueFormatters()(1234))
 }
 

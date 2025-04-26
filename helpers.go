@@ -3,7 +3,7 @@ package docpdf
 import "github.com/cdvelop/docpdf/errs"
 
 // convertNumericToFloat64 : accept numeric types, return float64-value
-func convertNumericToFloat64(size interface{}) (fontSize float64, err error) {
+func convertNumericToFloat64(size any) (fontSize float64, err error) {
 	switch size := size.(type) {
 	case float32:
 		return float64(size), nil
@@ -36,7 +36,7 @@ func convertNumericToFloat64(size interface{}) (fontSize float64, err error) {
 
 // Determine if a value is numeric
 // Courtesy of https://github.com/syyongx/php2go/blob/master/php.go
-func is_numeric(val interface{}) bool {
+func is_numeric(val any) bool {
 	switch v := val.(type) {
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
 	case float32, float64, complex64, complex128:
@@ -87,7 +87,7 @@ func is_numeric(val interface{}) bool {
 	return false
 }
 
-func in_array(needle interface{}, hystack interface{}) bool {
+func in_array(needle any, hystack any) bool {
 	switch key := needle.(type) {
 	case string:
 		for _, item := range hystack.([]string) {

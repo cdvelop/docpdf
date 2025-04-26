@@ -7,7 +7,7 @@ import (
 var ERROR_NO_KEY_FOUND = errors.New("no key found")
 var ERROR_NO_GET_WRONG_TYPE = errors.New("get wrong type")
 
-type TtfInfo map[string]interface{}
+type TtfInfo map[string]any
 
 func (t TtfInfo) PushString(key string, val string) {
 	t[key] = val

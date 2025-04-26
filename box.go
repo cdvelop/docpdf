@@ -9,7 +9,7 @@ package docpdf
 //
 // Returns:
 //   - A new box pointer with coordinates converted to points
-func (b *box) unitsToPoints(unit interface{}) (out *box) {
+func (b *box) unitsToPoints(unit any) (out *box) {
 	if b == nil {
 		return
 	}

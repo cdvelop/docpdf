@@ -1,6 +1,6 @@
 package docpdf
 
-import "strconv"
+import "github.com/cdvelop/tinystring"
 
 // tableWidthMode defines the table width calculation mode: automatic, fixed or percentage
 type tableWidthMode int
@@ -239,56 +239,12 @@ func (t *docTable) CellStyle(style CellStyle) *docTable {
 	return t
 }
 
-// anyToString converts any value to a string without using fmt
-// Uses TinyGo-compatible approach to convert numbers to strings
-func (t *docTable) anyToString(v any) string {
-	if v == nil {
-		return ""
-	}
-
-	switch val := v.(type) {
-	case string:
-		return val
-	case int:
-		return strconv.FormatInt(int64(val), 10)
-	case int8:
-		return strconv.FormatInt(int64(val), 10)
-	case int16:
-		return strconv.FormatInt(int64(val), 10)
-	case int32:
-		return strconv.FormatInt(int64(val), 10)
-	case int64:
-		return strconv.FormatInt(val, 10)
-	case uint:
-		return strconv.FormatUint(uint64(val), 10)
-	case uint8:
-		return strconv.FormatUint(uint64(val), 10)
-	case uint16:
-		return strconv.FormatUint(uint64(val), 10)
-	case uint32:
-		return strconv.FormatUint(uint64(val), 10)
-	case uint64:
-		return strconv.FormatUint(val, 10)
-	case float32:
-		return strconv.FormatFloat(float64(val), 'f', -1, 32)
-	case float64:
-		return strconv.FormatFloat(val, 'f', -1, 64)
-	case bool:
-		return strconv.FormatBool(val)
-	default:
-		// For any other type, return empty string
-		// In a full implementation, you might want to handle more types
-		t.doc.log("docTable anyToString error Unsupported type for conversion to string:", val)
-		return ""
-	}
-}
-
 // AddRow adds a row of data to the table
 // Accepts any value type which will be converted to strings
 func (t *docTable) AddRow(cells ...any) *docTable {
 	rowCells := make([]tableCell, len(cells))
 	for i, content := range cells {
-		formattedContent := t.anyToString(content)
+		formattedContent := tinystring.Convert(content).String()
 
 		// Apply prefix and suffix if column exists
 		if i < len(t.columns) {
@@ -515,6 +471,14 @@ func (t *docTable) drawCellContent(
 	textY := y + t.cellPadding
 	textWidth := width - (2 * t.cellPadding)
 	textHeight := height - (2 * t.cellPadding)
+
+	// Verificar si el contenido tiene más de 2 líneas y truncarlo si es necesario
+	lineCount := t.calculateTextLines(content, width)
+	if lineCount > 2 {
+		// Truncar el contenido a 2 líneas con puntos suspensivos
+		content = tinystring.Convert(content).Truncate(int(width), 0).String()
+
+	}
 
 	// Create cell options
 	cellOpt := cellOption{

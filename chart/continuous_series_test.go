@@ -35,10 +35,10 @@ func TestContinuousSeriesValueFormatter(t *testing.T) {
 	// replaced new assertions helper
 
 	cs := ContinuousSeries{
-		XValueFormatter: func(v interface{}) string {
+		XValueFormatter: func(v any) string {
 			return fmt.Sprintf("%f foo", v)
 		},
-		YValueFormatter: func(v interface{}) string {
+		YValueFormatter: func(v any) string {
 			return fmt.Sprintf("%f bar", v)
 		},
 	}
