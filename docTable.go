@@ -1,6 +1,11 @@
 package docpdf
 
-import "github.com/cdvelop/tinystring"
+import (
+	"math"
+	"strings"
+
+	"github.com/cdvelop/tinystring"
+)
 
 // tableWidthMode defines the table width calculation mode: automatic, fixed or percentage
 type tableWidthMode int
@@ -466,35 +471,86 @@ func (t *docTable) drawCellContent(
 	}
 	t.doc.SetTextColor(style.TextColor.R, style.TextColor.G, style.TextColor.B)
 
-	// Calculate text position with padding
+	// Calculate available text area considering padding
 	textX := x + t.cellPadding
-	textY := y + t.cellPadding
+	// textY := y + t.cellPadding // Initial Y position including top padding
 	textWidth := width - (2 * t.cellPadding)
-	textHeight := height - (2 * t.cellPadding)
+	// textHeight := height - (2 * t.cellPadding) // No longer use textHeight directly for drawing rect H
 
-	// Verificar si el contenido tiene más de 2 líneas y truncarlo si es necesario
-	lineCount := t.calculateTextLines(content, width)
-	if lineCount > 2 {
-		// Truncar el contenido a 2 líneas con puntos suspensivos
-		content = tinystring.Convert(content).Truncate(int(width), 0).String()
-
+	// Split text into lines that fit the available width
+	lines, err := t.doc.SplitText(content, textWidth)
+	if err != nil {
+		lines = []string{content} // Fallback
 	}
 
-	// Create cell options
+	// Limit to a maximum of 2 lines and prepare final content string
+	numLines := len(lines)
+	finalContent := ""
+	if numLines > 2 {
+		// Truncate the second line and add ellipsis
+		secondLine := lines[1]
+		// Estimate max chars for ellipsis (consider font size)
+		// Use a slightly more conservative factor for width estimation
+		charWidthEstimate := t.doc.curr.FontSize * 0.55
+		if charWidthEstimate <= 0 {
+			charWidthEstimate = 1
+		} // Avoid division by zero
+		maxCharsForEllipsis := int(textWidth / charWidthEstimate)
+		if maxCharsForEllipsis < 3 {
+			maxCharsForEllipsis = 3
+		}
+
+		// Ensure truncation doesn't go negative or beyond string length
+		ellipsis := "..."
+		ellipsisLen := len(ellipsis)
+		keepChars := maxCharsForEllipsis - ellipsisLen
+		if keepChars < 0 {
+			keepChars = 0
+		}
+		if keepChars > len(secondLine) {
+			keepChars = len(secondLine)
+		}
+
+		truncatedSecondLine := secondLine[:keepChars] + ellipsis
+		finalContent = lines[0] + "\n" + truncatedSecondLine
+		numLines = 2 // We are now effectively drawing 2 lines
+	} else {
+		finalContent = strings.Join(lines, "\n")
+	}
+
+	// Calculate line height based on current font size
+	lineHeight := t.doc.curr.FontSize * 1.2 // Standard line height multiplier
+
+	// Calculate the actual total height the text block will occupy
+	totalTextHeight := float64(numLines) * lineHeight
+
+	// Calculate vertical padding based on the *total cell height* (`height`)
+	// to center the text block within the entire cell, including padding areas.
+	verticalPadding := (height - totalTextHeight) / 2
+	if verticalPadding < 0 {
+		verticalPadding = 0 // Ensure padding is not negative
+	}
+
+	// Adjust Y position for vertical centering within the *entire cell*
+	drawY := y + verticalPadding // Start drawing from top of cell + calculated padding
+
+	// Create cell options for drawing
 	cellOpt := cellOption{
-		Align:  align | Middle, // Combine horizontal alignment with vertical middle alignment
-		Border: 0,              // No borders
+		Align:  align | Top, // Use Top alignment, vertical centering is handled by drawY
+		Border: 0,           // No borders for content drawing
 		breakOption: &breakOption{
 			Mode:           breakModeIndicatorSensitive,
 			BreakIndicator: ' ',
 		},
 	}
 
-	// Draw the cell content
-	t.doc.SetXY(textX, textY)
-	err := t.doc.MultiCellWithOption(&Rect{W: textWidth, H: textHeight}, content, cellOpt)
+	// Draw the potentially truncated and centered text
+	// Use textX (includes left padding) and the calculated drawY
+	// Use textWidth (width minus padding) and the calculated totalTextHeight for the drawing rectangle
+	t.doc.SetXY(textX, drawY)
+	err = t.doc.MultiCellWithOption(&Rect{W: textWidth, H: totalTextHeight}, finalContent, cellOpt)
 	if err != nil && err.Error() != "empty string" {
-		t.doc.log("Error drawing table cell:", err)
+		t.doc.log("Error drawing table cell content:", err)
 	}
 }
 
@@ -565,4 +621,18 @@ func (t *docTable) calculatePosition() float64 {
 	}
 
 	return x
+}
+
+// calculateTextLines calcula el número de líneas necesarias para renderizar un texto dentro de un ancho dado.
+func (t *docTable) calculateTextLines(content string, width float64) int {
+	// Usar el método MeasureTextWidth para calcular el ancho del texto
+	textWidth, err := t.doc.MeasureTextWidth(content)
+	if err != nil {
+		// En caso de error, asumir que el texto cabe en una línea
+		return 1
+	}
+
+	// Dividir el ancho total del texto por el ancho disponible para estimar las líneas
+	lineCount := int(math.Ceil(textWidth / width))
+	return lineCount
 }
