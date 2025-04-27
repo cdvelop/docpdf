@@ -1,6 +1,7 @@
 package docpdf
 
 import (
+	"fmt"
 	"math"
 	"strings"
 
@@ -473,9 +474,7 @@ func (t *docTable) drawCellContent(
 
 	// Calculate available text area considering padding
 	textX := x + t.cellPadding
-	// textY := y + t.cellPadding // Initial Y position including top padding
 	textWidth := width - (2 * t.cellPadding)
-	// textHeight := height - (2 * t.cellPadding) // No longer use textHeight directly for drawing rect H
 
 	// Split text into lines that fit the available width
 	lines, err := t.doc.SplitText(content, textWidth)
@@ -486,37 +485,36 @@ func (t *docTable) drawCellContent(
 	// Limit to a maximum of 2 lines and prepare final content string
 	numLines := len(lines)
 	finalContent := ""
-	if numLines > 2 {
-		// Truncate the second line and add ellipsis
+	// isTruncated := false
+	if numLines > 2 { // Truncate the second line and add ellipsis
 		secondLine := lines[1]
+
+		// Usamos SplitTextWithWordWrap para asegurar que el contenido se divide respetando palabras completas
+		wrappedSecondLine, _ := t.doc.SplitTextWithWordWrap(secondLine, textWidth)
+		if len(wrappedSecondLine) > 0 {
+			secondLine = wrappedSecondLine[0]
+		}
+
 		// Estimate max chars for ellipsis (consider font size)
-		// Use a slightly more conservative factor for width estimation
 		charWidthEstimate := t.doc.curr.FontSize * 0.55
 		if charWidthEstimate <= 0 {
 			charWidthEstimate = 1
-		} // Avoid division by zero
-		maxCharsForEllipsis := int(textWidth / charWidthEstimate)
-		if maxCharsForEllipsis < 3 {
-			maxCharsForEllipsis = 3
 		}
+		maxCharsForEllipsis := max(int(textWidth/charWidthEstimate), 3)
 
-		// Ensure truncation doesn't go negative or beyond string length
 		ellipsis := "..."
 		ellipsisLen := len(ellipsis)
-		keepChars := maxCharsForEllipsis - ellipsisLen
-		if keepChars < 0 {
-			keepChars = 0
-		}
-		if keepChars > len(secondLine) {
-			keepChars = len(secondLine)
-		}
+		keepChars := min(max(maxCharsForEllipsis-ellipsisLen, 0), len(secondLine))
 
 		truncatedSecondLine := secondLine[:keepChars] + ellipsis
 		finalContent = lines[0] + "\n" + truncatedSecondLine
 		numLines = 2 // We are now effectively drawing 2 lines
+		// isTruncated = true
 	} else {
 		finalContent = strings.Join(lines, "\n")
 	}
+
+	fmt.Printf("Final content: %s\n", finalContent)
 
 	// Calculate line height based on current font size
 	lineHeight := t.doc.curr.FontSize * 1.2 // Standard line height multiplier
@@ -525,30 +523,39 @@ func (t *docTable) drawCellContent(
 	totalTextHeight := float64(numLines) * lineHeight
 
 	// Calculate vertical padding based on the *total cell height* (`height`)
-	// to center the text block within the entire cell, including padding areas.
-	verticalPadding := (height - totalTextHeight) / 2
-	if verticalPadding < 0 {
-		verticalPadding = 0 // Ensure padding is not negative
+	verticalPadding := max((height-totalTextHeight)/2, 0)
+
+	// Adjust Y position slightly upwards to create more space at the bottom,
+	// especially for two lines. This compensates for font descenders visually.
+	// Use a small fraction of the line height for adjustment.
+	bottomSpacingAdjustment := 0.0
+	if numLines == 2 {
+		bottomSpacingAdjustment = lineHeight * 0.1 // Adjust by 10% of line height
 	}
-
-	// Adjust Y position for vertical centering within the *entire cell*
-	drawY := y + verticalPadding // Start drawing from top of cell + calculated padding
-
+	drawY := max(y+verticalPadding-bottomSpacingAdjustment, y)
+	// Para textos de 2 líneas, siempre usamos justificación
+	finalAlign := align
+	if numLines == 2 {
+		// Usamos Justify sin combinar con otras alineaciones para asegurar que funcione correctamente
+		finalAlign = Justify
+	}
 	// Create cell options for drawing
 	cellOpt := cellOption{
-		Align:  align | Top, // Use Top alignment, vertical centering is handled by drawY
-		Border: 0,           // No borders for content drawing
+		Align:  finalAlign, // Use calculated final alignment
+		Border: 0,          // No borders for content drawing
 		breakOption: &breakOption{
-			Mode:           breakModeIndicatorSensitive,
-			BreakIndicator: ' ',
+			Mode:           breakModeIndicatorSensitive, // Use word wrap sensitive mode
+			BreakIndicator: ' ',                         // Break on spaces
+			Separator:      "",                          // Sin separador adicional
 		},
 	}
 
 	// Draw the potentially truncated and centered text
-	// Use textX (includes left padding) and the calculated drawY
-	// Use textWidth (width minus padding) and the calculated totalTextHeight for the drawing rectangle
 	t.doc.SetXY(textX, drawY)
-	err = t.doc.MultiCellWithOption(&Rect{W: textWidth, H: totalTextHeight}, finalContent, cellOpt)
+	// Use textWidth and ensure the drawing height accommodates the text slightly better
+	// Add a small buffer to the height passed to MultiCell to avoid potential clipping
+	drawRectH := totalTextHeight + (lineHeight * 0.1)
+	err = t.doc.MultiCellWithOption(&Rect{W: textWidth, H: drawRectH}, finalContent, cellOpt)
 	if err != nil && err.Error() != "empty string" {
 		t.doc.log("Error drawing table cell content:", err)
 	}
