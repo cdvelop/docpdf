@@ -506,8 +506,9 @@ func (t *docTable) drawCellContent(
 
 	// Configurar opciones para dibujar la celda
 	cellOpt := cellOption{
-		Align:  cellAlign,
-		Border: 0, // No borders for content drawing
+		Align:         cellAlign,
+		Border:        0, // No borders for content drawing
+		TruncateLines: t.maxLinesTextForRowInACell,
 		breakOption: &breakOption{
 			Mode:           breakModeIndicatorSensitive,
 			BreakIndicator: ' ',
@@ -515,15 +516,14 @@ func (t *docTable) drawCellContent(
 		},
 	}
 
-	// Dibujar el texto utilizando el método MultiCellWithOptionAndMaxLines
+	// Dibujar el texto utilizando el método MultiCellWithOption
 	// que se encarga automáticamente de truncar el texto si es necesario
 	t.doc.SetXY(textX, drawY)
 	drawRectH := totalTextHeight + (lineHeight * 0.1)
-	err := t.doc.MultiCellWithOptionAndMaxLines(
+	err := t.doc.MultiCellWithOption(
 		&Rect{W: textWidth, H: drawRectH},
 		content,
 		cellOpt,
-		t.maxLinesTextForRowInACell,
 	)
 
 	if err != nil && err.Error() != "empty string" {

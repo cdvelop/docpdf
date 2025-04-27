@@ -49,6 +49,7 @@ type cellOption struct {
 	Align                  position //Allows to align the text. Possible values are: Left,Center,Right,Top,Bottom,Middle
 	Border                 position //Indicates if borders must be drawn around the cell. Possible values are: Left, Top, Right, Bottom, ALL
 	Float                  position //Indicates where the current position should go after the call. Possible values are: Right, Bottom
+	TruncateLines          int      // Si > 0, limita el texto a este número de líneas y añade puntos suspensivos si es necesario
 	transparency           *transparency
 	CoefUnderlinePosition  float64
 	CoefLineHeight         float64
@@ -346,6 +347,11 @@ func (gp *pdfEngine) MultiCellWithOption(rectangle *Rect, text string, opt cellO
 		return err
 	}
 
+	// Aplicar truncado si es necesario
+	if opt.TruncateLines > 0 {
+		textSplits = gp.truncateTextToMaxLines(textSplits, opt.TruncateLines, rectangle.W)
+	}
+
 	// Última línea no se justifica normalmente
 	lastLineIndex := len(textSplits) - 1
 
@@ -401,6 +407,49 @@ func (gp *pdfEngine) MultiCellWithOption(rectangle *Rect, text string, opt cellO
 	}
 
 	return nil
+}
+
+// truncateTextToMaxLines trunca un conjunto de líneas de texto para que no exceda el número máximo de líneas
+// y añade puntos suspensivos a la última línea si es necesario
+func (gp *pdfEngine) truncateTextToMaxLines(textSplits []string, maxLines int, availableWidth float64) []string {
+	if maxLines <= 0 || len(textSplits) <= maxLines {
+		return textSplits
+	}
+
+	// Tomamos solo las primeras líneas según maxLines
+	truncatedLines := textSplits[:maxLines]
+
+	// Si estamos truncando y tenemos al menos una línea para mostrar
+	if maxLines >= 1 && len(truncatedLines) > 0 {
+		// Añadimos puntos suspensivos a la última línea
+		lastLineIdx := maxLines - 1
+		lastLine := truncatedLines[lastLineIdx]
+
+		// Calcular el ancho disponible y cuántos caracteres caben con los puntos suspensivos
+		ellipsis := "..."
+
+		// Medir ancho de puntos suspensivos
+		ellipsisWidth, _ := gp.MeasureTextWidth(ellipsis)
+
+		// Calcular ancho disponible para el texto sin los puntos suspensivos
+		availableWidthForText := availableWidth - ellipsisWidth
+
+		// Acortar la última línea para dejar espacio para los puntos suspensivos
+		// Enfoque progresivo: vamos recortando caracteres hasta que quepa
+		for len(lastLine) > 0 {
+			width, _ := gp.MeasureTextWidth(lastLine)
+			if width <= availableWidthForText {
+				break
+			}
+			// Quitar el último carácter
+			lastLine = lastLine[:len(lastLine)-1]
+		}
+
+		// Añadir puntos suspensivos a la línea truncada
+		truncatedLines[lastLineIdx] = lastLine + ellipsis
+	}
+
+	return truncatedLines
 }
 
 // SplitText splits text into multiple lines based on width performing potential mid-word breaks.
