@@ -1,9 +1,7 @@
 package docpdf
 
 import (
-	"fmt"
 	"math"
-	"strings"
 
 	"github.com/cdvelop/tinystring"
 )
@@ -19,16 +17,17 @@ const (
 
 // docTable represents a table to be added to the document
 type docTable struct {
-	doc          *Document
-	columns      []tableColumn
-	rows         [][]tableCell
-	width        float64
-	rowHeight    float64
-	cellPadding  float64
-	headerStyle  CellStyle
-	cellStyle    CellStyle
-	alignment    position // Left, Center, or Right alignment
-	currentWidth float64
+	doc                       *Document
+	columns                   []tableColumn
+	rows                      [][]tableCell
+	width                     float64
+	rowHeight                 float64
+	maxLinesTextForRowInACell int // Maximum number of text lines per row in a cell
+	cellPadding               float64
+	headerStyle               CellStyle
+	cellStyle                 CellStyle
+	alignment                 position // Left, Center, or Right alignment
+	currentWidth              float64
 }
 
 // tableColumn represents a column in the table
@@ -73,10 +72,11 @@ func (doc *Document) NewTable(headers ...string) *docTable {
 
 	// Crear una nueva tabla con configuración predeterminada
 	table := &docTable{
-		doc:         doc,
-		rowHeight:   25, // Default row height
-		cellPadding: 5,  // Default padding
-		alignment:   Center,
+		doc:                       doc,
+		rowHeight:                 25, // Default row height
+		cellPadding:               5,  // Default padding
+		alignment:                 Center,
+		maxLinesTextForRowInACell: 2, // Limitamos a máximo 2 líneas de texto por fila en cada celda
 	}
 
 	// Crear los estilos predeterminados para la tabla
@@ -476,86 +476,56 @@ func (t *docTable) drawCellContent(
 	textX := x + t.cellPadding
 	textWidth := width - (2 * t.cellPadding)
 
-	// Split text into lines that fit the available width
-	lines, err := t.doc.SplitText(content, textWidth)
-	if err != nil {
-		lines = []string{content} // Fallback
-	}
+	// Para textos con más de una línea, usamos justificación para mejorar la apariencia
+	cellAlign := align
 
-	// Limit to a maximum of 2 lines and prepare final content string
+	// Estimar el número de líneas que tendría el texto
+	lines, _ := t.doc.SplitTextWithWordWrap(content, textWidth)
 	numLines := len(lines)
-	finalContent := ""
-	// isTruncated := false
-	if numLines > 2 { // Truncate the second line and add ellipsis
-		secondLine := lines[1]
 
-		// Usamos SplitTextWithWordWrap para asegurar que el contenido se divide respetando palabras completas
-		wrappedSecondLine, _ := t.doc.SplitTextWithWordWrap(secondLine, textWidth)
-		if len(wrappedSecondLine) > 0 {
-			secondLine = wrappedSecondLine[0]
-		}
-
-		// Estimate max chars for ellipsis (consider font size)
-		charWidthEstimate := t.doc.curr.FontSize * 0.55
-		if charWidthEstimate <= 0 {
-			charWidthEstimate = 1
-		}
-		maxCharsForEllipsis := max(int(textWidth/charWidthEstimate), 3)
-
-		ellipsis := "..."
-		ellipsisLen := len(ellipsis)
-		keepChars := min(max(maxCharsForEllipsis-ellipsisLen, 0), len(secondLine))
-
-		truncatedSecondLine := secondLine[:keepChars] + ellipsis
-		finalContent = lines[0] + "\n" + truncatedSecondLine
-		numLines = 2 // We are now effectively drawing 2 lines
-		// isTruncated = true
-	} else {
-		finalContent = strings.Join(lines, "\n")
+	if numLines >= 2 {
+		cellAlign = Justify // Justificar texto multilínea
 	}
 
-	fmt.Printf("Final content: %s\n", finalContent)
+	// Calcular altura de línea y posicionamiento vertical
+	lineHeight := t.doc.curr.FontSize * 1.2
 
-	// Calculate line height based on current font size
-	lineHeight := t.doc.curr.FontSize * 1.2 // Standard line height multiplier
+	// Altura estimada del texto (con límite de 2 líneas)
+	estimatedLines := min(numLines, t.maxLinesTextForRowInACell)
+	totalTextHeight := float64(estimatedLines) * lineHeight
 
-	// Calculate the actual total height the text block will occupy
-	totalTextHeight := float64(numLines) * lineHeight
-
-	// Calculate vertical padding based on the *total cell height* (`height`)
+	// Centrar verticalmente el texto en la celda
 	verticalPadding := max((height-totalTextHeight)/2, 0)
 
-	// Adjust Y position slightly upwards to create more space at the bottom,
-	// especially for two lines. This compensates for font descenders visually.
-	// Use a small fraction of the line height for adjustment.
+	// Pequeño ajuste para textos de 2 líneas para compensar descendentes de fuente
 	bottomSpacingAdjustment := 0.0
-	if numLines == 2 {
-		bottomSpacingAdjustment = lineHeight * 0.1 // Adjust by 10% of line height
+	if estimatedLines == 2 {
+		bottomSpacingAdjustment = lineHeight * 0.1
 	}
 	drawY := max(y+verticalPadding-bottomSpacingAdjustment, y)
-	// Para textos de 2 líneas, siempre usamos justificación
-	finalAlign := align
-	if numLines == 2 {
-		// Usamos Justify sin combinar con otras alineaciones para asegurar que funcione correctamente
-		finalAlign = Justify
-	}
-	// Create cell options for drawing
+
+	// Configurar opciones para dibujar la celda
 	cellOpt := cellOption{
-		Align:  finalAlign, // Use calculated final alignment
-		Border: 0,          // No borders for content drawing
+		Align:  cellAlign,
+		Border: 0, // No borders for content drawing
 		breakOption: &breakOption{
-			Mode:           breakModeIndicatorSensitive, // Use word wrap sensitive mode
-			BreakIndicator: ' ',                         // Break on spaces
-			Separator:      "",                          // Sin separador adicional
+			Mode:           breakModeIndicatorSensitive,
+			BreakIndicator: ' ',
+			Separator:      "",
 		},
 	}
 
-	// Draw the potentially truncated and centered text
+	// Dibujar el texto utilizando el método MultiCellWithOptionAndMaxLines
+	// que se encarga automáticamente de truncar el texto si es necesario
 	t.doc.SetXY(textX, drawY)
-	// Use textWidth and ensure the drawing height accommodates the text slightly better
-	// Add a small buffer to the height passed to MultiCell to avoid potential clipping
 	drawRectH := totalTextHeight + (lineHeight * 0.1)
-	err = t.doc.MultiCellWithOption(&Rect{W: textWidth, H: drawRectH}, finalContent, cellOpt)
+	err := t.doc.MultiCellWithOptionAndMaxLines(
+		&Rect{W: textWidth, H: drawRectH},
+		content,
+		cellOpt,
+		t.maxLinesTextForRowInACell,
+	)
+
 	if err != nil && err.Error() != "empty string" {
 		t.doc.log("Error drawing table cell content:", err)
 	}
