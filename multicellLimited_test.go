@@ -69,7 +69,7 @@ func TestMultiCellWithMaxLines(t *testing.T) {
 			}
 
 			// Ejecutar el método bajo prueba
-			err := doc.MultiCellWithMaxLines(&Rect{W: tc.width, H: 50}, tc.text, cellOpt, tc.maxLines)
+			err := doc.MultiCellWithOptionAndMaxLines(&Rect{W: tc.width, H: 50}, tc.text, cellOpt, tc.maxLines)
 
 			// Verificar resultado
 			if tc.expectErr && err == nil {
