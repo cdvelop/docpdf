@@ -1,8 +1,6 @@
 package docpdf
 
 import (
-	"math"
-
 	"github.com/cdvelop/tinystring"
 )
 
@@ -136,7 +134,7 @@ func (doc *Document) NewTable(headers ...string) *docTable {
 func detectWidthModeFromHeaders(headers []string) tableWidthMode {
 	// Si algún encabezado usa porcentaje, usamos modo porcentaje
 	for _, headerStr := range headers {
-		options := parseHeaderFormat(headerStr)
+		options := parseTableFormat(headerStr)
 		if options.WidthMode == widthModePercent {
 			return widthModePercent
 		}
@@ -145,7 +143,7 @@ func detectWidthModeFromHeaders(headers []string) tableWidthMode {
 	// Si todos los encabezados usan ancho fijo, usamos modo fijo
 	allFixed := true
 	for _, headerStr := range headers {
-		options := parseHeaderFormat(headerStr)
+		options := parseTableFormat(headerStr)
 		if options.WidthMode != widthModeFixed {
 			allFixed = false
 			break
@@ -598,18 +596,4 @@ func (t *docTable) calculatePosition() float64 {
 	}
 
 	return x
-}
-
-// calculateTextLines calcula el número de líneas necesarias para renderizar un texto dentro de un ancho dado.
-func (t *docTable) calculateTextLines(content string, width float64) int {
-	// Usar el método MeasureTextWidth para calcular el ancho del texto
-	textWidth, err := t.doc.MeasureTextWidth(content)
-	if err != nil {
-		// En caso de error, asumir que el texto cabe en una línea
-		return 1
-	}
-
-	// Dividir el ancho total del texto por el ancho disponible para estimar las líneas
-	lineCount := int(math.Ceil(textWidth / width))
-	return lineCount
 }
