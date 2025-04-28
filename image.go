@@ -33,8 +33,8 @@ type imgInfo struct {
 	data             []byte
 }
 
-// ImageByHolder : draw image by imageHolder
-func (gp *pdfEngine) ImageByHolder(img imageHolder, x float64, y float64, rect *Rect) error {
+// drawImageByHolder : draw image by imageHolder
+func (gp *pdfEngine) drawImageByHolder(img imageHolder, x float64, y float64, rect *Rect) error {
 	gp.unitsToPointsVar(&x, &y)
 
 	rect = rect.unitsToPoints(gp.config.Unit)
@@ -278,11 +278,11 @@ func (gp *pdfEngine) imageByHolder(img imageHolder, opts imageOptions) error {
 	return nil
 }
 
-// Image : draw image
-func (gp *pdfEngine) Image(picPath string, x float64, y float64, rect *Rect) error {
+// drawImageInPdf : draw image in pdf by image content
+func (gp *pdfEngine) drawImageInPdf(imageContent []byte, x float64, y float64, rect *Rect) error {
 	gp.unitsToPointsVar(&x, &y)
 	rect = rect.unitsToPoints(gp.config.Unit)
-	imgh, err := imageHolderByPath(picPath)
+	imgh, err := imageHolderByBytes(imageContent)
 	if err != nil {
 		return err
 	}

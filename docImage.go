@@ -1,38 +1,36 @@
 package docpdf
 
 import (
+	"bytes"
 	"image"
-	"os"
-	"path/filepath"
+
+	"github.com/cdvelop/docpdf/env"
+	"github.com/cdvelop/docpdf/errs"
 )
 
 // docImage represents an image to be added to the document
 type docImage struct {
-	doc       *Document
-	path      string
-	width     float64
-	height    float64
-	keepRatio bool
-	alignment position
-	x, y      float64
-	hasPos    bool
-	inline    bool // New property to track inline status
-	valign    int  // Vertical alignment for inline images
+	doc           *Document
+	pathOrContent any //eg: "path/to/image.png" or []byte{...}
+	width         float64
+	height        float64
+	keepRatio     bool
+	alignment     position
+	x, y          float64
+	hasPos        bool
+	inline        bool // New property to track inline status
+	valign        int  // Vertical alignment for inline images
 }
 
-// AddImage creates a new image element
-func (doc *Document) AddImage(path string) *docImage {
-	// Use absolute path if provided path is relative
-	absolutePath, err := filepath.Abs(path)
-	if err == nil && fileExists(absolutePath) {
-		path = absolutePath
-	}
-
+// AddImage creates a new image element in the document
+// supporting both absolute and relative paths or image data in []byte format
+// eg: doc.AddImage("path/to/image.png") or doc.AddImage([]byte{...})
+func (doc *Document) AddImage(imagePathOrContent any) *docImage {
 	return &docImage{
-		doc:       doc,
-		path:      path,
-		keepRatio: true,
-		alignment: Left,
+		doc:           doc,
+		pathOrContent: imagePathOrContent,
+		keepRatio:     true,
+		alignment:     Left,
 	}
 }
 
@@ -112,8 +110,13 @@ func (img *docImage) VerticalAlignBottom() *docImage {
 
 // Draw renders the image on the document to include page break handling
 func (img *docImage) Draw() error {
+	imageContent, err := env.FileExists(img.pathOrContent)
+	if err != nil {
+		return errs.New("Image Draw error", err)
+	}
+
 	// Get image dimensions to calculate aspect ratio if needed
-	imgWidth, imgHeight, err := img.getImageDimensions()
+	imgWidth, imgHeight, err := img.getImageDimensions(imageContent)
 	if err != nil {
 		return err
 	}
@@ -160,9 +163,8 @@ func (img *docImage) Draw() error {
 		W: finalWidth,
 		H: finalHeight,
 	}
-
 	// Draw the image using the underlying pdfEngine instance
-	err = img.doc.Image(img.path, x, y, rect)
+	err = img.doc.drawImageInPdf(imageContent, x, y, rect)
 	if err != nil {
 		return err
 	}
@@ -191,14 +193,10 @@ func (img *docImage) Draw() error {
 }
 
 // getImageDimensions returns the natural width and height of the image
-func (img *docImage) getImageDimensions() (float64, float64, error) {
-	file, err := os.Open(img.path)
-	if err != nil {
-		return 0, 0, err
-	}
-	defer file.Close()
+func (img *docImage) getImageDimensions(imageContent []byte) (float64, float64, error) {
+	reader := bytes.NewReader(imageContent)
 
-	imgConfig, _, err := image.DecodeConfig(file)
+	imgConfig, _, err := image.DecodeConfig(reader)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -258,13 +256,4 @@ func (img *docImage) calculatePosition(width float64) (float64, float64) {
 	}
 
 	return x, y
-}
-
-// fileExists checks if a file exists and is not a directory
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
 }

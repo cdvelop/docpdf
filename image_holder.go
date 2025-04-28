@@ -5,7 +5,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
-	"os"
 )
 
 // imageHolder hold image data
@@ -17,11 +16,6 @@ type imageHolder interface {
 // imageHolderByBytes create imageHolder by []byte
 func imageHolderByBytes(b []byte) (imageHolder, error) {
 	return newImageBuff(b)
-}
-
-// imageHolderByPath create imageHolder by image path
-func imageHolderByPath(path string) (imageHolder, error) {
-	return newImageBuffByPath(path)
 }
 
 // imageHolderByReader create imageHolder by io.Reader
@@ -43,17 +37,6 @@ func newImageBuff(b []byte) (*imageBuff, error) {
 	}
 	var i imageBuff
 	i.id = fmt.Sprintf("%x", h.Sum(nil))
-	i.Write(b)
-	return &i, nil
-}
-
-func newImageBuffByPath(path string) (*imageBuff, error) {
-	var i imageBuff
-	i.id = path
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
 	i.Write(b)
 	return &i, nil
 }

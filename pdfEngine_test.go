@@ -44,7 +44,7 @@ func BenchmarkPdfWithImageHolder(b *testing.B) {
 		return
 	}
 	for i := 0; i < b.N; i++ {
-		pdf.ImageByHolder(imgH, 20.0, float64(i)*2.0, nil)
+		pdf.drawImageByHolder(imgH, 20.0, float64(i)*2.0, nil)
 	}
 
 	pdf.SetXY(250, 200)
@@ -75,13 +75,13 @@ func TestPdfWithImageHolder(t *testing.T) {
 		return
 	}
 
-	err = pdf.ImageByHolder(imgH, 20.0, 20, nil)
+	err = pdf.drawImageByHolder(imgH, 20.0, 20, nil)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = pdf.ImageByHolder(imgH, 20.0, 200, nil)
+	err = pdf.drawImageByHolder(imgH, 20.0, 200, nil)
 	if err != nil {
 		t.Error(err)
 		return
@@ -115,13 +115,13 @@ func TestPdfWithImageHolderGif(t *testing.T) {
 		return
 	}
 
-	err = pdf.ImageByHolder(imgH, 20.0, 20, nil)
+	err = pdf.drawImageByHolder(imgH, 20.0, 20, nil)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = pdf.ImageByHolder(imgH, 20.0, 200, nil)
+	err = pdf.drawImageByHolder(imgH, 20.0, 200, nil)
 	if err != nil {
 		t.Error(err)
 		return
@@ -153,7 +153,7 @@ func TestRetrievingNumberOfPdfPage(t *testing.T) {
 		return
 	}
 
-	err = pdf.ImageByHolder(imgH, 20.0, 20, nil)
+	err = pdf.drawImageByHolder(imgH, 20.0, 20, nil)
 	if err != nil {
 		t.Error(err)
 		return
@@ -201,7 +201,7 @@ func TestImageCrop(t *testing.T) {
 		return
 	}
 
-	//err = pdf.ImageByHolder(imgH, 20.0, 20, nil)
+	//err = pdf.drawImageByHolder(imgH, 20.0, 20, nil)
 	err = pdf.ImageByHolderWithOptions(imgH, imageOptions{
 		//VerticalFlip: true,
 		//HorizontalFlip: true,
@@ -595,7 +595,7 @@ func TestClearValue(t *testing.T) {
 		return
 	}
 
-	err = pdf.ImageByHolder(imgH, 20.0, 20, nil)
+	err = pdf.drawImageByHolder(imgH, 20.0, 20, nil)
 	if err != nil {
 		t.Error(err)
 		return
