@@ -76,7 +76,7 @@ func (doc *Document) AddBarChart() *docChart {
 		width:       500, // Ancho predeterminado
 		height:      300, // Alto predeterminado
 		keepRatio:   true,
-		alignment:   Left,
+		alignment:   Center,
 		barWidth:    30,  // Ancho de barra predeterminado (ajustado)
 		barSpacing:  15,  // Espacio entre barras predeterminado (ajustado)
 		dpi:         150, // DPI reducido a 150
@@ -322,70 +322,13 @@ func (c *docChart) Draw() error {
 	}
 	tmpFile.Close()
 
-	// Verificar si el gráfico cabe en la página actual
-	if !c.hasPos && !c.doc.inHeaderFooterDraw {
-		newY := c.doc.ensureElementFits(c.height)
-		if !c.inline {
-			c.doc.SetY(newY)
-		}
-	}
+	// Dibujar la imagen
+	docImage := c.doc.AddImage(tmpFile.Name())
+	docImage.alignment = c.alignment
 
-	// Determinar la posición (después de un posible salto de página)
-	x := c.doc.margins.Left
-	y := c.doc.GetY()
-
-	// Aplicar alineación
-	switch c.alignment {
-	case Center:
-		x = c.doc.margins.Left + (c.doc.contentAreaWidth-c.width)/2
-	case Right:
-		x = c.doc.margins.Left + c.doc.contentAreaWidth - c.width
-	}
-
-	// Si se especificó una posición fija, usarla
-	if c.hasPos {
-		x, y = c.x, c.y
-	}
-
-	// Ajustar la posición vertical para gráficos en línea según la alineación
-	if c.inline {
-		lineHeight := c.doc.GetLineHeight()
-		switch c.valign {
-		case 0: // Alineación superior
-			// No se necesita ajuste
-		case 1: // Alineación media
-			y = y + (lineHeight-c.height)/2
-		case 2: // Alineación inferior
-			y = y + lineHeight - c.height
-		default:
-			// Por defecto, alineación media
-			y = y + (lineHeight-c.height)/2
-		}
-	}
-
-	// Crear rectángulo para la imagen
-	rect := &Rect{
-		W: c.width,
-		H: c.height,
-	}
-
-	// Dibujar la imagen usando la instancia pdfEngine subyacente
-	err = c.doc.Image(tmpFile.Name(), x, y, rect)
+	err = docImage.Draw()
 	if err != nil {
 		return err
-	}
-
-	// Manejar actualizaciones de posición según la configuración de línea
-	if c.inline {
-		// Para gráficos en línea, avanzar la posición X pero mantener Y sin cambios
-		c.doc.SetX(x + c.width)
-		c.doc.inlineMode = true
-	} else {
-		// Para gráficos de bloque, avanzar la posición Y para evitar que el texto se superponga con el gráfico
-		if !c.hasPos {
-			c.doc.newLineBreakBasedOnDefaultFont(y + c.height)
-		}
-		c.doc.inlineMode = false
 	}
 
 	return nil
