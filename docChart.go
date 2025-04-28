@@ -1,7 +1,7 @@
 package docpdf
 
 import (
-	"os"
+	"bytes"
 
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/drawing"
@@ -197,12 +197,8 @@ func (c *docChart) Quality(dpi float64) *docChart {
 
 // Draw renderiza el gráfico en el documento con manejo de saltos de página
 func (c *docChart) Draw() error {
-	// Crear un archivo temporal para almacenar la imagen del gráfico
-	tmpFile, err := os.CreateTemp("", "chart-*.png")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(tmpFile.Name()) // Eliminar el archivo temporal al finalizar
+	// Crear un buffer en memoria para almacenar la imagen del gráfico
+	var buf bytes.Buffer
 
 	// Ajustar las dimensiones del gráfico para la calidad deseada
 	widthInPixels := int(c.width * c.dpi / 72.0)
@@ -314,16 +310,14 @@ func (c *docChart) Draw() error {
 		Right:  int(10 * scaleFactor),
 		Bottom: int(15 * scaleFactor),
 	}
-
-	// Renderizar el gráfico
-	err = barChart.Render(chart.PNG, tmpFile)
+	// Renderizar el gráfico directamente al buffer en memoria
+	err := barChart.Render(chart.PNG, &buf)
 	if err != nil {
 		return err
 	}
-	tmpFile.Close()
 
-	// Dibujar la imagen
-	docImage := c.doc.AddImage(tmpFile.Name())
+	// Usar los bytes del buffer directamente sin necesidad de archivo temporal
+	docImage := c.doc.AddImage(buf.Bytes())
 	docImage.alignment = c.alignment
 
 	err = docImage.Draw()
