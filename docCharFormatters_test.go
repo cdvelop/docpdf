@@ -13,12 +13,13 @@ func TestChartFormatters(t *testing.T) {
 
 	// Añadir un título
 	doc.AddHeader1("Ejemplo de Formateadores para Gráficos").AlignCenter().Draw()
-
 	// Añadir una explicación
 	doc.AddText("Este ejemplo muestra cómo usar los nuevos formateadores de etiquetas y valores en gráficos de barras.").Draw()
+
 	// Crear un gráfico sin formateo de miles (para comparación)
 	doc.AddHeader2("Gráfico sin formateo de miles").Draw()
 	doc.AddText("Las etiquetas y valores se muestran sin separadores de miles:").Draw()
+
 	chartNoFormat := doc.AddBarChart().
 		Title("Ventas por Departamento").
 		Height(250).
@@ -42,9 +43,9 @@ func TestChartFormatters(t *testing.T) {
 	// Agregar algo de espacio
 	doc.AddText("").Draw()
 	doc.AddText("").Draw()
-	// Crear un gráfico con formateo
-	doc.AddHeader2("Gráfico con formateo").Draw()
+	// Crear un gráfico con formateo	doc.AddHeader2("Gráfico con formateo").Draw()
 	doc.AddText("Las etiquetas se truncan con TruncateName y los valores se muestran con separadores de miles (por defecto):").Draw()
+
 	chartWithFormat := doc.AddBarChart().
 		Title("Ventas por Departamento").
 		Height(250).

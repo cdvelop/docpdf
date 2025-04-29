@@ -271,14 +271,34 @@ func (c *docChart) Draw() error {
 		Bottom: int(5 * scaleFactor),
 	}
 	barChart.TitleStyle = titleStyle
-
 	// Reservar más espacio para las etiquetas del eje X
-	barChart.Height = int(float64(barChart.Height) * 0.9) // Reducir altura para dar más espacio a etiquetas
+	// Factor de reducción predeterminado
+	heightReductionFactor := 0.9
 
+	// Si se ha configurado un padding específico para el eje X, ajustar la reducción proporcionalmente
+	if c.xAxisStyle.Padding.Bottom > 20 {
+		// Ajustamos el factor de reducción en función del padding
+		// Mayor padding requiere más reducción de altura
+		heightReductionFactor = 0.9 - float64(c.xAxisStyle.Padding.Bottom-20)/200
+		// Limitamos el factor entre 0.75 y 0.9 para evitar reducciones extremas
+		if heightReductionFactor < 0.75 {
+			heightReductionFactor = 0.75
+		}
+	}
+
+	barChart.Height = int(float64(barChart.Height) * heightReductionFactor) // Reducir altura para dar más espacio a etiquetas
 	// Configurar el canvas con más espacio en la parte inferior
+	// Valor predeterminado para el espacio inferior
+	bottomCanvasPadding := int(40 * scaleFactor)
+
+	// Si se ha configurado un padding específico para el eje X, aumentamos también el canvas
+	if c.xAxisStyle.Padding.Bottom > 0 {
+		bottomCanvasPadding = int(float64(c.xAxisStyle.Padding.Bottom) * 1.5 * scaleFactor)
+	}
+
 	barChart.Canvas = chart.Style{
 		Padding: chart.Box{
-			Bottom: int(40 * scaleFactor), // Espacio adicional para etiquetas
+			Bottom: bottomCanvasPadding, // Espacio adicional para etiquetas
 		},
 	}
 
@@ -286,16 +306,14 @@ func (c *docChart) Draw() error {
 	if c.background.FillColor.A > 0 {
 		barChart.Background = c.background
 	}
-
 	if c.canvas.FillColor.A > 0 {
 		// Mantener el padding adicional
+		// Usar el mismo valor de bottomCanvasPadding que se calculó anteriormente
 		c.canvas.Padding = chart.Box{
-			Bottom: int(40 * scaleFactor),
+			Bottom: bottomCanvasPadding,
 		}
 		barChart.Canvas = c.canvas
-	}
-
-	// Configuración de ejes
+	} // Configuración de ejes
 	if !c.xAxisStyle.Hidden {
 		xStyle := chart.Style{}
 		fontbridge.ApplyToChartStyle(&xStyle, "axis")
@@ -303,9 +321,16 @@ func (c *docChart) Draw() error {
 		xStyle.Hidden = false
 		xStyle.StrokeWidth = c.strokeWidth
 		xStyle.StrokeColor = c.xAxisStyle.StrokeColor
+
+		// Aplicar el padding personalizado si se ha configurado, o usar el valor predeterminado
+		bottomPadding := int(20 * scaleFactor) // Valor predeterminado
+		if c.xAxisStyle.Padding.Bottom > 0 {
+			bottomPadding = c.xAxisStyle.Padding.Bottom
+		}
+
 		xStyle.Padding = chart.Box{
 			Top:    int(5 * scaleFactor),
-			Bottom: int(20 * scaleFactor), // Más espacio para las etiquetas
+			Bottom: bottomPadding, // Usar el padding configurado o el predeterminado
 		}
 		barChart.XAxis = xStyle
 	}

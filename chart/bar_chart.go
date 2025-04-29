@@ -404,19 +404,143 @@ func (bc BarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box, yrange Range,
 		axesOuterBox = axesOuterBox.Grow(axesBounds)
 	}
 
-	return canvasBox.OuterConstrain(bc.box(), axesOuterBox)
+	initialBox := bc.box()               // Get the box based on background padding first
+	finalCanvasBox := initialBox.Clone() // Start adjusting from the initial box
+
+	// --- Adjust for Y Axis (Primary) ---
+	if !bc.YAxis.Style.Hidden {
+		yAxisStyleDefaults := bc.styleDefaultsAxes()
+		yAxisStyleDefaults.WriteToRenderer(r) // Set style for measurement
+
+		// Calculate max label width manually
+		maxLabelWidth := 0
+		for _, t := range yticks {
+			// Ensure tick style is applied for measurement if different
+			tickStyle := bc.YAxis.TickStyle.InheritFrom(yAxisStyleDefaults)
+			tickStyle.WriteToRenderer(r)
+			labelBox := r.MeasureText(t.Label)
+			if labelBox.Width() > maxLabelWidth {
+				maxLabelWidth = labelBox.Width()
+			}
+		}
+
+		// Calculate total width needed:
+		yAxisTotalWidth := maxLabelWidth + DefaultYAxisMargin + DefaultHorizontalTickWidth
+
+		// Add space for axis name if present
+		if !bc.YAxis.NameStyle.Hidden && len(bc.YAxis.Name) > 0 {
+			// Use the actual name style defined on the axis, inheriting defaults
+			nameStyle := bc.YAxis.NameStyle.InheritFrom(yAxisStyleDefaults)
+			// Assume default rotation is 90 degrees if not specified otherwise
+			if nameStyle.TextRotationDegrees == 0 {
+				nameStyle.TextRotationDegrees = 90
+			}
+			nameStyle.WriteToRenderer(r)
+			nameBox := r.MeasureText(bc.YAxis.Name)
+
+			var nameWidth int
+			// Use height for width if rotated vertically
+			if nameStyle.TextRotationDegrees == 90 || nameStyle.TextRotationDegrees == 270 {
+				nameWidth = nameBox.Height()
+			} else {
+				nameWidth = nameBox.Width()
+			}
+			// Add name width and another margin
+			yAxisTotalWidth += nameWidth + DefaultYAxisMargin
+		}
+
+		// The final canvas needs to start at the initial position + the calculated width.
+		requiredCanvasLeft := initialBox.Left + yAxisTotalWidth
+		finalCanvasBox.Left = requiredCanvasLeft
+	}
+
+	// --- Adjust for X Axis ---
+	if !bc.XAxis.Hidden {
+		// Recalculate xaxisHeight more accurately here if needed,
+		// reusing the logic from the previous calculation within this function.
+		// For now, assume the previously calculated 'xaxisHeight' in axesOuterBox is sufficient.
+		// We need the actual height calculated earlier. Let's recalculate for clarity.
+
+		calculatedXAxisHeight := DefaultVerticalTickHeight // Minimum height
+		axisStyle := bc.XAxis.InheritFrom(bc.styleDefaultsAxes())
+		axisStyle.WriteToRenderer(r) // Ensure renderer has the correct style for measurement
+
+		width, spacing, _ := bc.calculateScaledTotalWidth(canvasBox) // Use canvasBox for width calculation context
+		// cursor := canvasBox.Left // Removed unused variable
+
+		for _, bar := range bc.Bars {
+			if len(bar.Label) > 0 {
+				// Estimate label box width more accurately based on scaled width/spacing
+				labelBoxWidth := width + spacing
+				// Ensure minimum width for very narrow bars
+				if labelBoxWidth < 10 {
+					labelBoxWidth = 10
+				}
+
+				// Use a temporary box for measurement, respecting potential canvas adjustments
+				tempLabelBox := Box{
+					// Top doesn't matter for height measurement
+					Left:  0, // Use 0 for width measurement context
+					Right: labelBoxWidth,
+					// Bottom doesn't matter for height measurement
+				}
+
+				lines := Text.WrapFit(r, bar.Label, tempLabelBox.Width(), axisStyle)
+				linesBox := Text.MeasureLines(r, lines, axisStyle)
+				labelHeight := linesBox.Height() + DefaultXAxisMargin // Add margin
+
+				if labelHeight > calculatedXAxisHeight {
+					calculatedXAxisHeight = labelHeight
+				}
+			}
+			// Cursor update is not needed for height calculation
+		}
+		// Ensure bottom padding from style is considered
+		calculatedXAxisHeight += axisStyle.Padding.Bottom
+
+		finalCanvasBox.Bottom -= calculatedXAxisHeight
+	}
+
+	// Ensure top padding for title is considered
+	if len(bc.Title) > 0 && !bc.TitleStyle.Hidden {
+		titleHeight := bc.measureTitleHeight(r)
+		// Use DefaultTitleTop for bottom margin as well for consistency, or define a specific constant if needed
+		finalCanvasBox.Top += titleHeight + bc.TitleStyle.Padding.GetBottom(DefaultTitleTop)
+	}
+
+	// Ensure canvas box doesn't collapse
+	if finalCanvasBox.Bottom <= finalCanvasBox.Top {
+		finalCanvasBox.Bottom = finalCanvasBox.Top + 1 // Minimum 1 pixel height
+	}
+	if finalCanvasBox.Right <= finalCanvasBox.Left {
+		finalCanvasBox.Right = finalCanvasBox.Left + 1 // Minimum 1 pixel width
+	}
+
+	return finalCanvasBox
 }
 
-// box returns the chart bounds as a box.
-func (bc BarChart) box() Box {
-	dpr := bc.Background.Padding.GetRight(10)
-	dpb := bc.Background.Padding.GetBottom(50)
+// measureTitleHeight calculates the height needed for the title.
+func (bc BarChart) measureTitleHeight(r Renderer) int {
+	if len(bc.Title) == 0 || bc.TitleStyle.Hidden {
+		return 0
+	}
+	style := bc.styleDefaultsTitle() // Get combined style
+	r.SetFont(style.GetFont(bc.GetFont()))
+	r.SetFontColor(style.GetFontColor(bc.GetColorPalette().TextColor()))
+	r.SetFontSize(style.GetFontSize(bc.getTitleFontSize()))
 
+	textBox := r.MeasureText(bc.Title)
+	// Use DefaultTitleTop for bottom margin as well for consistency
+	return textBox.Height() + style.Padding.GetTop(DefaultTitleTop) + style.Padding.GetBottom(DefaultTitleTop)
+}
+
+// box returns the chart bounds as a box, considering background padding.
+func (bc BarChart) box() Box {
 	return Box{
-		Top:    bc.Background.Padding.GetTop(20),
-		Left:   bc.Background.Padding.GetLeft(20),
-		Right:  bc.GetWidth() - dpr,
-		Bottom: bc.GetHeight() - dpb,
+		Top:    bc.Background.Padding.GetTop(DefaultBackgroundPadding.Top),
+		Left:   bc.Background.Padding.GetLeft(DefaultBackgroundPadding.Left),
+		Right:  bc.GetWidth() - bc.Background.Padding.GetRight(DefaultBackgroundPadding.Right),
+		Bottom: bc.GetHeight() - bc.Background.Padding.GetBottom(DefaultBackgroundPadding.Bottom),
 	}
 }
 

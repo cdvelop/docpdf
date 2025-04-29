@@ -65,9 +65,9 @@ func (ya YAxis) GetTickStyle() Style {
 
 // GetTicks returns the ticks for a series.
 // The coalesce priority is:
-// 	- User Supplied Ticks (i.e. Ticks array on the axis itself).
-// 	- Range ticks (i.e. if the range provides ticks).
-//	- Generating continuous ticks based on minimum spacing and canvas width.
+//   - User Supplied Ticks (i.e. Ticks array on the axis itself).
+//   - Range ticks (i.e. if the range provides ticks).
+//   - Generating continuous ticks based on minimum spacing and canvas width.
 func (ya YAxis) GetTicks(r Renderer, ra Range, defaults Style, vf ValueFormatter) []Tick {
 	if len(ya.Ticks) > 0 {
 		return ya.Ticks
@@ -143,14 +143,23 @@ func (ya YAxis) Render(r Renderer, canvasBox Box, ra Range, defaults Style, tick
 
 	sw := tickStyle.GetStrokeWidth(defaults.StrokeWidth)
 
-	var lx int
-	var tx int
-	if ya.AxisType == YAxisPrimary {
-		lx = canvasBox.Right + int(sw)
-		tx = lx + DefaultYAxisMargin
-	} else if ya.AxisType == YAxisSecondary {
-		lx = canvasBox.Left - int(sw)
-		tx = lx - DefaultYAxisMargin
+	var lx int          // x-coordinate of the axis line
+	var tx int          // base x-coordinate for text labels
+	var tickXOffset int // x-offset for the end of the tick mark
+	var nameTextX int   // x-coordinate for the axis name
+
+	// Determine positioning based on AxisType
+	if ya.AxisType == YAxisPrimary { // Typically left side for BarChart, right for others
+		// For BarChart context (and potentially others needing left primary), draw on LEFT
+		lx = canvasBox.Left - int(sw)             // Line slightly left of canvas
+		tx = lx - DefaultYAxisMargin              // Text starts left of the line after margin
+		tickXOffset = -DefaultHorizontalTickWidth // Ticks go left
+		nameTextX = tx                            // Default name position based on text
+	} else { // YAxisSecondary is always on the right
+		lx = canvasBox.Right + int(sw)           // Line slightly right of canvas
+		tx = lx + DefaultYAxisMargin             // Text starts right of the line after margin
+		tickXOffset = DefaultHorizontalTickWidth // Ticks go right
+		nameTextX = tx                           // Default name position based on text
 	}
 
 	r.MoveTo(lx, canvasBox.Bottom)
@@ -169,10 +178,11 @@ func (ya YAxis) Render(r Renderer, canvasBox Box, ra Range, defaults Style, tick
 			maxTextWidth = tb.Width()
 		}
 
-		if ya.AxisType == YAxisSecondary {
-			finalTextX = tx - tb.Width()
-		} else {
-			finalTextX = tx
+		// Adjust text position based on type
+		if ya.AxisType == YAxisPrimary { // Left side
+			finalTextX = tx - tb.Width() // Align right edge of text to tx
+		} else { // Right side (Secondary)
+			finalTextX = tx // Align left edge of text to tx
 		}
 
 		if tickStyle.TextRotationDegrees == 0 {
@@ -184,11 +194,7 @@ func (ya YAxis) Render(r Renderer, canvasBox Box, ra Range, defaults Style, tick
 		tickStyle.WriteToRenderer(r)
 
 		r.MoveTo(lx, ly)
-		if ya.AxisType == YAxisPrimary {
-			r.LineTo(lx+DefaultHorizontalTickWidth, ly)
-		} else if ya.AxisType == YAxisSecondary {
-			r.LineTo(lx-DefaultHorizontalTickWidth, ly)
-		}
+		r.LineTo(lx+tickXOffset, ly) // Draw tick left or right based on offset
 		r.Stroke()
 
 		Draw.Text(r, t.Label, finalTextX, finalTextY, tickStyle)
@@ -199,11 +205,13 @@ func (ya YAxis) Render(r Renderer, canvasBox Box, ra Range, defaults Style, tick
 		nameStyle.GetTextOptions().WriteToRenderer(r)
 		tb := Draw.MeasureText(r, ya.Name, nameStyle)
 
-		var tx int
-		if ya.AxisType == YAxisPrimary {
-			tx = canvasBox.Right + int(sw) + DefaultYAxisMargin + maxTextWidth + DefaultYAxisMargin
-		} else if ya.AxisType == YAxisSecondary {
-			tx = canvasBox.Left - (DefaultYAxisMargin + int(sw) + maxTextWidth + DefaultYAxisMargin)
+		// Adjust name position based on AxisType
+		if ya.AxisType == YAxisPrimary { // Left side
+			// Position name to the left of the labels/ticks
+			nameTextX = tx - maxTextWidth - DefaultYAxisMargin // tx is already left of axis line
+		} else { // Right side (Secondary)
+			// Position name to the right of the labels/ticks
+			nameTextX = tx + maxTextWidth + DefaultYAxisMargin // tx is already right of axis line
 		}
 
 		var ty int
@@ -213,7 +221,7 @@ func (ya YAxis) Render(r Renderer, canvasBox Box, ra Range, defaults Style, tick
 			ty = canvasBox.Top + (canvasBox.Height()>>1 - tb.Height()>>1)
 		}
 
-		Draw.Text(r, ya.Name, tx, ty, nameStyle)
+		Draw.Text(r, ya.Name, nameTextX, ty, nameStyle)
 	}
 
 	if !ya.Zero.Style.Hidden {
