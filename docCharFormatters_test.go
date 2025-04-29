@@ -1,6 +1,7 @@
 package docpdf
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/cdvelop/docpdf/chart"
@@ -20,22 +21,53 @@ func TestChartFormatters(t *testing.T) {
 	doc.AddHeader2("Gráfico sin formateo de miles").Draw()
 	doc.AddText("Las etiquetas y valores se muestran sin separadores de miles:").Draw()
 
+	// Datos originales
+	bars := []struct {
+		val   float64
+		label string
+	}{
+		{1234567, "Departamento de Desarrollo de Software"},
+		{2345678, "Departamento de Marketing y Publicidad"},
+		{3456789, "Departamento de Recursos Humanos"},
+		{4567890, "Departamento de Ventas y Atención al Cliente"},
+		{5678901, "Departamento de Investigación"},
+	}
+
+	// Ordenar de mayor a menor
+	sort.Slice(bars, func(i, j int) bool {
+		return bars[i].val > bars[j].val
+	})
+
+	// Calcular dinámicamente BarWidth y BarSpacing para ocupar todo el ancho
+	n := len(bars)
+	chartWidth := 500.0 // float64
+	var barWidth, barSpacing float64
+	if n > 1 {
+		barWidth = 40.0 // Puedes ajustar este valor base si lo deseas
+		barSpacing = (chartWidth - float64(n)*barWidth) / float64(n-1)
+		if barSpacing < 0 {
+			barSpacing = 0
+			barWidth = chartWidth / float64(n)
+		}
+	} else {
+		barWidth = chartWidth
+		barSpacing = 0
+	}
+
 	chartNoFormat := doc.AddBarChart().
 		Title("Ventas por Departamento").
 		Height(250).
-		Width(500).
-		BarWidth(40).
-		BarSpacing(20).
+		Width(chartWidth).
+		BarWidth(int(barWidth)).
+		BarSpacing(int(barSpacing)).
 		WithAxis(true, true).
 		WithoutThousandsSeparator(). // Explícitamente desactivar el separador de miles
 		Quality(150)
 
-	// Añadir datos con nombres largos y valores grandes
-	chartNoFormat.AddBar(1234567, "Departamento de Desarrollo de Software")
-	chartNoFormat.AddBar(2345678, "Departamento de Marketing y Publicidad")
-	chartNoFormat.AddBar(3456789, "Departamento de Recursos Humanos")
-	chartNoFormat.AddBar(4567890, "Departamento de Ventas y Atención al Cliente")
-	chartNoFormat.AddBar(5678901, "Departamento de Investigación")
+	// Ahora agrega las barras en orden
+	for _, b := range bars {
+		chartNoFormat.AddBar(b.val, b.label)
+	}
 
 	// Dibujar el gráfico sin formateo
 	chartNoFormat.Draw()
@@ -43,27 +75,25 @@ func TestChartFormatters(t *testing.T) {
 	// Agregar algo de espacio
 	doc.AddText("").Draw()
 	doc.AddText("").Draw()
-	// Crear un gráfico con formateo	doc.AddHeader2("Gráfico con formateo").Draw()
+	// Crear un gráfico con formateo
+	doc.AddHeader2("Gráfico con formateo").Draw()
 	doc.AddText("Las etiquetas se truncan con TruncateName y los valores se muestran con separadores de miles (por defecto):").Draw()
 
+	// Usar los mismos valores de barWidth y barSpacing para el segundo gráfico
 	chartWithFormat := doc.AddBarChart().
 		Title("Ventas por Departamento").
 		Height(250).
-		Width(500).
-		BarWidth(40).
-		BarSpacing(20).
+		Width(chartWidth).
+		BarWidth(int(barWidth)).
+		BarSpacing(int(barSpacing)).
 		WithAxis(true, true).
 		Quality(150).
-		// Usar los nuevos métodos de formateo
 		WithTruncateNameFormatter(3, 15) // Máximo 3 caracteres por palabra, 15 en total
-		// Ya no es necesario llamar a WithThousandsSeparator() porque es el comportamiento predeterminado
 
-	// Añadir los mismos datos
-	chartWithFormat.AddBar(1234567, "Departamento de Desarrollo de Software")
-	chartWithFormat.AddBar(2345678, "Departamento de Marketing y Publicidad")
-	chartWithFormat.AddBar(3456789, "Departamento de Recursos Humanos")
-	chartWithFormat.AddBar(4567890, "Departamento de Ventas y Atención al Cliente")
-	chartWithFormat.AddBar(5678901, "Departamento de Investigación")
+	// Añadir los mismos datos ordenados
+	for _, b := range bars {
+		chartWithFormat.AddBar(b.val, b.label)
+	}
 
 	// Dibujar el gráfico con formateo
 	chartWithFormat.Draw()
