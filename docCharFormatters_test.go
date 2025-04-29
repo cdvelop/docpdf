@@ -38,31 +38,11 @@ func TestChartFormatters(t *testing.T) {
 		return bars[i].val > bars[j].val
 	})
 
-	// Calcular dinámicamente BarWidth y BarSpacing para ocupar todo el ancho
-	n := len(bars)
-	chartWidth := 500.0 // float64
-	var barWidth, barSpacing float64
-	if n > 1 {
-		barWidth = 40.0 // Puedes ajustar este valor base si lo deseas
-		barSpacing = (chartWidth - float64(n)*barWidth) / float64(n-1)
-		if barSpacing < 0 {
-			barSpacing = 0
-			barWidth = chartWidth / float64(n)
-		}
-	} else {
-		barWidth = chartWidth
-		barSpacing = 0
-	}
-
 	chartNoFormat := doc.AddBarChart().
 		Title("Ventas por Departamento").
-		Height(250).
-		Width(chartWidth).
-		BarWidth(int(barWidth)).
-		BarSpacing(int(barSpacing)).
-		WithAxis(true, true).
-		WithoutThousandsSeparator(). // Explícitamente desactivar el separador de miles
-		Quality(150)
+		BarSpacing(2).
+		WithoutThousandsSeparator() // Explícitamente desactivar el separador de miles
+		// Quality(150)
 
 	// Ahora agrega las barras en orden
 	for _, b := range bars {
@@ -73,8 +53,7 @@ func TestChartFormatters(t *testing.T) {
 	chartNoFormat.Draw()
 
 	// Agregar algo de espacio
-	doc.AddText("").Draw()
-	doc.AddText("").Draw()
+	doc.Br(1)
 	// Crear un gráfico con formateo
 	doc.AddHeader2("Gráfico con formateo").Draw()
 	doc.AddText("Las etiquetas se truncan con TruncateName y los valores se muestran con separadores de miles (por defecto):").Draw()
@@ -83,11 +62,6 @@ func TestChartFormatters(t *testing.T) {
 	chartWithFormat := doc.AddBarChart().
 		Title("Ventas por Departamento").
 		Height(250).
-		Width(chartWidth).
-		BarWidth(int(barWidth)).
-		BarSpacing(int(barSpacing)).
-		WithAxis(true, true).
-		Quality(150).
 		WithTruncateNameFormatter(3, 15) // Máximo 3 caracteres por palabra, 15 en total
 
 	// Añadir los mismos datos ordenados

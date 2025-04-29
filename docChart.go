@@ -20,7 +20,6 @@ type docChart struct {
 	hasPos    bool
 	inline    bool
 	valign    int
-
 	// Propiedades específicas para BarChart
 	title          string
 	barWidth       int
@@ -80,8 +79,8 @@ func (doc *Document) AddBarChart() *docChart {
 		height:         300, // Alto predeterminado
 		keepRatio:      true,
 		alignment:      Center,
-		barWidth:       30,                                    // Ancho de barra predeterminado (ajustado)
-		barSpacing:     15,                                    // Espacio entre barras predeterminado (ajustado)
+		barWidth:       40,                                    // Ancho de barra inicial (será ajustado automáticamente)
+		barSpacing:     15,                                    // Espacio entre barras inicial (será ajustado automáticamente)
 		dpi:            150,                                   // DPI reducido a 150
 		strokeWidth:    1.0,                                   // Ancho de línea por defecto
 		valueFormatter: chartutils.FormatNumberValueFormatter, // Formateador de valores predeterminado con separadores de miles
@@ -170,18 +169,15 @@ func (c *docChart) VerticalAlignBottom() *docChart {
 	return c
 }
 
-// BarWidth establece el ancho de las barras en el gráfico de barras
-// y actualiza automáticamente el formateador de etiquetas para ajustarse al nuevo ancho
+// BarWidth establece un ancho de barra inicial antes de los cálculos automáticos
+// Nota: El ancho final puede ser ajustado automáticamente para aprovechar el espacio disponible
 func (c *docChart) BarWidth(width int) *docChart {
 	c.barWidth = width
-	// Actualizar el formateador de etiquetas basado en el nuevo ancho de barra
-	// Mantener los mismos caracteres por palabra pero actualizar el ancho máximo
-	// Si el formateador anterior no era un TruncateNameLabelFormatter, usamos 3 como predeterminado
-	c.labelFormatter = chartutils.TruncateNameLabelFormatter(3, c.barWidth)
 	return c
 }
 
-// BarSpacing establece el espaciado entre barras en el gráfico de barras
+// BarSpacing establece un espaciado inicial entre barras antes de los cálculos automáticos
+// Nota: El espaciado final puede ser ajustado automáticamente para aprovechar el espacio disponible
 func (c *docChart) BarSpacing(spacing int) *docChart {
 	c.barSpacing = spacing
 	return c
@@ -208,6 +204,53 @@ func (c *docChart) Quality(dpi float64) *docChart {
 		c.dpi = dpi
 	}
 	return c
+}
+
+// calculateBarLayout calcula automáticamente el ancho de barras y espaciado
+// para que ocupen todo el ancho de contenido disponible
+func (c *docChart) calculateBarLayout() {
+	if len(c.bars) == 0 {
+		return // No hay barras para calcular
+	}
+
+	// Usar contentAreaWidth del documento como ancho total disponible
+	chartWidth := c.doc.contentAreaWidth
+
+	n := len(c.bars)
+	if n > 1 {
+		// Usar el ancho de barra configurado como base
+		barWidth := float64(c.barWidth) // Usamos el ancho ya configurado como punto de partida
+
+		// Calcular espaciado basado en el espacio disponible
+		barSpacing := (chartWidth - float64(n)*barWidth) / float64(n-1)
+
+		// Si el espaciado es negativo o muy pequeño, recalcular
+		if barSpacing < 5 {
+			// Asignar un espaciado mínimo
+			barSpacing = 5
+			// Recalcular el ancho de barras con este espaciado mínimo
+			barWidth = (chartWidth - barSpacing*float64(n-1)) / float64(n)
+
+			// Si el ancho es demasiado pequeño, usar un valor mínimo
+			if barWidth < 20 {
+				barWidth = 20
+				// Ya no intentamos ajustar más, puede que el gráfico sea más ancho que contentAreaWidth
+			}
+		}
+
+		// Actualizar las propiedades del objeto docChart
+		c.barWidth = int(barWidth)
+		c.barSpacing = int(barSpacing)
+	} else {
+		// Si solo hay una barra, usar todo el ancho disponible
+		c.barWidth = int(chartWidth)
+		c.barSpacing = 0
+	}
+
+	// Actualizar también el formateador de etiquetas para que se ajuste al nuevo ancho de barra
+	if c.labelFormatter != nil {
+		c.labelFormatter = chartutils.TruncateNameLabelFormatter(3, c.barWidth)
+	}
 }
 
 // Draw renderiza el gráfico en el documento con manejo de saltos de página
@@ -243,7 +286,11 @@ func (c *docChart) Draw() error {
 		// Aplicar formateador de etiquetas si está definido
 		// Siempre usar el formateador, que por defecto es DefaultLabelFormatter
 		formattedBars[i].Label = c.labelFormatter(bar.Label)
+	} // Calcular automáticamente el ancho de barras y espaciado si hay barras
+	if len(c.bars) > 0 {
+		c.calculateBarLayout()
 	}
+
 	// Crear el gráfico de barras
 	barChart := chart.BarChart{
 		Title:      c.title,
