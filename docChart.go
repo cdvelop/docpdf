@@ -39,6 +39,7 @@ type docChart struct {
 }
 
 // AddBarChart crea un nuevo elemento de gráfico de barras
+// default alignment: Center
 func (doc *Document) AddBarChart() *docChart {
 	// Inicializar fontbridge con la configuración de fuentes actual del documento
 	// si aún no se ha inicializado
@@ -73,19 +74,24 @@ func (doc *Document) AddBarChart() *docChart {
 			doc.fontConfig.Normal.LineSpacing,
 		)
 	}
-	return &docChart{
+	chart := &docChart{
 		doc:            doc,
 		width:          500, // Ancho predeterminado
 		height:         300, // Alto predeterminado
 		keepRatio:      true,
 		alignment:      Center,
-		barWidth:       30,                               // Ancho de barra predeterminado (ajustado)
-		barSpacing:     15,                               // Espacio entre barras predeterminado (ajustado)
-		dpi:            150,                              // DPI reducido a 150
-		strokeWidth:    1.0,                              // Ancho de línea por defecto
-		labelFormatter: chartutils.DefaultLabelFormatter, // Formateador de etiquetas predeterminado
-		valueFormatter: chart.FloatValueFormatter,        // Formateador de valores predeterminado
+		barWidth:       30,                                    // Ancho de barra predeterminado (ajustado)
+		barSpacing:     15,                                    // Espacio entre barras predeterminado (ajustado)
+		dpi:            150,                                   // DPI reducido a 150
+		strokeWidth:    1.0,                                   // Ancho de línea por defecto
+		valueFormatter: chartutils.FormatNumberValueFormatter, // Formateador de valores predeterminado con separadores de miles
 	}
+
+	// Configuración automática del formateador de etiquetas basado en el ancho de la barra
+	// Usamos 3 caracteres por palabra como predeterminado y el barWidth como ancho máximo
+	chart.labelFormatter = chartutils.TruncateNameLabelFormatter(3, chart.barWidth)
+
+	return chart
 }
 
 // Title establece el título del gráfico
@@ -165,8 +171,13 @@ func (c *docChart) VerticalAlignBottom() *docChart {
 }
 
 // BarWidth establece el ancho de las barras en el gráfico de barras
+// y actualiza automáticamente el formateador de etiquetas para ajustarse al nuevo ancho
 func (c *docChart) BarWidth(width int) *docChart {
 	c.barWidth = width
+	// Actualizar el formateador de etiquetas basado en el nuevo ancho de barra
+	// Mantener los mismos caracteres por palabra pero actualizar el ancho máximo
+	// Si el formateador anterior no era un TruncateNameLabelFormatter, usamos 3 como predeterminado
+	c.labelFormatter = chartutils.TruncateNameLabelFormatter(3, c.barWidth)
 	return c
 }
 
@@ -406,15 +417,26 @@ func (c *docChart) WithValueFormatter(formatter chart.ValueFormatter) *docChart 
 
 // WithTruncateNameFormatter configura un formateador para truncar las etiquetas usando TruncateName
 // maxCharsPerWord: máximo de caracteres por palabra
-// maxWidth: máximo ancho total de la etiqueta
+// maxWidth: máximo ancho total de la etiqueta (si no se especifica o es mayor que barWidth, se usa barWidth)
 func (c *docChart) WithTruncateNameFormatter(maxCharsPerWord, maxWidth int) *docChart {
-	c.labelFormatter = chartutils.TruncateNameLabelFormatter(maxCharsPerWord, maxWidth)
+	// Siempre usamos el menor entre maxWidth y barWidth para respetar el ancho de la barra
+	effectiveMaxWidth := maxWidth
+	if effectiveMaxWidth > c.barWidth {
+		effectiveMaxWidth = c.barWidth
+	}
+	c.labelFormatter = chartutils.TruncateNameLabelFormatter(maxCharsPerWord, effectiveMaxWidth)
 	return c
 }
 
 // WithThousandsSeparator configura un formateador para mostrar los valores con separadores de miles
 func (c *docChart) WithThousandsSeparator() *docChart {
 	c.valueFormatter = chartutils.FormatNumberValueFormatter
+	return c
+}
+
+// WithoutThousandsSeparator configura un formateador para mostrar los valores sin separadores de miles
+func (c *docChart) WithoutThousandsSeparator() *docChart {
+	c.valueFormatter = chart.FloatValueFormatter
 	return c
 }
 
