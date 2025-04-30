@@ -430,7 +430,6 @@ func (c *docChart) Draw() error {
 
 	// Usar los bytes del buffer directamente sin necesidad de archivo temporal
 	docImage := c.doc.AddImage(buf.Bytes())
-	docImage.alignment = c.alignment
 
 	err = docImage.Draw()
 	if err != nil {

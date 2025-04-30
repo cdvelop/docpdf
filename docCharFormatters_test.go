@@ -28,21 +28,22 @@ func TestChartFormatters(t *testing.T) {
 	}{
 		{1234567, "Departamento de Desarrollo de Software"},
 		{2345678, "Departamento de Marketing y Publicidad"},
+		{5678901, "Departamento de Investigación"},
 		{3456789, "Departamento de Recursos Humanos"},
 		{4567890, "Departamento de Ventas y Atención al Cliente"},
-		{5678901, "Departamento de Investigación"},
+		{6789012, "Departamento de Finanzas y Contabilidad"},
+		{7890123, "Departamento de Soporte Técnico"},
+		{8901234, "Departamento de Operaciones"},
+		{9012345, "Departamento de Logística"},
+		{1345678, "Departamento de Calidad"},
 	}
-
-	// Ordenar de mayor a menor
-	sort.Slice(bars, func(i, j int) bool {
-		return bars[i].val > bars[j].val
-	})
 
 	chartNoFormat := doc.AddBarChart().
 		Title("Ventas por Departamento").
-		BarSpacing(2).
+		// BarWidth(40).
+		// BarSpacing(0).
 		WithoutThousandsSeparator() // Explícitamente desactivar el separador de miles
-		// Quality(150)
+	// Quality(150)
 
 	// Ahora agrega las barras en orden
 	for _, b := range bars {
@@ -61,8 +62,13 @@ func TestChartFormatters(t *testing.T) {
 	// Usar los mismos valores de barWidth y barSpacing para el segundo gráfico
 	chartWithFormat := doc.AddBarChart().
 		Title("Ventas por Departamento").
-		Height(250).
+		// Height(250).
 		WithTruncateNameFormatter(3, 15) // Máximo 3 caracteres por palabra, 15 en total
+
+	// Ordenar de mayor a menor
+	sort.Slice(bars, func(i, j int) bool {
+		return bars[i].val > bars[j].val
+	})
 
 	// Añadir los mismos datos ordenados
 	for _, b := range bars {
