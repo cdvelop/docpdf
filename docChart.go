@@ -44,16 +44,16 @@ func (doc *Document) AddBarChart() *docChart {
 	// Inicializar fontbridge con la configuración de fuentes actual del documento
 	// si aún no se ha inicializado
 	if fontbridge.SharedFontConfig.Font == nil && doc != nil {
-		// Convertir RGBColor a drawing.Color
+		// Convertir RGBColor a drawing.Color para diferentes elementos del gráfico
 		titleColor := fontbridge.GetDrawingColor(
 			doc.fontConfig.Header1.Color.R,
 			doc.fontConfig.Header1.Color.G,
 			doc.fontConfig.Header1.Color.B,
 		)
 		normalColor := fontbridge.GetDrawingColor(
-			doc.fontConfig.Normal.Color.R,
-			doc.fontConfig.Normal.Color.G,
-			doc.fontConfig.Normal.Color.B,
+			doc.fontConfig.ChartLabel.Color.R,
+			doc.fontConfig.ChartLabel.Color.G,
+			doc.fontConfig.ChartLabel.Color.B,
 		)
 		footnoteColor := fontbridge.GetDrawingColor(
 			doc.fontConfig.Footnote.Color.R,
@@ -61,18 +61,29 @@ func (doc *Document) AddBarChart() *docChart {
 			doc.fontConfig.Footnote.Color.B,
 		)
 
+		// Color específico para ejes
+		axisColor := fontbridge.GetDrawingColor(
+			doc.fontConfig.ChartAxisLabel.Color.R,
+			doc.fontConfig.ChartAxisLabel.Color.G,
+			doc.fontConfig.ChartAxisLabel.Color.B,
+		)
+
 		// Inicializar la configuración compartida
 		fontbridge.InitFromDocConfig(
 			doc.fontConfig.Family.Path,
 			doc.fontConfig.Family.Regular,
 			float64(doc.fontConfig.Header2.Size),
-			float64(doc.fontConfig.Normal.Size),
+			float64(doc.fontConfig.ChartLabel.Size),
 			float64(doc.fontConfig.Footnote.Size),
 			titleColor,
 			normalColor,
 			footnoteColor,
 			doc.fontConfig.Normal.LineSpacing,
 		)
+
+		// Actualizar específicamente el tamaño y color de las etiquetas de ejes
+		fontbridge.SharedFontConfig.AxisLabelSize = float64(doc.fontConfig.ChartAxisLabel.Size)
+		fontbridge.SharedFontConfig.AxisLabelColor = axisColor
 	}
 	chart := &docChart{
 		doc:            doc,
@@ -289,7 +300,7 @@ func (c *docChart) Draw() error {
 		if c.labelFormatter != nil { // Asegurarse de que el formateador existe
 
 			// Pasar el ancho de barra calculado como segundo argumento
-			formattedBars[i].Label = c.labelFormatter(bar.Label, c.barWidth-25) // Ajustar el ancho para evitar que se corte
+			formattedBars[i].Label = c.labelFormatter(bar.Label, c.barWidth-10) // Ajustar el ancho para evitar que se corte
 			// formattedBars[i].Label = c.labelFormatter(bar.Label, c.barWidth)
 		}
 	} // Crear el gráfico de barras (usando las barras ya formateadas)
@@ -464,11 +475,22 @@ func (c *docChart) WithAxis(showX, showY bool) *docChart {
 		c.xAxisStyle.Hidden = true
 	} else {
 		c.xAxisStyle = chart.Shown()
+		// Aplicar configuración específica para eje X
+		c.xAxisStyle.Padding = chart.Box{
+			Bottom: 20, // Espacio predeterminado para etiquetas del eje X
+			Top:    5,
+		}
 	}
+
 	if !showY {
 		c.yAxisStyle.Hidden = true
 	} else {
 		c.yAxisStyle = chart.Shown()
+		// Aplicar configuración específica para eje Y
+		c.yAxisStyle.Padding = chart.Box{
+			Left:  10,
+			Right: 5,
+		}
 		// No establecemos ValueFormatter aquí, se hace en Draw()
 	}
 

@@ -4,14 +4,16 @@ import "strings"
 
 // FontConfig represents different font configurations for document sections
 type FontConfig struct {
-	Family     Font
-	Normal     TextStyle
-	Header1    TextStyle
-	Header2    TextStyle
-	Header3    TextStyle
-	Footnote   TextStyle
-	PageHeader TextStyle
-	PageFooter TextStyle
+	Family         Font
+	Normal         TextStyle
+	Header1        TextStyle
+	Header2        TextStyle
+	Header3        TextStyle
+	Footnote       TextStyle
+	PageHeader     TextStyle
+	PageFooter     TextStyle
+	ChartLabel     TextStyle // For chart bar labels/values
+	ChartAxisLabel TextStyle // For chart axis labels (X/Y axes)
 }
 
 // Font represents font files for different styles
@@ -161,6 +163,21 @@ func defaultFontConfig() FontConfig {
 			LineSpacing: 1.0,
 			Alignment:   Right | Top,
 			SpaceBefore: 2,
+			SpaceAfter:  0,
+		}, ChartLabel: TextStyle{ // Added default chart style
+			Size:        9,                    // Slightly smaller than Normal (11)
+			Color:       RGBColor{50, 50, 50}, // Dark Gray, less harsh than black
+			LineSpacing: 1.0,
+			Alignment:   Left | Top, // Default alignment, chart might override
+			SpaceBefore: 0,
+			SpaceAfter:  0,
+		},
+		ChartAxisLabel: TextStyle{ // Style for X/Y axis labels
+			Size:        8,                    // Smaller than ChartLabel
+			Color:       RGBColor{70, 70, 70}, // Slightly lighter than ChartLabel
+			LineSpacing: 1.0,
+			Alignment:   Center | Top, // Center alignment for axes
+			SpaceBefore: 0,
 			SpaceAfter:  0,
 		},
 	}

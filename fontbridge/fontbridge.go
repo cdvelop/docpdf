@@ -69,17 +69,23 @@ func InitFromDocConfig(fontPath string, fontFile string, titleSize, normalSize, 
 		}
 	}
 
-	// Actualizar tamaños
+	// Actualizar tamaños (los valores por defecto)
 	SharedFontConfig.TitleSize = titleSize
-	SharedFontConfig.AxisLabelSize = normalSize
 	SharedFontConfig.ValueLabelSize = normalSize
 	SharedFontConfig.LegendSize = footnoteSize
 
+	// Por defecto, AxisLabelSize usa el mismo tamaño que normalSize
+	// pero se actualizará si se proporciona explícitamente en AddBarChart
+	SharedFontConfig.AxisLabelSize = normalSize
+
 	// Actualizar colores
 	SharedFontConfig.TitleColor = titleColor
-	SharedFontConfig.AxisLabelColor = normalColor
 	SharedFontConfig.ValueLabelColor = normalColor
 	SharedFontConfig.LegendColor = footnoteColor
+
+	// Por defecto, AxisLabelColor usa el mismo color que normalColor
+	// pero se actualizará si se proporciona explícitamente en AddBarChart
+	SharedFontConfig.AxisLabelColor = normalColor
 
 	// Actualizar espaciado
 	SharedFontConfig.LineSpacing = lineSpacing

@@ -26,7 +26,7 @@ func TruncateNameLabelFormatter(maxCharsPerWord int) LabelFormatter {
 			// Si el ancho no es válido, devolver la etiqueta original
 			return label
 		}
-		return tinystring.Convert(label).TruncateName(maxCharsPerWord, availableWidth).String()
+		return tinystring.Convert(label).TruncateName(maxCharsPerWord, availableWidth).Capitalize().String()
 	}
 }
 
