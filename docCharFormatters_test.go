@@ -40,8 +40,6 @@ func TestChartFormatters(t *testing.T) {
 
 	chartNoFormat := doc.AddBarChart().
 		Title("Ventas por Departamento").
-		// BarWidth(40).
-		// BarSpacing(0).
 		WithoutThousandsSeparator() // Explícitamente desactivar el separador de miles
 	// Quality(150)
 
@@ -62,7 +60,6 @@ func TestChartFormatters(t *testing.T) {
 	// Usar los mismos valores de barWidth y barSpacing para el segundo gráfico
 	chartWithFormat := doc.AddBarChart().
 		Title("Ventas por Departamento").
-		// Height(250).
 		WithTruncateNameFormatter(3, 15) // Máximo 3 caracteres por palabra, 15 en total
 
 	// Ordenar de mayor a menor
@@ -94,8 +91,8 @@ func TestChartFormattersLabels(t *testing.T) {
 		// Crear un gráfico con un formateador de etiquetas personalizado
 		barChart := doc.AddBarChart()
 
-		// Crear un formateador simple que añade un prefijo
-		testFormatter := func(label string) string {
+		// Crear un formateador simple que añade un prefijo (ahora acepta availableWidth)
+		testFormatter := func(label string, availableWidth int) string {
 			return "Test-" + label
 		}
 
@@ -110,8 +107,8 @@ func TestChartFormattersLabels(t *testing.T) {
 			t.Error("El formateador de etiquetas no se guardó correctamente")
 		}
 
-		// Verificar que el formateador funciona como se espera
-		result := barChart.labelFormatter("Label")
+		// Verificar que el formateador funciona como se espera (pasar un ancho dummy)
+		result := barChart.labelFormatter("Label", 50) // 50 es un ancho arbitrario para la prueba
 		expected := "Test-Label"
 		if result != expected {
 			t.Errorf("El formateador de etiquetas no funcionó correctamente. Esperado: %s, Obtenido: %s", expected, result)
@@ -150,7 +147,7 @@ func TestChartFormattersLabels(t *testing.T) {
 		// Crear un gráfico con el formateador TruncateName
 		barChart := doc.AddBarChart()
 
-		// Aplicar el formateador
+		// Aplicar el formateador con ancho fijo
 		barChart.WithTruncateNameFormatter(3, 10)
 
 		// Verificar que el formateador se guardó
@@ -158,11 +155,15 @@ func TestChartFormattersLabels(t *testing.T) {
 			t.Error("El formateador TruncateName no se guardó correctamente")
 		}
 
-		// Verificar que el formateador funciona como se espera
-		result := barChart.labelFormatter("Departamento de Ventas")
-		// Debería truncar a "Dep. de Ven..." o similar
+		// Verificar que el formateador funciona como se espera (pasar un ancho dummy, será ignorado)
+		result := barChart.labelFormatter("Departamento de Ventas", 50) // 50 es ignorado por esta implementación
+		// Debería truncar a "Dep. de Ven..." o similar, basado en el ancho fijo 10
+		expectedTruncated := "Dep. de Ve..." // Ajustar si la lógica de TruncateName es diferente
+		if result != expectedTruncated {
+			t.Errorf("El formateador TruncateName no funcionó como se esperaba. Esperado: %q, Obtenido: %q", expectedTruncated, result)
+		}
 		if len(result) > 10 {
-			t.Errorf("El formateador TruncateName no limitó la longitud correctamente: %s", result)
+			t.Errorf("El formateador TruncateName no limitó la longitud correctamente (esperado <= 10): %s", result)
 		}
 	})
 

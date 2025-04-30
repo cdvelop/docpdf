@@ -7,6 +7,7 @@ import (
 	"github.com/cdvelop/docpdf/chartutils"
 	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/fontbridge"
+	"github.com/cdvelop/tinystring" // <--- Añadir import
 )
 
 // docChart representa un gráfico que se añadirá al documento
@@ -29,7 +30,7 @@ type docChart struct {
 	yAxisStyle     chart.Style
 	background     chart.Style
 	canvas         chart.Style
-	labelFormatter chartutils.LabelFormatter // Formateador para etiquetas
+	labelFormatter chartutils.LabelFormatter // Formateador para etiquetas (recibe label y ancho disponible)
 	valueFormatter chart.ValueFormatter      // Formateador para valores
 
 	// Propiedades para control de calidad
@@ -86,9 +87,9 @@ func (doc *Document) AddBarChart() *docChart {
 		valueFormatter: chartutils.FormatNumberValueFormatter, // Formateador de valores predeterminado con separadores de miles
 	}
 
-	// Configuración automática del formateador de etiquetas basado en el ancho de la barra
-	// Usamos 3 caracteres por palabra como predeterminado y el barWidth como ancho máximo
-	chart.labelFormatter = chartutils.TruncateNameLabelFormatter(3, chart.barWidth)
+	// Configuración automática del formateador de etiquetas
+	// Ahora TruncateNameLabelFormatter solo necesita maxCharsPerWord
+	chart.labelFormatter = chartutils.TruncateNameLabelFormatter(3)
 
 	return chart
 }
@@ -246,15 +247,15 @@ func (c *docChart) calculateBarLayout() {
 		c.barWidth = int(chartWidth)
 		c.barSpacing = 0
 	}
-
-	// Actualizar también el formateador de etiquetas para que se ajuste al nuevo ancho de barra
-	if c.labelFormatter != nil {
-		c.labelFormatter = chartutils.TruncateNameLabelFormatter(3, c.barWidth)
-	}
 }
 
 // Draw renderiza el gráfico en el documento con manejo de saltos de página
 func (c *docChart) Draw() error {
+	// Calcular automáticamente el ancho de barras y espaciado ANTES de formatear
+	if len(c.bars) > 0 {
+		c.calculateBarLayout()
+	}
+
 	// Crear un buffer en memoria para almacenar la imagen del gráfico
 	var buf bytes.Buffer
 
@@ -266,6 +267,7 @@ func (c *docChart) Draw() error {
 	// NO aplicamos el factor de escala a los tamaños de fuente
 	// porque queremos que sean exactamente los definidos en FontConfig
 	scaleFactor := c.dpi / 72.0
+
 	// Asegurarnos de que fontbridge está inicializado correctamente
 	if fontbridge.SharedFontConfig.Font == nil {
 		// Intentar cargar la fuente predeterminada como última opción
@@ -284,21 +286,20 @@ func (c *docChart) Draw() error {
 		formattedBars[i] = bar
 
 		// Aplicar formateador de etiquetas si está definido
-		// Siempre usar el formateador, que por defecto es DefaultLabelFormatter
-		formattedBars[i].Label = c.labelFormatter(bar.Label)
-	} // Calcular automáticamente el ancho de barras y espaciado si hay barras
-	if len(c.bars) > 0 {
-		c.calculateBarLayout()
-	}
+		if c.labelFormatter != nil { // Asegurarse de que el formateador existe
 
-	// Crear el gráfico de barras
+			// Pasar el ancho de barra calculado como segundo argumento
+			formattedBars[i].Label = c.labelFormatter(bar.Label, c.barWidth-25) // Ajustar el ancho para evitar que se corte
+			// formattedBars[i].Label = c.labelFormatter(bar.Label, c.barWidth)
+		}
+	} // Crear el gráfico de barras (usando las barras ya formateadas)
 	barChart := chart.BarChart{
 		Title:      c.title,
 		Width:      widthInPixels,
 		Height:     heightInPixels,
-		BarWidth:   int(float64(c.barWidth) * scaleFactor),
-		BarSpacing: int(float64(c.barSpacing) * scaleFactor),
-		Bars:       formattedBars,
+		BarWidth:   int(float64(c.barWidth) * scaleFactor),   // Usar el barWidth calculado
+		BarSpacing: int(float64(c.barSpacing) * scaleFactor), // Usar el barSpacing calculado
+		Bars:       formattedBars,                            // Usar las barras con etiquetas ya formateadas
 		DPI:        c.dpi,
 		Font:       fontbridge.SharedFontConfig.Font, // Usar la fuente compartida
 	}
@@ -473,29 +474,31 @@ func (c *docChart) WithAxis(showX, showY bool) *docChart {
 }
 
 // WithLabelFormatter configura un formateador personalizado para las etiquetas de las barras
-// Permite utilizar funciones como TruncateName de tinystring para mejorar la legibilidad
+// El formateador debe tener la firma: func(label string, availableWidth int) string
 func (c *docChart) WithLabelFormatter(formatter chartutils.LabelFormatter) *docChart {
 	c.labelFormatter = formatter
 	return c
 }
 
 // WithValueFormatter configura un formateador personalizado para los valores numéricos
-// Permite utilizar funciones como FormatNumber de tinystring para formatear números con separadores de miles
 func (c *docChart) WithValueFormatter(formatter chart.ValueFormatter) *docChart {
 	c.valueFormatter = formatter
 	return c
 }
 
 // WithTruncateNameFormatter configura un formateador para truncar las etiquetas usando TruncateName
+// con un ancho máximo FIJO, ignorando el ancho de barra calculado.
 // maxCharsPerWord: máximo de caracteres por palabra
-// maxWidth: máximo ancho total de la etiqueta (si no se especifica o es mayor que barWidth, se usa barWidth)
+// maxWidth: máximo ancho total FIJO de la etiqueta
 func (c *docChart) WithTruncateNameFormatter(maxCharsPerWord, maxWidth int) *docChart {
-	// Siempre usamos el menor entre maxWidth y barWidth para respetar el ancho de la barra
-	effectiveMaxWidth := maxWidth
-	if effectiveMaxWidth > c.barWidth {
-		effectiveMaxWidth = c.barWidth
+	// Crear una clausura que capture maxCharsPerWord y maxWidth fijos
+	c.labelFormatter = func(label string, availableWidth int) string {
+		// Ignorar availableWidth y usar el maxWidth fijo capturado
+		if maxWidth <= 0 {
+			return label // Si el ancho fijo no es válido, devolver original
+		}
+		return tinystring.Convert(label).TruncateName(maxCharsPerWord, maxWidth).String()
 	}
-	c.labelFormatter = chartutils.TruncateNameLabelFormatter(maxCharsPerWord, effectiveMaxWidth)
 	return c
 }
 
@@ -511,14 +514,12 @@ func (c *docChart) WithoutThousandsSeparator() *docChart {
 	return c
 }
 
-// WithCustomLabelFormatter configura un formateador personalizado para las etiquetas
+// WithCustomLabelFormatter es un alias para WithLabelFormatter para mantener consistencia
 func (c *docChart) WithCustomLabelFormatter(formatter chartutils.LabelFormatter) *docChart {
-	c.labelFormatter = formatter
-	return c
+	return c.WithLabelFormatter(formatter)
 }
 
-// WithCustomValueFormatter configura un formateador personalizado para los valores
+// WithCustomValueFormatter es un alias para WithValueFormatter para mantener consistencia
 func (c *docChart) WithCustomValueFormatter(formatter chart.ValueFormatter) *docChart {
-	c.valueFormatter = formatter
-	return c
+	return c.WithValueFormatter(formatter)
 }
