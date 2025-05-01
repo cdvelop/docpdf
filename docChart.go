@@ -422,25 +422,44 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 	// para mantener la proporción adecuada entre el donut y el agujero central
 
 	donutChart := chart.DonutChart{
-		Title:      c.title,
-		Width:      widthInPixels,  // Mantener dimensiones externas consistentes
-		Height:     heightInPixels, // Mantener dimensiones externas consistentes
-		DPI:        c.dpi,
-		Values:     formattedValues,
-		TitleStyle: titleStyle,
-		Background: backgroundStyle,
-		Font:       fontbridge.SharedFontConfig.Font,
-		// Usar una paleta de colores alternativa que proporciona colores diferentes automáticamente
+		Title:        c.title,
+		Width:        widthInPixels,
+		Height:       heightInPixels,
+		DPI:          c.dpi,
+		Values:       formattedValues,
+		TitleStyle:   titleStyle,
+		Background:   backgroundStyle,
+		Font:         fontbridge.SharedFontConfig.Font,
 		ColorPalette: chart.AlternateColorPalette,
-	} // Configurar el estilo para las porciones del donut usando la misma configuración del ValueLabelSize
-	sliceStyle := chart.Style{
-		StrokeColor: chart.ColorWhite, // Borde blanco entre porciones
-		StrokeWidth: 1.0,              // Líneas más finas para separación visual clara pero sutil
-	}
 
-	// Aplicar la configuración de estilo desde fontbridge de forma consistente
-	fontbridge.ApplyToChartStyle(&sliceStyle, "value")
-	donutChart.SliceStyle = sliceStyle
+		// Increase slice separation with thicker stroke lines
+		SliceStyle: chart.Style{
+			StrokeColor: chart.ColorWhite,
+			StrokeWidth: 3.0, // Increased from 1.0 for more visible separation
+		},
+
+		// Custom element for the inner circle
+		Elements: []chart.Renderable{
+			func(r chart.Renderer, canvasBox chart.Box, defaults chart.Style) {
+				cx, cy := canvasBox.Center()
+
+				// Calculate dimensions for a proper circle
+				diameter := chart.MinInt(canvasBox.Width(), canvasBox.Height())
+				radius := float64(diameter) / 2.5 // Adjust outer circle size
+
+				// Make the hole larger for better spacing
+				holeRadius := radius / 2.2 // Larger hole (was /3.5)
+
+				// Create a clean white inner circle
+				r.SetFillColor(chart.ColorWhite)
+				r.SetStrokeColor(chart.ColorWhite)
+				r.SetStrokeWidth(2.0)
+				r.MoveTo(cx, cy)
+				r.Circle(holeRadius, cx, cy)
+				r.FillStroke()
+			},
+		},
+	}
 
 	// Asegurarse de que todos los valores tengan el mismo estilo
 	for i := range formattedValues {
@@ -455,12 +474,12 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 			// Dibuja un círculo blanco en el centro para crear el agujero
 			cx, cy := canvasBox.Center()
 
-			// Usar el 50% de la altura como diámetro del donut
-			outerDiameter := float64(heightInPixels) * 0.5
+			// Calcular diámetro como en la implementación original
+			diameter := chart.MinInt(canvasBox.Width(), canvasBox.Height())
+			radius := float64(diameter>>1) / 1.1
 
-			// Calculamos el radio del agujero como un porcentaje del diámetro externo
-			// Un valor común para donut charts es entre 40-60% del radio externo
-			holeRadius := outerDiameter * 0.4 // 40% del diámetro externo
+			// Usar la misma proporción que en donut_chart.go para el agujero (radius/3.5)
+			holeRadius := radius / 3.5
 
 			// Dibujar el círculo central (el "agujero")
 			r.SetFillColor(chart.ColorWhite)
