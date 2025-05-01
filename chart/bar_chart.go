@@ -364,12 +364,10 @@ func (bc BarChart) calculateScaledTotalWidth(canvasBox Box) (width, spacing, tot
 }
 
 func (bc BarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box, yrange Range, yticks []Tick) Box {
-	axesOuterBox := canvasBox.Clone()
-
-	_, _, totalWidth := bc.calculateScaledTotalWidth(canvasBox)
-
+	// This section is just for calculating xaxisHeight for later use
+	var xaxisHeight int
 	if !bc.XAxis.Hidden {
-		xaxisHeight := DefaultVerticalTickHeight
+		xaxisHeight = DefaultVerticalTickHeight
 
 		axisStyle := bc.XAxis.InheritFrom(bc.styleDefaultsAxes())
 		axisStyle.WriteToRenderer(r)
@@ -389,22 +387,7 @@ func (bc BarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box, yrange Range,
 				xaxisHeight = mathutils.MinInt(linesBox.Height()+(2*DefaultXAxisMargin), xaxisHeight)
 			}
 		}
-
-		xbox := Box{
-			Top:    canvasBox.Top,
-			Left:   canvasBox.Left,
-			Right:  canvasBox.Left + totalWidth,
-			Bottom: bc.GetHeight() - xaxisHeight,
-		}
-
-		axesOuterBox = axesOuterBox.Grow(xbox)
 	}
-
-	if !bc.YAxis.Style.Hidden {
-		axesBounds := bc.YAxis.Measure(r, canvasBox, yrange, bc.styleDefaultsAxes(), yticks)
-		axesOuterBox = axesOuterBox.Grow(axesBounds)
-	}
-
 	initialBox := bc.box()               // Get the box based on background padding first
 	finalCanvasBox := initialBox.Clone() // Start adjusting from the initial box
 
@@ -457,17 +440,12 @@ func (bc BarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box, yrange Range,
 
 	// --- Adjust for X Axis ---
 	if !bc.XAxis.Hidden {
-		// Recalculate xaxisHeight more accurately here if needed,
-		// reusing the logic from the previous calculation within this function.
-		// For now, assume the previously calculated 'xaxisHeight' in axesOuterBox is sufficient.
-		// We need the actual height calculated earlier. Let's recalculate for clarity.
-
+		// Calculate X-axis height
 		calculatedXAxisHeight := DefaultVerticalTickHeight // Minimum height
 		axisStyle := bc.XAxis.InheritFrom(bc.styleDefaultsAxes())
 		axisStyle.WriteToRenderer(r) // Ensure renderer has the correct style for measurement
 
 		width, spacing, _ := bc.calculateScaledTotalWidth(canvasBox) // Use canvasBox for width calculation context
-		// cursor := canvasBox.Left // Removed unused variable
 
 		for _, bar := range bc.Bars {
 			if len(bar.Label) > 0 {
@@ -480,10 +458,8 @@ func (bc BarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box, yrange Range,
 
 				// Use a temporary box for measurement, respecting potential canvas adjustments
 				tempLabelBox := Box{
-					// Top doesn't matter for height measurement
 					Left:  0, // Use 0 for width measurement context
 					Right: labelBoxWidth,
-					// Bottom doesn't matter for height measurement
 				}
 
 				lines := Text.WrapFit(r, bar.Label, tempLabelBox.Width(), axisStyle)
@@ -494,7 +470,6 @@ func (bc BarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box, yrange Range,
 					calculatedXAxisHeight = labelHeight
 				}
 			}
-			// Cursor update is not needed for height calculation
 		}
 		// Ensure bottom padding from style is considered
 		calculatedXAxisHeight += axisStyle.Padding.Bottom

@@ -29,7 +29,9 @@ func main() {
 		},
 	}
 
-	f, _ := os.Create("output.png")
+	f, _ := os.Create("output.svg")
 	defer f.Close()
-	graph.Render(chart.PNG, f)
+	graph.Render(chart.SVG, f)
+	// graph.Render(chart.PNG, f)
+
 }

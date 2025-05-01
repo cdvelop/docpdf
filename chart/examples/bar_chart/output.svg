@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 512"><path  d="M 0 0
+L 1024 0
+L 1024 512
+L 0 512
+L 0 0" style="stroke-width:0;stroke:#FFFFFF;fill:#FFFFFF"/><path  d="M 46 93
+L 1019 93
+L 1019 485
+L 46 485
+L 46 93" style="stroke-width:0;stroke:#FFFFFF;fill:#FFFFFF"/><path  d="M 85 93
+L 145 93
+L 145 485
+L 85 485
+L 85 93" style="stroke-width:3;stroke:#6AC3CB;fill:#6AC3CB"/><path  d="M 224 127
+L 284 127
+L 284 485
+L 224 485
+L 224 127" style="stroke-width:3;stroke:#2ABE89;fill:#2ABE89"/><path  d="M 363 140
+L 423 140
+L 423 485
+L 363 485
+L 363 140" style="stroke-width:3;stroke:#6E808B;fill:#6E808B"/><path  d="M 502 280
+L 562 280
+L 562 485
+L 502 485
+L 502 280" style="stroke-width:3;stroke:#F0AE5A;fill:#F0AE5A"/><path  d="M 641 300
+L 701 300
+L 701 485
+L 641 485
+L 641 300" style="stroke-width:3;stroke:#0074D9;fill:#0074D9"/><path  d="M 780 367
+L 840 367
+L 840 485
+L 780 485
+L 780 367" style="stroke-width:3;stroke:#00D965;fill:#00D965"/><path  d="M 919 485
+L 979 485
+L 979 485
+L 919 485
+L 919 485" style="stroke-width:3;stroke:#D90074;fill:#D90074"/><path  d="M 46 485
+L 1019 485" style="stroke-width:0;stroke:#333333;fill:none"/><path  d="M 46 485
+L 46 490" style="stroke-width:0;stroke:#333333;fill:none"/><text x="102" y="507" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">Blue</text><path  d="M 185 485
+L 185 490" style="stroke-width:0;stroke:#333333;fill:none"/><text x="237" y="507" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">Green</text><path  d="M 324 485
+L 324 490" style="stroke-width:0;stroke:#333333;fill:none"/><text x="380" y="507" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">Gray</text><path  d="M 463 485
+L 463 490" style="stroke-width:0;stroke:#333333;fill:none"/><text x="511" y="507" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">Orange</text><path  d="M 602 485
+L 602 490" style="stroke-width:0;stroke:#333333;fill:none"/><text x="658" y="507" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">Test</text><path  d="M 741 485
+L 741 490" style="stroke-width:0;stroke:#333333;fill:none"/><text x="804" y="507" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">??</text><path  d="M 880 485
+L 880 490" style="stroke-width:0;stroke:#333333;fill:none"/><text x="946" y="507" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">!!</text><path  d="M 46 485
+L 46 93" style="stroke-width:0;stroke:#333333;fill:none"/><path  d="M 46 485
+L 41 485" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="491" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">1.00</text><path  d="M 46 451
+L 41 451" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="457" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">1.36</text><path  d="M 46 419
+L 41 419" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="425" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">1.71</text><path  d="M 46 386
+L 41 386" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="392" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">2.07</text><path  d="M 46 354
+L 41 354" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="360" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">2.42</text><path  d="M 46 320
+L 41 320" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="326" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">2.78</text><path  d="M 46 288
+L 41 288" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="294" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">3.13</text><path  d="M 46 256
+L 41 256" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="262" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">3.48</text><path  d="M 46 223
+L 41 223" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="229" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">3.84</text><path  d="M 46 190
+L 41 190" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="196" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">4.19</text><path  d="M 46 157
+L 41 157" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="163" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">4.55</text><path  d="M 46 125
+L 41 125" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="131" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">4.90</text><path  d="M 46 93
+L 41 93" style="stroke-width:0;stroke:#333333;fill:none"/><text x="10" y="99" style="stroke-width:0;stroke:none;fill:#333333;font-size:12.8px;font-family:'Roboto Medium',sans-serif">5.25</text><path  d="M 46 577
+L 1019 577" style="stroke-width:0;stroke:none;fill:none"/><path  d="M 46 451
+L 1019 451" style="stroke-width:0;stroke:none;fill:none"/><path  d="M 46 419
+L 1019 419" style="stroke-width:0;stroke:none;fill:none"/><path  d="M 46 386
+L 1019 386" style="stroke-width:0;stroke:none;fill:none"/><path  d="M 46 354
+L 1019 354" style="stroke-width:0;stroke:none;fill:none"/><path  d="M 46 320
+L 1019 320" style="stroke-width:0;stroke:none;fill:none"/><path  d="M 46 288
+L 1019 288" style="stroke-width:0;stroke:none;fill:none"/><path  d="M 46 256
+L 1019 256" style="stroke-width:0;stroke:none;fill:none"/><path  d="M 46 223
+L 1019 223" style="stroke-width:0;stroke:none;fill:none"/><path  d="M 46 190
+L 1019 190" style="stroke-width:0;stroke:none;fill:none"/><path  d="M 46 157
+L 1019 157" style="stroke-width:0;stroke:none;fill:none"/><path  d="M 46 125
+L 1019 125" style="stroke-width:0;stroke:none;fill:none"/><text x="438" y="33" style="stroke-width:0;stroke:none;fill:#333333;font-size:23.0px;font-family:'Roboto Medium',sans-serif">Test Bar Chart</text></svg>

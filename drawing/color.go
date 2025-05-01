@@ -267,8 +267,12 @@ func (c Color) AverageWith(other Color) Color {
 	}
 }
 
-// String returns a css string representation of the color.
+// String returns a css string representation of the color in hexadecimal format (#RRGGBB).
 func (c Color) String() string {
-	fa := float64(c.A) / float64(255)
-	return fmt.Sprintf("rgba(%v,%v,%v,%.1f)", c.R, c.G, c.B, fa)
+	// Si la transparencia es total, devolver "none" como en el código original de styleAsSVG
+	if c.A == 0 {
+		return "none"
+	}
+	// Generar formato hexadecimal #RRGGBB
+	return fmt.Sprintf("#%02X%02X%02X", c.R, c.G, c.B)
 }
