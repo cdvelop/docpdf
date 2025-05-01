@@ -52,8 +52,8 @@ func TestCharts(t *testing.T) {
 
 	// Crear el gráfico de donut con la nueva API unificada
 	donutChart := doc.Chart().Donut().
-		Title("Distribución de Ventas").
-		WithTruncateNameFormatter(3, 30) // Mismo formato que el gráfico de barras
+		Title("Distribución de Ventas")
+		// WithTruncateNameFormatter(3, 30) // Mismo formato que el gráfico de barras
 
 	// Usar los mismos datos que el gráfico de barras
 	for _, b := range bars {
