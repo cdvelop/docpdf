@@ -7,12 +7,26 @@ import (
 	"github.com/cdvelop/docpdf/fontbridge"
 )
 
+// ChartInterface define los métodos comunes para todos los tipos de gráficos
+type ChartInterface interface {
+	// Estas son las funciones comunes que deberían implementar todos los gráficos
+	Draw() error
+	Quality(dpi float64) interface{}
+	WithThousandsSeparator() interface{}
+	WithoutThousandsSeparator() interface{}
+	WithStyle(backgroundColor, foregroundColor drawing.Color) interface{}
+	WithLabelFormatter(formatter chartutils.LabelFormatter) interface{}
+	WithValueFormatter(formatter chart.ValueFormatter) interface{}
+	WithTruncateNameFormatter(maxCharsPerWord, maxWidth int) interface{}
+}
+
 // ChartType define los tipos de gráficos soportados
 type ChartType string
 
 const (
 	BarChartType   ChartType = "bar"
 	DonutChartType ChartType = "donut"
+	// Aquí se pueden agregar más tipos de gráficos en el futuro
 )
 
 // docCharts es el punto de entrada para la API de gráficos
@@ -75,28 +89,15 @@ func (doc *Document) Chart() *docCharts {
 // Bar crea un nuevo elemento de gráfico de barras
 // default alignment: Center
 func (c *docCharts) Bar() *docBarChart {
-	// Crear una instancia base del gráfico
-	base := &docChart{
-		doc:            c.doc,
-		width:          500, // Ancho predeterminado
-		height:         300, // Alto predeterminado
-		keepRatio:      true,
-		alignment:      Center,
-		dpi:            150,                                   // DPI reducido a 150
-		strokeWidth:    1.0,                                   // Ancho de línea por defecto
-		valueFormatter: chartutils.FormatNumberValueFormatter, // Formateador de valores predeterminado con separadores de miles
-		chartType:      BarChartType,
-	}
+	// Usar la función de configuración común
+	base := configureBaseChart(c.doc, BarChartType)
 
-	// Crear el gráfico de barras específico
+	// Crear el gráfico de barras específico con la configuración base
 	barChart := &docBarChart{
 		docChart:   base,
 		barWidth:   40, // Ancho de barra inicial (será ajustado automáticamente)
 		barSpacing: 15, // Espacio entre barras inicial (será ajustado automáticamente)
 	}
-
-	// Configuración automática del formateador de etiquetas
-	barChart.docChart.labelFormatter = chartutils.TruncateNameLabelFormatter(3)
 
 	return barChart
 }
@@ -104,18 +105,8 @@ func (c *docCharts) Bar() *docBarChart {
 // Donut crea un nuevo elemento de gráfico de tipo donut
 // default alignment: Center
 func (c *docCharts) Donut() *docDonutChart {
-	// Crear una instancia base del gráfico
-	base := &docChart{
-		doc:            c.doc,
-		width:          400, // Ancho predeterminado para donut
-		height:         400, // Alto predeterminado para donut (normalmente cuadrado)
-		keepRatio:      true,
-		alignment:      Center,
-		dpi:            150,                                   // DPI reducido a 150
-		strokeWidth:    1.0,                                   // Ancho de línea por defecto
-		valueFormatter: chartutils.FormatNumberValueFormatter, // Formateador de valores predeterminado con separadores de miles
-		chartType:      DonutChartType,
-	}
+	// Usar la función de configuración común
+	base := configureBaseChart(c.doc, DonutChartType)
 
 	// Crear el gráfico específico de tipo donut
 	donutChart := &docDonutChart{
@@ -357,6 +348,18 @@ func (c *docDonutChart) AddValue(value float64, label string) *docDonutChart {
 // WithValueFormatter configura un formateador personalizado para los valores numéricos
 func (c *docDonutChart) WithValueFormatter(formatter chart.ValueFormatter) *docDonutChart {
 	c.docChart.valueFormatter = formatter
+	return c
+}
+
+// WithLabelFormatter configura un formateador personalizado para las etiquetas
+func (c *docDonutChart) WithLabelFormatter(formatter chartutils.LabelFormatter) *docDonutChart {
+	c.docChart.labelFormatter = formatter
+	return c
+}
+
+// WithTruncateNameFormatter configura un formateador para truncar las etiquetas
+func (c *docDonutChart) WithTruncateNameFormatter(maxCharsPerWord, maxWidth int) *docDonutChart {
+	c.docChart.WithTruncateNameFormatter(maxCharsPerWord, maxWidth)
 	return c
 }
 

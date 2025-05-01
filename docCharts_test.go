@@ -28,10 +28,10 @@ func TestCharts(t *testing.T) {
 		{3456789, "RR.HH."},
 		{4567890, "Ventas"},
 	}
-
 	// Crear el gráfico de barras con la nueva API
 	barChart := doc.Chart().Bar().
-		Title("Ventas por Departamento")
+		Title("Ventas por Departamento").
+		WithTruncateNameFormatter(3, 30) // Formato consistente para etiquetas
 
 	// Ordenar de mayor a menor
 	sort.Slice(bars, func(i, j int) bool {
@@ -50,9 +50,10 @@ func TestCharts(t *testing.T) {
 	doc.AddHeader2("2. Gráfico tipo Donut").Draw()
 	doc.AddText("Se puede crear un gráfico de tipo donut con Chart().Donut():").Draw()
 
-	// Crear el gráfico de donut con la nueva API
+	// Crear el gráfico de donut con la nueva API unificada
 	donutChart := doc.Chart().Donut().
-		Title("Distribución de Ventas")
+		Title("Distribución de Ventas").
+		WithTruncateNameFormatter(3, 30) // Mismo formato que el gráfico de barras
 
 	// Usar los mismos datos que el gráfico de barras
 	for _, b := range bars {
@@ -61,6 +62,9 @@ func TestCharts(t *testing.T) {
 
 	// Dibujar el gráfico de donut
 	donutChart.Draw()
+
+	// Agregar texto explicativo
+	doc.AddText("Ambos gráficos ahora comparten una configuración uniforme de texto y estilo.").Draw()
 
 	// Guardar el documento
 	err := doc.WritePdf("docCharts_test.pdf")

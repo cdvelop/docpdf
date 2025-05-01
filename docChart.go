@@ -394,6 +394,16 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 	if len(c.values) == 0 {
 		return nil // No hay valores para mostrar
 	}
+
+	// Calcular ancho óptimo para etiquetas basado en el tamaño del gráfico
+	// Para el donut, usaremos un ancho adaptado al espacio disponible
+	labelWidth := widthInPixels / 20 // Un valor proporcional al ancho total del gráfico
+	if labelWidth < 10 {
+		labelWidth = 10 // Mínimo para evitar etiquetas muy truncadas
+	} else if labelWidth > 50 {
+		labelWidth = 50 // Máximo para evitar etiquetas demasiado largas
+	}
+
 	// Si tenemos un formateador de etiquetas, aplicarlo a cada valor
 	formattedValues := make([]chart.Value, len(c.values))
 	for i, val := range c.values {
@@ -401,23 +411,22 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 
 		// Aplicar formateador de etiquetas si existe
 		if c.labelFormatter != nil {
-			// Usar un ancho fijo para las etiquetas del donut
-			formattedValues[i].Label = c.labelFormatter(val.Label, 30)
+			// Usar ancho calculado para las etiquetas del donut
+			formattedValues[i].Label = c.labelFormatter(val.Label, labelWidth)
 		}
 
 		// Aplicar formateador de valores si existe (para mostrar valores junto a etiquetas)
 		if c.valueFormatter != nil {
 			formattedValues[i].Label = formattedValues[i].Label + " (" + c.valueFormatter(val.Value) + ")"
 		}
-	} // Crear el gráfico de tipo donut con tamaño más compacto
-	// Calcular un tamaño adecuado para el donut (aproximadamente 65-70% del tamaño original)
-	scaledWidth := int(float64(widthInPixels) * 0.7)
-	scaledHeight := int(float64(heightInPixels) * 0.7)
+	}
 
+	// Mantener las dimensiones originales para consistencia con el gráfico de barras
+	// Ya no escalamos el tamaño a un porcentaje menor
 	donutChart := chart.DonutChart{
 		Title:      c.title,
-		Width:      scaledWidth,
-		Height:     scaledHeight,
+		Width:      widthInPixels,
+		Height:     heightInPixels,
 		DPI:        c.dpi,
 		Values:     formattedValues,
 		TitleStyle: titleStyle,
@@ -425,22 +434,24 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 		Font:       fontbridge.SharedFontConfig.Font,
 		// Usar una paleta de colores alternativa que proporciona colores diferentes automáticamente
 		ColorPalette: chart.AlternateColorPalette,
-	}
-	// Configurar el estilo para las porciones del donut
+	} // Configurar el estilo para las porciones del donut usando la misma configuración del ValueLabelSize
 	sliceStyle := chart.Style{
 		StrokeColor: chart.ColorWhite, // Borde blanco entre porciones
-		StrokeWidth: 2.0,              // Líneas aún más finas para un aspecto más limpio
-		FontSize:    fontbridge.SharedFontConfig.ValueLabelSize,
-		FontColor:   fontbridge.SharedFontConfig.ValueLabelColor,
-		Font:        fontbridge.SharedFontConfig.Font,
+		StrokeWidth: 2.0,              // Líneas más finas para un aspecto más limpio
 	}
 
-	// Aplicar la configuración de estilo desde fontbridge
+	// Aplicar la configuración de estilo desde fontbridge de forma consistente
 	fontbridge.ApplyToChartStyle(&sliceStyle, "value")
 	donutChart.SliceStyle = sliceStyle
 
+	// Asegurarse de que todos los valores tengan el mismo estilo
+	for i := range formattedValues {
+		valueStyle := chart.Style{}
+		fontbridge.ApplyToChartStyle(&valueStyle, "value")
+		formattedValues[i].Style = valueStyle
+	}
 	// Crear elementos personalizados para el donut
-	// Este elemento modifica el tamaño del agujero central (haciéndolo más grande)
+	// Este elemento modifica el tamaño del agujero central
 	donutChart.Elements = []chart.Renderable{
 		func(r chart.Renderer, canvasBox chart.Box, defaults chart.Style) {
 			// Este código se ejecuta después de dibujar el donut
@@ -448,9 +459,9 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 			cx, cy := canvasBox.Center()
 			diameter := math.Min(float64(canvasBox.Width()), float64(canvasBox.Height()))
 
-			// Radio para el "donut hole" - usar un valor más pequeño para un agujero más grande
-			// 2.5 es el valor por defecto en la librería, usamos 2.0 para un agujero más grande
-			holeRadius := diameter / 4.5
+			// Radio para el "donut hole" - usar un valor proporcionado que se ve bien
+			// con las nuevas dimensiones del gráfico (un tercio del diámetro)
+			holeRadius := diameter / 3.0
 
 			// Dibujar el círculo central (el "agujero")
 			r.SetFillColor(chart.ColorWhite)
@@ -469,4 +480,26 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 
 	// Renderizar el gráfico directamente al buffer en memoria
 	return donutChart.Render(chart.PNG, buf)
+}
+
+// configureBaseChart establece la configuración común para cualquier tipo de gráfico
+// Esta función centraliza la lógica de configuración para mantener consistencia
+func configureBaseChart(doc *Document, chartType ChartType) *docChart {
+	// Crear instancia base con configuración común
+	base := &docChart{
+		doc:            doc,
+		width:          500, // Ancho predeterminado
+		height:         300, // Alto predeterminado
+		keepRatio:      true,
+		alignment:      Center,
+		dpi:            150,                                   // DPI reducido a 150
+		strokeWidth:    1.0,                                   // Ancho de línea por defecto
+		valueFormatter: chartutils.FormatNumberValueFormatter, // Formateador de valores predeterminado con separadores de miles
+		chartType:      chartType,
+	}
+
+	// Configuración automática del formateador de etiquetas
+	base.labelFormatter = chartutils.TruncateNameLabelFormatter(3)
+
+	return base
 }
