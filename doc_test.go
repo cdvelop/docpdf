@@ -52,7 +52,7 @@ func TestDocumentAPIUsage(t *testing.T) {
 	doc.AddText("This text is right-aligned.").Regular().AlignRight().Draw()
 
 	// Create and add a bar chart using the new API instead of static image
-	barChart := doc.AddBarChart().
+	barChart := doc.Chart().Bar().
 		Title("Monthly Sales").
 		Height(320).
 		AlignCenter().

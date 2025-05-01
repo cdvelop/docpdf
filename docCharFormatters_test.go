@@ -16,7 +16,6 @@ func TestChartFormatters(t *testing.T) {
 	doc.AddHeader1("Ejemplo de Formateadores para Gráficos").AlignCenter().Draw()
 	// Añadir una explicación
 	doc.AddText("Este ejemplo muestra cómo usar los nuevos formateadores de etiquetas y valores en gráficos de barras.").Draw()
-
 	// Crear un gráfico sin formateo de miles (para comparación)
 	doc.AddHeader2("Gráfico sin formateo de miles").Draw()
 	doc.AddText("Las etiquetas y valores se muestran sin separadores de miles:").Draw()
@@ -38,7 +37,7 @@ func TestChartFormatters(t *testing.T) {
 		{1345678, "Departamento de Calidad"},
 	}
 
-	chartNoFormat := doc.AddBarChart().
+	chartNoFormat := doc.Chart().Bar().
 		Title("Ventas por Departamento").
 		WithoutThousandsSeparator() // Explícitamente desactivar el separador de miles
 	// Quality(150)
@@ -58,7 +57,7 @@ func TestChartFormatters(t *testing.T) {
 	doc.AddText("Las etiquetas se truncan con TruncateName y los valores se muestran con separadores de miles (por defecto):").Draw()
 
 	// Usar los mismos valores de barWidth y barSpacing para el segundo gráfico
-	chartWithFormat := doc.AddBarChart().
+	chartWithFormat := doc.Chart().Bar().
 		Title("Ventas por Departamento").
 		WithTruncateNameFormatter(3, 15) // Máximo 3 caracteres por palabra, 15 en total
 
@@ -85,11 +84,10 @@ func TestChartFormatters(t *testing.T) {
 func TestChartFormattersLabels(t *testing.T) {
 	// Crear un documento de prueba
 	doc := NewDocument()
-
 	// Prueba 1: Formateador de etiquetas
 	t.Run("LabelFormatter", func(t *testing.T) {
 		// Crear un gráfico con un formateador de etiquetas personalizado
-		barChart := doc.AddBarChart()
+		barChart := doc.Chart().Bar()
 
 		// Crear un formateador simple que añade un prefijo (ahora acepta availableWidth)
 		testFormatter := func(label string, availableWidth int) string {
@@ -103,12 +101,12 @@ func TestChartFormattersLabels(t *testing.T) {
 		barChart.AddBar(100, "Label")
 
 		// Verificar que el formateador se guardó
-		if barChart.labelFormatter == nil {
+		if barChart.docChart.labelFormatter == nil {
 			t.Error("El formateador de etiquetas no se guardó correctamente")
 		}
 
 		// Verificar que el formateador funciona como se espera (pasar un ancho dummy)
-		result := barChart.labelFormatter("Label", 50) // 50 es un ancho arbitrario para la prueba
+		result := barChart.docChart.labelFormatter("Label", 50) // 50 es un ancho arbitrario para la prueba
 		expected := "Test-Label"
 		if result != expected {
 			t.Errorf("El formateador de etiquetas no funcionó correctamente. Esperado: %s, Obtenido: %s", expected, result)
@@ -118,7 +116,7 @@ func TestChartFormattersLabels(t *testing.T) {
 	// Prueba 2: Formateador de valores
 	t.Run("ValueFormatter", func(t *testing.T) {
 		// Crear un gráfico con un formateador de valores personalizado
-		barChart := doc.AddBarChart()
+		barChart := doc.Chart().Bar()
 
 		// Crear un formateador simple que añade un sufijo
 		testFormatter := func(v any) string {
@@ -130,12 +128,12 @@ func TestChartFormattersLabels(t *testing.T) {
 		barChart.WithValueFormatter(testFormatter)
 
 		// Verificar que el formateador se guardó
-		if barChart.valueFormatter == nil {
+		if barChart.docChart.valueFormatter == nil {
 			t.Error("El formateador de valores no se guardó correctamente")
 		}
 
 		// Verificar que el formateador funciona como se espera
-		result := barChart.valueFormatter(100.0)
+		result := barChart.docChart.valueFormatter(100.0)
 		expected := "100.00 units"
 		if result != expected {
 			t.Errorf("El formateador de valores no funcionó correctamente. Esperado: %s, Obtenido: %s", expected, result)
@@ -145,18 +143,18 @@ func TestChartFormattersLabels(t *testing.T) {
 	// Prueba 3: Método de conveniencia WithTruncateNameFormatter
 	t.Run("TruncateNameFormatter", func(t *testing.T) {
 		// Crear un gráfico con el formateador TruncateName
-		barChart := doc.AddBarChart()
+		barChart := doc.Chart().Bar() // Cambiado a doc.Chart().Bar()
 
 		// Aplicar el formateador con ancho fijo
 		barChart.WithTruncateNameFormatter(3, 10)
 
 		// Verificar que el formateador se guardó
-		if barChart.labelFormatter == nil {
+		if barChart.docChart.labelFormatter == nil {
 			t.Error("El formateador TruncateName no se guardó correctamente")
 		}
 
 		// Verificar que el formateador funciona como se espera (pasar un ancho dummy, será ignorado)
-		result := barChart.labelFormatter("Departamento de Ventas", 50) // 50 es ignorado por esta implementación
+		result := barChart.docChart.labelFormatter("Departamento de Ventas", 50) // 50 es ignorado por esta implementación
 		// Debería truncar a "Dep. de Ven..." o similar, basado en el ancho fijo 10
 		expectedTruncated := "Dep. de Ve..." // Ajustar si la lógica de TruncateName es diferente
 		if result != expectedTruncated {
@@ -170,18 +168,18 @@ func TestChartFormattersLabels(t *testing.T) {
 	// Prueba 4: Método de conveniencia WithThousandsSeparator
 	t.Run("ThousandsSeparator", func(t *testing.T) {
 		// Crear un gráfico con el formateador FormatNumber
-		barChart := doc.AddBarChart()
+		barChart := doc.Chart().Bar()
 
 		// Aplicar el formateador
 		barChart.WithThousandsSeparator()
 
 		// Verificar que el formateador se guardó
-		if barChart.valueFormatter == nil {
+		if barChart.docChart.valueFormatter == nil {
 			t.Error("El formateador FormatNumber no se guardó correctamente")
 		}
 
 		// Verificar que el formateador funciona como se espera
-		result := barChart.valueFormatter(1234567.0)
+		result := barChart.docChart.valueFormatter(1234567.0)
 		expected := "1.234.567" // Con separadores de miles
 		if result != expected {
 			t.Errorf("El formateador FormatNumber no funcionó correctamente. Esperado: %s, Obtenido: %s", expected, result)
