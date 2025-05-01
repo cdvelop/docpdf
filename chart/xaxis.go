@@ -2,6 +2,8 @@ package chart
 
 import (
 	"math"
+
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 // HideXAxis hides the x-axis.
@@ -60,9 +62,9 @@ func (xa XAxis) GetTickPosition(defaults ...TickPosition) TickPosition {
 
 // GetTicks returns the ticks for a series.
 // The coalesce priority is:
-// 	- User Supplied Ticks (i.e. Ticks array on the axis itself).
-// 	- Range ticks (i.e. if the range provides ticks).
-//	- Generating continuous ticks based on minimum spacing and canvas width.
+//   - User Supplied Ticks (i.e. Ticks array on the axis itself).
+//   - Range ticks (i.e. if the range provides ticks).
+//   - Generating continuous ticks based on minimum spacing and canvas width.
 func (xa XAxis) GetTicks(r Renderer, ra Range, defaults Style, vf ValueFormatter) []Tick {
 	if len(xa.Ticks) > 0 {
 		return xa.Ticks
@@ -110,9 +112,9 @@ func (xa XAxis) Measure(r Renderer, canvasBox Box, ra Range, defaults Style, tic
 			break
 		}
 
-		left = MinInt(left, ltx)
-		right = MaxInt(right, rtx)
-		bottom = MaxInt(bottom, ty)
+		left = mathutils.MinInt(left, ltx)
+		right = mathutils.MaxInt(right, rtx)
+		bottom = mathutils.MaxInt(bottom, ty)
 	}
 
 	if !xa.NameStyle.Hidden && len(xa.Name) > 0 {
@@ -164,7 +166,7 @@ func (xa XAxis) Render(r Renderer, canvasBox Box, ra Range, defaults Style, tick
 				ty = canvasBox.Bottom + (2 * DefaultXAxisMargin)
 			}
 			Draw.Text(r, t.Label, tx, ty, tickWithAxisStyle)
-			maxTextHeight = MaxInt(maxTextHeight, tb.Height())
+			maxTextHeight = mathutils.MaxInt(maxTextHeight, tb.Height())
 			break
 		case TickPositionBetweenTicks:
 			if index > 0 {
@@ -180,7 +182,7 @@ func (xa XAxis) Render(r Renderer, canvasBox Box, ra Range, defaults Style, tick
 				}, finalTickStyle)
 
 				ftb := Text.MeasureLines(r, Text.WrapFit(r, t.Label, tx-ltx, finalTickStyle), finalTickStyle)
-				maxTextHeight = MaxInt(maxTextHeight, ftb.Height())
+				maxTextHeight = mathutils.MaxInt(maxTextHeight, ftb.Height())
 			}
 			break
 		}

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/cdvelop/docpdf/chart/testutil"
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 type mockValuesProvider struct {
@@ -12,14 +13,14 @@ type mockValuesProvider struct {
 }
 
 func (m mockValuesProvider) Len() int {
-	return MinInt(len(m.X), len(m.Y))
+	return mathutils.MinInt(len(m.X), len(m.Y))
 }
 
 func (m mockValuesProvider) GetValues(index int) (x, y float64) {
 	if index < 0 {
 		panic("negative index at GetValue()")
 	}
-	if index >= MinInt(len(m.X), len(m.Y)) {
+	if index >= mathutils.MinInt(len(m.X), len(m.Y)) {
 		panic("index is outside the length of m.X or m.Y")
 	}
 	x = m.X[index]

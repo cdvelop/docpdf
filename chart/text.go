@@ -2,6 +2,8 @@ package chart
 
 import (
 	"strings"
+
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 // TextHorizontalAlign is an enum for the horizontal alignment options.
@@ -147,7 +149,7 @@ func (t text) MeasureLines(r Renderer, lines []string, style Style) Box {
 	var output Box
 	for index, line := range lines {
 		lineBox := r.MeasureText(line)
-		output.Right = MaxInt(lineBox.Right, output.Right)
+		output.Right = mathutils.MaxInt(lineBox.Right, output.Right)
 		output.Bottom += lineBox.Height()
 		if index < len(lines)-1 {
 			output.Bottom += +style.GetTextLineSpacing()

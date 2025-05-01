@@ -2,6 +2,8 @@ package chart
 
 import (
 	"math"
+
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 var (
@@ -38,8 +40,8 @@ func (d draw) LineSeries(r Renderer, canvasBox Box, xrange, yrange Range, style 
 			y = cb - yrange.Translate(vy)
 			r.LineTo(x, y)
 		}
-		r.LineTo(x, MinInt(cb, cb-yv0))
-		r.LineTo(x0, MinInt(cb, cb-yv0))
+		r.LineTo(x, mathutils.MinInt(cb, cb-yv0))
+		r.LineTo(x0, mathutils.MinInt(cb, cb-yv0))
 		r.LineTo(x0, y0)
 		r.Fill()
 	}

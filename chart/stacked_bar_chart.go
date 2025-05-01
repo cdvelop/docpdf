@@ -7,6 +7,7 @@ import (
 	"math"
 
 	"github.com/cdvelop/docpdf/freetype/truetype"
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 // StackedBar is a bar within a StackedBarChart.
@@ -177,7 +178,7 @@ func (sbc StackedBarChart) drawBar(r Renderer, canvasBox Box, xoffset int, bar S
 			Top:    yoffset,
 			Left:   bxl,
 			Right:  bxr,
-			Bottom: MinInt(yoffset+barHeight, canvasBox.Bottom-DefaultStrokeWidth),
+			Bottom: mathutils.MinInt(yoffset+barHeight, canvasBox.Bottom-DefaultStrokeWidth),
 		}
 		Draw.Box(r, barBox, bv.Style.InheritFrom(sbc.styleDefaultsStackedBarValue(index)))
 		yoffset += barHeight
@@ -226,7 +227,7 @@ func (sbc StackedBarChart) drawHorizontalBar(r Renderer, canvasBox Box, yoffset 
 		barHeight := int(math.Ceil(bv.Value * float64(canvasBox.Width())))
 		barBox := Box{
 			Top:    boxTop,
-			Left:   MinInt(xOffset-barHeight, canvasBox.Left+DefaultStrokeWidth),
+			Left:   mathutils.MinInt(xOffset-barHeight, canvasBox.Left+DefaultStrokeWidth),
 			Right:  xOffset,
 			Bottom: boxBottom,
 		}
@@ -461,7 +462,7 @@ func (sbc StackedBarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box) Box {
 				lines := Text.WrapFit(r, bar.Name, barLabelBox.Width(), axisStyle)
 				linesBox := Text.MeasureLines(r, lines, axisStyle)
 
-				xaxisHeight = MaxInt(linesBox.Height()+(2*DefaultXAxisMargin), xaxisHeight)
+				xaxisHeight = mathutils.MaxInt(linesBox.Height()+(2*DefaultXAxisMargin), xaxisHeight)
 			}
 		}
 		return Box{
@@ -504,7 +505,7 @@ func (sbc StackedBarChart) getHorizontalAdjustedCanvasBox(r Renderer, canvasBox 
 				lines := Text.WrapFit(r, bar.Name, barLabelBox.Width(), axisStyle)
 				linesBox := Text.MeasureLines(r, lines, axisStyle)
 
-				yAxisWidth = MaxInt(linesBox.Height()+(2*DefaultXAxisMargin), yAxisWidth)
+				yAxisWidth = mathutils.MaxInt(linesBox.Height()+(2*DefaultXAxisMargin), yAxisWidth)
 			}
 		}
 		return Box{
@@ -558,7 +559,7 @@ func (sbc StackedBarChart) styleDefaultsTitle() Style {
 }
 
 func (sbc StackedBarChart) getScaledFontSize() float64 {
-	effectiveDimension := MinInt(sbc.GetWidth(), sbc.GetHeight())
+	effectiveDimension := mathutils.MinInt(sbc.GetWidth(), sbc.GetHeight())
 	if effectiveDimension >= 2048 {
 		return 48.0
 	} else if effectiveDimension >= 1024 {
@@ -572,7 +573,7 @@ func (sbc StackedBarChart) getScaledFontSize() float64 {
 }
 
 func (sbc StackedBarChart) getTitleFontSize() float64 {
-	effectiveDimension := MinInt(sbc.GetWidth(), sbc.GetHeight())
+	effectiveDimension := mathutils.MinInt(sbc.GetWidth(), sbc.GetHeight())
 	if effectiveDimension >= 2048 {
 		return 48
 	} else if effectiveDimension >= 1024 {

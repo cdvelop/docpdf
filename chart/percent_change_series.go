@@ -1,5 +1,7 @@
 package chart
 
+import "github.com/cdvelop/docpdf/mathutils"
+
 // Interface Assertions.
 var (
 	_ Series                 = (*PercentChangeSeries)(nil)
@@ -52,7 +54,7 @@ func (pcs PercentChangeSeries) GetValues(index int) (x, y float64) {
 	_, fy := pcs.InnerSeries.GetFirstValues()
 	x0, y0 := pcs.InnerSeries.GetValues(index)
 	x = x0
-	y = PercentDifference(fy, y0)
+	y = mathutils.PercentDifference(fy, y0)
 	return
 }
 
@@ -73,7 +75,7 @@ func (pcs PercentChangeSeries) GetLastValues() (x, y float64) {
 	_, fy := pcs.InnerSeries.GetFirstValues()
 	x0, y0 := pcs.InnerSeries.GetLastValues()
 	x = x0
-	y = PercentDifference(fy, y0)
+	y = mathutils.PercentDifference(fy, y0)
 	return
 }
 

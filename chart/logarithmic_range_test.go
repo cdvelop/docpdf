@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	"github.com/cdvelop/docpdf/chart/testutil"
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 func TestLogRangeTranslate(t *testing.T) {
 	values := []float64{1, 10, 100, 1000, 10000, 100000, 1000000}
 	r := LogarithmicRange{Domain: 1000}
-	r.Min, r.Max = MinMax(values...)
+	r.Min, r.Max = mathutils.MinMax(values...)
 
 	testutil.AssertEqual(t, 0, r.Translate(0))          // goes to bottom
 	testutil.AssertEqual(t, 0, r.Translate(1))          // goes to bottom
@@ -21,7 +22,7 @@ func TestLogRangeTranslate(t *testing.T) {
 func TestGetTicks(t *testing.T) {
 	values := []float64{35, 512, 1525122}
 	r := LogarithmicRange{Domain: 1000}
-	r.Min, r.Max = MinMax(values...)
+	r.Min, r.Max = mathutils.MinMax(values...)
 
 	ticks := r.GetTicks(nil, Style{}, FloatValueFormatter)
 	testutil.AssertEqual(t, 7, len(ticks))
@@ -33,7 +34,7 @@ func TestGetTicks(t *testing.T) {
 func TestGetTicksFromHigh(t *testing.T) {
 	values := []float64{1412, 352144, 1525122} // min tick should be 1000
 	r := LogarithmicRange{}
-	r.Min, r.Max = MinMax(values...)
+	r.Min, r.Max = mathutils.MinMax(values...)
 
 	ticks := r.GetTicks(nil, Style{}, FloatValueFormatter)
 	testutil.AssertEqual(t, 5, len(ticks))

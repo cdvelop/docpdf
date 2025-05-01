@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/cdvelop/docpdf/freetype/truetype"
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 // DonutChart is a chart that draws sections of a circle based on percentages with an hole.
@@ -123,7 +124,7 @@ func (pc DonutChart) drawTitle(r Renderer) {
 
 func (pc DonutChart) drawSlices(r Renderer, canvasBox Box, values []Value) {
 	cx, cy := canvasBox.Center()
-	diameter := MinInt(canvasBox.Width(), canvasBox.Height())
+	diameter := mathutils.MinInt(canvasBox.Width(), canvasBox.Height())
 	radius := float64(diameter>>1) / 1.1
 	labelRadius := (radius * 2.83) / 3.0
 
@@ -139,8 +140,8 @@ func (pc DonutChart) drawSlices(r Renderer, canvasBox Box, values []Value) {
 		for index, v := range values {
 			v.Style.InheritFrom(pc.styleDonutChartValue(index)).WriteToRenderer(r)
 			r.MoveTo(cx, cy)
-			rads = PercentToRadians(total)
-			delta = PercentToRadians(v.Value)
+			rads = mathutils.PercentToRadians(total)
+			delta = mathutils.PercentToRadians(v.Value)
 
 			r.ArcTo(cx, cy, (radius / 1.25), (radius / 1.25), rads, delta)
 
@@ -158,7 +159,7 @@ func (pc DonutChart) drawSlices(r Renderer, canvasBox Box, values []Value) {
 	})
 	v.Style.InheritFrom(styletemp).WriteToRenderer(r)
 	r.MoveTo(cx, cy)
-	r.ArcTo(cx, cy, (radius / 3.5), (radius / 3.5), DegreesToRadians(0), DegreesToRadians(359))
+	r.ArcTo(cx, cy, (radius / 3.5), (radius / 3.5), mathutils.DegreesToRadians(0), mathutils.DegreesToRadians(359))
 	r.LineTo(cx, cy)
 	r.Close()
 	r.FillStroke()
@@ -168,9 +169,9 @@ func (pc DonutChart) drawSlices(r Renderer, canvasBox Box, values []Value) {
 	for index, v := range values {
 		v.Style.InheritFrom(pc.styleDonutChartValue(index)).WriteToRenderer(r)
 		if len(v.Label) > 0 {
-			delta2 = PercentToRadians(total + (v.Value / 2.0))
-			delta2 = RadianAdd(delta2, _pi2)
-			lx, ly = CirclePoint(cx, cy, labelRadius, delta2)
+			delta2 = mathutils.PercentToRadians(total + (v.Value / 2.0))
+			delta2 = mathutils.RadianAdd(delta2, mathutils.TwoPi)
+			lx, ly = mathutils.CirclePoint(cx, cy, labelRadius, delta2)
 
 			tb := r.MeasureText(v.Label)
 			lx = lx - (tb.Width() >> 1)
@@ -195,7 +196,7 @@ func (pc DonutChart) getDefaultCanvasBox() Box {
 }
 
 func (pc DonutChart) getCircleAdjustedCanvasBox(canvasBox Box) Box {
-	circleDiameter := MinInt(canvasBox.Width(), canvasBox.Height())
+	circleDiameter := mathutils.MinInt(canvasBox.Width(), canvasBox.Height())
 
 	square := Box{
 		Right:  circleDiameter,
@@ -241,7 +242,7 @@ func (pc DonutChart) styleDonutChartValue(index int) Style {
 }
 
 func (pc DonutChart) getScaledFontSize() float64 {
-	effectiveDimension := MinInt(pc.GetWidth(), pc.GetHeight())
+	effectiveDimension := mathutils.MinInt(pc.GetWidth(), pc.GetHeight())
 	if effectiveDimension >= 2048 {
 		return 48.0
 	} else if effectiveDimension >= 1024 {
@@ -280,7 +281,7 @@ func (pc DonutChart) styleDefaultsTitle() Style {
 }
 
 func (pc DonutChart) getTitleFontSize() float64 {
-	effectiveDimension := MinInt(pc.GetWidth(), pc.GetHeight())
+	effectiveDimension := mathutils.MinInt(pc.GetWidth(), pc.GetHeight())
 	if effectiveDimension >= 2048 {
 		return 48
 	} else if effectiveDimension >= 1024 {

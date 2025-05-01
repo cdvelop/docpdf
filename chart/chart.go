@@ -7,6 +7,7 @@ import (
 	"math"
 
 	"github.com/cdvelop/docpdf/freetype/truetype"
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 // Chart is what we're drawing.
@@ -270,8 +271,8 @@ func (c Chart) getRanges() (xrange, yrange, yrangeAlt Range) {
 
 		if !c.YAxis.Style.Hidden {
 			delta := yrange.GetDelta()
-			roundTo := GetRoundToForDelta(delta)
-			rmin, rmax := RoundDown(yrange.GetMin(), roundTo), RoundUp(yrange.GetMax(), roundTo)
+			roundTo := mathutils.GetRoundToForDelta(delta)
+			rmin, rmax := mathutils.RoundDown(yrange.GetMin(), roundTo), mathutils.RoundUp(yrange.GetMax(), roundTo)
 
 			yrange.SetMin(rmin)
 			yrange.SetMax(rmax)
@@ -292,8 +293,8 @@ func (c Chart) getRanges() (xrange, yrange, yrangeAlt Range) {
 
 		if !c.YAxisSecondary.Style.Hidden {
 			delta := yrangeAlt.GetDelta()
-			roundTo := GetRoundToForDelta(delta)
-			rmin, rmax := RoundDown(yrangeAlt.GetMin(), roundTo), RoundUp(yrangeAlt.GetMax(), roundTo)
+			roundTo := mathutils.GetRoundToForDelta(delta)
+			rmin, rmax := mathutils.RoundDown(yrangeAlt.GetMin(), roundTo), mathutils.RoundUp(yrangeAlt.GetMax(), roundTo)
 			yrangeAlt.SetMin(rmin)
 			yrangeAlt.SetMax(rmax)
 		}

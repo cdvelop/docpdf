@@ -11,6 +11,7 @@ import (
 
 	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/freetype/truetype"
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 // SVG returns a new png/raster renderer.
@@ -113,8 +114,8 @@ func (vr *vectorRenderer) QuadCurveTo(cx, cy, x, y int) {
 }
 
 func (vr *vectorRenderer) ArcTo(cx, cy int, rx, ry, startAngle, delta float64) {
-	startAngle = RadianAdd(startAngle, _pi2)
-	endAngle := RadianAdd(startAngle, delta)
+	startAngle = mathutils.RadianAdd(startAngle, mathutils.TwoPi)
+	endAngle := mathutils.RadianAdd(startAngle, delta)
 
 	startx := cx + int(rx*math.Sin(startAngle))
 	starty := cy - int(ry*math.Cos(startAngle))
@@ -128,10 +129,10 @@ func (vr *vectorRenderer) ArcTo(cx, cy int, rx, ry, startAngle, delta float64) {
 	endx := cx + int(rx*math.Sin(endAngle))
 	endy := cy - int(ry*math.Cos(endAngle))
 
-	dd := RadiansToDegrees(delta)
+	dd := mathutils.RadiansToDegrees(delta)
 
 	largeArcFlag := 0
-	if delta > _pi {
+	if delta > mathutils.Pi {
 		largeArcFlag = 1
 	}
 
@@ -205,7 +206,7 @@ func (vr *vectorRenderer) MeasureText(body string) (box Box) {
 		if vr.c.textTheta == nil {
 			return
 		}
-		box = box.Corners().Rotate(RadiansToDegrees(*vr.c.textTheta)).Box()
+		box = box.Corners().Rotate(mathutils.RadiansToDegrees(*vr.c.textTheta)).Box()
 	}
 	return
 }
@@ -271,7 +272,7 @@ func (c *canvas) Text(x, y int, body string, style Style) {
 	if c.textTheta == nil {
 		c.w.Write([]byte(fmt.Sprintf(`<text x="%d" y="%d" %s>%s</text>`, x, y, c.styleAsSVG(style), body)))
 	} else {
-		transform := fmt.Sprintf(` transform="rotate(%0.2f,%d,%d)"`, RadiansToDegrees(*c.textTheta), x, y)
+		transform := fmt.Sprintf(` transform="rotate(%0.2f,%d,%d)"`, mathutils.RadiansToDegrees(*c.textTheta), x, y)
 		c.w.Write([]byte(fmt.Sprintf(`<text x="%d" y="%d" %s%s>%s</text>`, x, y, c.styleAsSVG(style), transform, body)))
 	}
 }

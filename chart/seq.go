@@ -3,6 +3,8 @@ package chart
 import (
 	"math"
 	"sort"
+
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 // ValueSequence returns a sequence for a given values set.
@@ -234,7 +236,7 @@ func (s Seq) StdDev() float64 {
 	return math.Pow(s.Variance(), 0.5)
 }
 
-//Percentile finds the relative standing in a slice of floats.
+// Percentile finds the relative standing in a slice of floats.
 // `percent` should be given on the interval [0,1.0).
 func (s Seq) Percentile(percent float64) (percentile float64) {
 	l := s.Len()
@@ -249,12 +251,12 @@ func (s Seq) Percentile(percent float64) (percentile float64) {
 	sorted := s.Sort()
 	index := percent * float64(l)
 	if index == float64(int64(index)) {
-		i := f64i(index)
+		i := mathutils.RoundToInt(index)
 		ci := sorted.GetValue(i - 1)
 		c := sorted.GetValue(i)
 		percentile = (ci + c) / 2.0
 	} else {
-		i := f64i(index)
+		i := mathutils.RoundToInt(index)
 		percentile = sorted.GetValue(i)
 	}
 

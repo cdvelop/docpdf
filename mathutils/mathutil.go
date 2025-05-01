@@ -1,75 +1,6 @@
-package chart
+package mathutils
 
 import "math"
-
-const (
-	_pi   = math.Pi
-	_2pi  = 2 * math.Pi
-	_3pi4 = (3 * math.Pi) / 4.0
-	_4pi3 = (4 * math.Pi) / 3.0
-	_3pi2 = (3 * math.Pi) / 2.0
-	_5pi4 = (5 * math.Pi) / 4.0
-	_7pi4 = (7 * math.Pi) / 4.0
-	_pi2  = math.Pi / 2.0
-	_pi4  = math.Pi / 4.0
-	_d2r  = (math.Pi / 180.0)
-	_r2d  = (180.0 / math.Pi)
-)
-
-// MinMax returns the minimum and maximum of a given set of values.
-func MinMax(values ...float64) (min, max float64) {
-	if len(values) == 0 {
-		return
-	}
-
-	max = values[0]
-	min = values[0]
-	var value float64
-	for index := 1; index < len(values); index++ {
-		value = values[index]
-		if value < min {
-			min = value
-		}
-		if value > max {
-			max = value
-		}
-	}
-	return
-}
-
-// MinInt returns the minimum int.
-func MinInt(values ...int) (min int) {
-	if len(values) == 0 {
-		return
-	}
-
-	min = values[0]
-	var value int
-	for index := 1; index < len(values); index++ {
-		value = values[index]
-		if value < min {
-			min = value
-		}
-	}
-	return
-}
-
-// MaxInt returns the maximum int.
-func MaxInt(values ...int) (max int) {
-	if len(values) == 0 {
-		return
-	}
-
-	max = values[0]
-	var value int
-	for index := 1; index < len(values); index++ {
-		value = values[index]
-		if value > max {
-			max = value
-		}
-	}
-	return
-}
 
 // AbsInt returns the absolute value of an int.
 func AbsInt(value int) int {
@@ -86,7 +17,7 @@ func DegreesToRadians(degrees float64) float64 {
 
 // RadiansToDegrees translates a radian value to a degree value.
 func RadiansToDegrees(value float64) float64 {
-	return math.Mod(value, _2pi) * _r2d
+	return math.Mod(value, TwoPi) * _r2d
 }
 
 // PercentToRadians converts a normalized value (0,1) to radians.
@@ -97,10 +28,10 @@ func PercentToRadians(pct float64) float64 {
 // RadianAdd adds a delta to a base in radians.
 func RadianAdd(base, delta float64) float64 {
 	value := base + delta
-	if value > _2pi {
-		return math.Mod(value, _2pi)
+	if value > TwoPi {
+		return math.Mod(value, TwoPi)
 	} else if value < 0 {
-		return math.Mod(_2pi+value, _2pi)
+		return math.Mod(TwoPi+value, TwoPi)
 	}
 	return value
 }
@@ -108,7 +39,7 @@ func RadianAdd(base, delta float64) float64 {
 // DegreesAdd adds a delta to a base in radians.
 func DegreesAdd(baseDegrees, deltaDegrees float64) float64 {
 	value := baseDegrees + deltaDegrees
-	if value > _2pi {
+	if value > TwoPi {
 		return math.Mod(value, 360.0)
 	} else if value < 0 {
 		return math.Mod(360.0+value, 360.0)
@@ -155,21 +86,6 @@ func RoundDown(value, roundTo float64) float64 {
 	}
 	d1 := math.Floor(value / roundTo)
 	return d1 * roundTo
-}
-
-// Normalize returns a set of numbers on the interval [0,1] for a given set of inputs.
-// An example: 4,3,2,1 => 0.4, 0.3, 0.2, 0.1
-// Caveat; the total may be < 1.0; there are going to be issues with irrational numbers etc.
-func Normalize(values ...float64) []float64 {
-	var total float64
-	for _, v := range values {
-		total += v
-	}
-	output := make([]float64, len(values))
-	for x, v := range values {
-		output[x] = RoundDown(v/total, 0.0001)
-	}
-	return output
 }
 
 // Mean returns the mean of a set of values
@@ -246,7 +162,8 @@ func RoundPlaces(input float64, places int) (rounded float64) {
 	return rounded / precision * sign
 }
 
-func f64i(value float64) int {
+// RoundToInt convierte un float64 a int redondeando al entero más cercano
+func RoundToInt(value float64) int {
 	r := RoundPlaces(value, 0)
 	return int(r)
 }

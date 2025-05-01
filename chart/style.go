@@ -6,6 +6,7 @@ import (
 
 	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/freetype/truetype"
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 const (
@@ -360,7 +361,7 @@ func (s Style) WriteToRenderer(r Renderer) {
 
 	r.ClearTextRotation()
 	if s.GetTextRotationDegrees() != 0 {
-		r.SetTextRotation(DegreesToRadians(s.GetTextRotationDegrees()))
+		r.SetTextRotation(mathutils.DegreesToRadians(s.GetTextRotationDegrees()))
 	}
 }
 

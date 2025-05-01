@@ -4,13 +4,14 @@ import (
 	"testing"
 
 	"github.com/cdvelop/docpdf/chart/testutil"
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 func TestRangeTranslate(t *testing.T) {
 	// replaced new assertions helper
 	values := []float64{1.0, 2.0, 2.5, 2.7, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0}
 	r := ContinuousRange{Domain: 1000}
-	r.Min, r.Max = MinMax(values...)
+	r.Min, r.Max = mathutils.MinMax(values...)
 
 	// delta = ~7.0
 	// value = ~5.0

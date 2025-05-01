@@ -8,6 +8,7 @@ import (
 
 	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/freetype/truetype"
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 // PNG returns a new png/raster renderer.
@@ -194,7 +195,7 @@ func (rr *rasterRenderer) MeasureText(body string) Box {
 		return textBox
 	}
 
-	return textBox.Corners().Rotate(RadiansToDegrees(*rr.rotateRadians)).Box()
+	return textBox.Corners().Rotate(mathutils.RadiansToDegrees(*rr.rotateRadians)).Box()
 }
 
 // SetTextRotation sets a text rotation.

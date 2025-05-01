@@ -3,6 +3,8 @@ package chart
 import (
 	"fmt"
 	"math"
+
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 // Interface Assertions.
@@ -60,10 +62,10 @@ func (as AnnotationSeries) Measure(r Renderer, canvasBox Box, xrange, yrange Ran
 			lx := canvasBox.Left + xrange.Translate(a.XValue)
 			ly := canvasBox.Bottom - yrange.Translate(a.YValue)
 			ab := Draw.MeasureAnnotation(r, canvasBox, style, lx, ly, a.Label)
-			box.Top = MinInt(box.Top, ab.Top)
-			box.Left = MinInt(box.Left, ab.Left)
-			box.Right = MaxInt(box.Right, ab.Right)
-			box.Bottom = MaxInt(box.Bottom, ab.Bottom)
+			box.Top = mathutils.MinInt(box.Top, ab.Top)
+			box.Left = mathutils.MinInt(box.Left, ab.Left)
+			box.Right = mathutils.MaxInt(box.Right, ab.Right)
+			box.Bottom = mathutils.MaxInt(box.Bottom, ab.Bottom)
 		}
 	}
 	return box

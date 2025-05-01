@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"strings"
+
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 // TicksProvider is a type that provides ticks.
@@ -83,15 +85,15 @@ func GenerateContinuousTicks(r Renderer, ra Range, isVertical bool, style Style,
 	rangeDelta := math.Abs(max - min)
 	tickStep := rangeDelta / float64(intermediateTickCount)
 
-	roundTo := GetRoundToForDelta(rangeDelta) / 10
-	intermediateTickCount = MinInt(intermediateTickCount, DefaultTickCountSanityCheck)
+	roundTo := mathutils.GetRoundToForDelta(rangeDelta) / 10
+	intermediateTickCount = mathutils.MinInt(intermediateTickCount, DefaultTickCountSanityCheck)
 
 	for x := 1; x < intermediateTickCount; x++ {
 		var tickValue float64
 		if ra.IsDescending() {
-			tickValue = max - RoundUp(tickStep*float64(x), roundTo)
+			tickValue = max - mathutils.RoundUp(tickStep*float64(x), roundTo)
 		} else {
-			tickValue = min + RoundUp(tickStep*float64(x), roundTo)
+			tickValue = min + mathutils.RoundUp(tickStep*float64(x), roundTo)
 		}
 		ticks = append(ticks, Tick{
 			Value: tickValue,
