@@ -178,6 +178,18 @@ This example shows the main features of the library:
 	}
 ```
 
+## Current Development Focus: Direct Chart Rendering
+
+We are currently working on improving how charts are rendered within PDF documents.
+
+**Problem:** The current method renders charts as intermediate images (SVG/PNG), which are then embedded as raster images in the PDF. This is inefficient, leads to loss of vector quality, and relies on dependencies like `freetype`, hindering the goal of creating a lightweight library suitable for TinyGo and browser environments.
+
+**Solution in Progress:** We are implementing a direct rendering approach. This involves:
+1.  Creating a new internal `chartengine` package (starting with bar charts) that calculates layout using PDF units (points).
+2.  Developing a `pdfRenderer` that translates drawing commands from `chartengine` directly into vector drawing commands for the underlying PDF engine (`pdfEngine`).
+
+This will result in true vector graphics for charts within the PDF, eliminate the `freetype` dependency for charts, improve performance, and align with the goal of a smaller, browser-friendly library.
+
 ## Acknowledgements
 
 This library would not have been possible without github repositories:

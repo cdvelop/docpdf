@@ -242,6 +242,7 @@ func (c *docChart) Draw() error {
 
 	// Usar los bytes del buffer directamente sin necesidad de archivo temporal
 	docImage := c.doc.AddImage(buf.Bytes())
+	//docImage := c.doc.AddChartSvg(buf.Bytes())
 	// ajustar la alineación según la configuración
 	docImage.alignment = c.alignment
 
