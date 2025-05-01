@@ -1,33 +1,18 @@
 package docpdf
 
 import (
-	"math"
-
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/chartutils"
 	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/fontbridge"
 )
 
-// ChartInterface define los métodos comunes para todos los tipos de gráficos
-type ChartInterface interface {
-	// Estas son las funciones comunes que deberían implementar todos los gráficos
-	Draw() error
-	Quality(dpi float64) interface{}
-	WithThousandsSeparator() interface{}
-	WithoutThousandsSeparator() interface{}
-	WithStyle(backgroundColor, foregroundColor drawing.Color) interface{}
-	WithLabelFormatter(formatter chartutils.LabelFormatter) interface{}
-	WithValueFormatter(formatter chart.ValueFormatter) interface{}
-	WithTruncateNameFormatter(maxCharsPerWord, maxWidth int) interface{}
-}
-
-// ChartType define los tipos de gráficos soportados
-type ChartType string
+// chartType define los tipos de gráficos soportados
+type chartType string
 
 const (
-	BarChartType   ChartType = "bar"
-	DonutChartType ChartType = "donut"
+	barChartType   chartType = "bar"
+	donutChartType chartType = "donut"
 	// Aquí se pueden agregar más tipos de gráficos en el futuro
 )
 
@@ -92,7 +77,7 @@ func (doc *Document) Chart() *docCharts {
 // default alignment: Center
 func (c *docCharts) Bar() *docBarChart {
 	// Usar la función de configuración común
-	base := configureBaseChart(c.doc, BarChartType)
+	base := configureBaseChart(c.doc, barChartType)
 
 	// Crear el gráfico de barras específico con la configuración base
 	barChart := &docBarChart{
@@ -107,14 +92,8 @@ func (c *docCharts) Bar() *docBarChart {
 // Donut crea un nuevo elemento de gráfico de tipo donut
 // default alignment: Center
 func (c *docCharts) Donut() *docDonutChart {
-	// Usar la función de configuración común
-	base := configureBaseChart(c.doc, DonutChartType)
-
-	// Para el donut, preferimos dimensiones cuadradas para garantizar un círculo perfecto
-	// Si se desea un tamaño específico, se puede configurar posteriormente
-	minDimension := math.Min(base.width, base.height)
-	base.width = minDimension
-	base.height = minDimension
+	// Usar la función de configuración común de todo el gráfico
+	base := configureBaseChart(c.doc, donutChartType)
 
 	// Crear el gráfico específico de tipo donut
 	donutChart := &docDonutChart{

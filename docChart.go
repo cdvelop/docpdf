@@ -3,7 +3,6 @@ package docpdf
 
 import (
 	"bytes"
-	"math"
 
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/chartutils"
@@ -23,7 +22,7 @@ type docChart struct {
 	hasPos    bool
 	inline    bool
 	valign    int
-	chartType ChartType
+	chartType chartType
 
 	// Propiedades comunes a todos los gráficos
 	title          string
@@ -229,9 +228,9 @@ func (c *docChart) Draw() error {
 
 	// Renderizar según el tipo de gráfico
 	switch c.chartType {
-	case BarChartType:
+	case barChartType:
 		err = c.drawBarChart(&buf, widthInPixels, heightInPixels, scaleFactor, titleStyle, backgroundStyle)
-	case DonutChartType:
+	case donutChartType:
 		err = c.drawDonutChart(&buf, widthInPixels, heightInPixels, scaleFactor, titleStyle, backgroundStyle)
 	default:
 		// Si no se reconoce el tipo, usar el gráfico de barras como predeterminado
@@ -455,9 +454,13 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 			// Este código se ejecuta después de dibujar el donut
 			// Dibuja un círculo blanco en el centro para crear el agujero
 			cx, cy := canvasBox.Center()
-			diameter := math.Min(float64(canvasBox.Width()), float64(canvasBox.Height())) // Usar un valor mayor para el divisor crea un agujero más pequeño
-			// y viceversa. Usamos un valor ajustado para crear un donut con buen aspecto
-			holeRadius := diameter * 0.25 // 25% del diámetro
+
+			// Usar el 50% de la altura como diámetro del donut
+			outerDiameter := float64(heightInPixels) * 0.5
+
+			// Calculamos el radio del agujero como un porcentaje del diámetro externo
+			// Un valor común para donut charts es entre 40-60% del radio externo
+			holeRadius := outerDiameter * 0.4 // 40% del diámetro externo
 
 			// Dibujar el círculo central (el "agujero")
 			r.SetFillColor(chart.ColorWhite)
@@ -480,7 +483,7 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 
 // configureBaseChart establece la configuración común para cualquier tipo de gráfico
 // Esta función centraliza la lógica de configuración para mantener consistencia
-func configureBaseChart(doc *Document, chartType ChartType) *docChart {
+func configureBaseChart(doc *Document, chartType chartType) *docChart {
 	// Crear instancia base con configuración común
 	base := &docChart{
 		doc:            doc,
