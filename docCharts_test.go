@@ -32,11 +32,6 @@ func TestCharts(t *testing.T) {
 	// Crear el gráfico de barras con la nueva API
 	barChart := doc.Chart().Bar().
 		Title("Ventas por Departamento")
-		// BarWidth(60).
-		// BarSpacing(20).
-		// WithAxis(true, true).
-		// AlignCenter().
-		// Height(250)
 
 	// Ordenar de mayor a menor
 	sort.Slice(bars, func(i, j int) bool {
@@ -51,29 +46,19 @@ func TestCharts(t *testing.T) {
 	// Dibujar el gráfico de barras
 	barChart.Draw()
 
-	// Agregar espacio
-	doc.Br(1)
-
 	// Crear un gráfico de tipo donut
 	doc.AddHeader2("2. Gráfico tipo Donut").Draw()
 	doc.AddText("Se puede crear un gráfico de tipo donut con Chart().Donut():").Draw()
 
 	// Crear el gráfico de donut con la nueva API
 	donutChart := doc.Chart().Donut().
-		Title("Distribución de Ventas").
-		Size(350, 350). // Los gráficos donut suelen ser cuadrados
-		AlignCenter()
+		Title("Distribución de Ventas")
 
 	// Usar los mismos datos que el gráfico de barras
 	for _, b := range bars {
 		donutChart.AddValue(b.val, b.label)
 	}
 
-	// Aplicar un estilo personalizado
-	// bgColor := drawing.Color{R: 245, G: 245, B: 245, A: 255}   // Gris muy claro
-	// sliceColor := drawing.Color{R: 30, G: 144, B: 255, A: 255} // Azul real
-
-	// donutChart.WithStyle(bgColor, sliceColor)
 	// Dibujar el gráfico de donut
 	donutChart.Draw()
 
