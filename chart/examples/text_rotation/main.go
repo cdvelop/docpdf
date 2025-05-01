@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/cdvelop/docpdf/chart"
-	"github.com/cdvelop/docpdf/drawing"
+	"github.com/cdvelop/docpdf/style"
 )
 
 func main() {
@@ -14,20 +14,20 @@ func main() {
 	r, _ := chart.PNG(1024, 1024)
 
 	chart.Draw.Text(r, "Test", 64, 64, chart.Style{
-		FontColor: drawing.ColorBlack,
+		FontColor: style.ColorBlack,
 		FontSize:  18,
 		Font:      f,
 	})
 
 	chart.Draw.Text(r, "Test", 64, 64, chart.Style{
-		FontColor:           drawing.ColorBlack,
+		FontColor:           style.ColorBlack,
 		FontSize:            18,
 		Font:                f,
 		TextRotationDegrees: 45.0,
 	})
 
 	tb := chart.Draw.MeasureText(r, "Test", chart.Style{
-		FontColor: drawing.ColorBlack,
+		FontColor: style.ColorBlack,
 		FontSize:  18,
 		Font:      f,
 	}).Shift(64, 64)
@@ -35,13 +35,13 @@ func main() {
 	tbc := tb.Corners().Rotate(45)
 
 	chart.Draw.BoxCorners(r, tbc, chart.Style{
-		StrokeColor: drawing.ColorRed,
+		StrokeColor: style.ColorRed,
 		StrokeWidth: 2,
 	})
 
 	tbcb := tbc.Box()
 	chart.Draw.Box(r, tbcb, chart.Style{
-		StrokeColor: drawing.ColorBlue,
+		StrokeColor: style.ColorBlue,
 		StrokeWidth: 2,
 	})
 

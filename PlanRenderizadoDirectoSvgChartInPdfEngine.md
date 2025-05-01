@@ -18,7 +18,7 @@ La integración actual de gráficos en `docpdf` presenta varias limitaciones fun
 
 **Gestión de Fuentes Fragmentada y Dependencias Pesadas (Problema de `fontUnitRefactor.md`):**
 
-*   **Inconsistencia:** `docpdf` usa su motor (`pdfEngine`) con fuentes preprocesadas (`fontmaker`), mientras que la librería `chart` (usada por `docChart`) depende de `freetype` para renderizar texto en los gráficos (actualmente como imágenes).
+*   **Inconsistencia:** `docpdf` usa su motor (`PdfEngine`) con fuentes preprocesadas (`fontmaker`), mientras que la librería `chart` (usada por `docChart`) depende de `freetype` para renderizar texto en los gráficos (actualmente como imágenes).
 *   **Duplicación:** Gestión de fuentes duplicada e incoherente entre `docpdf` y `chart`.
 *   **Dependencia Raster:** `freetype` es una dependencia relativamente pesada, enfocada en renderizado raster.
 
@@ -29,28 +29,28 @@ La integración actual de gráficos en `docpdf` presenta varias limitaciones fun
 
 **Conclusión del Problema:** El enfoque actual no solo es ineficiente y produce gráficos de menor calidad (rasterizados), sino que también introduce dependencias pesadas (`freetype`) y una gestión de fuentes fragmentada que impiden el objetivo estratégico de tener una librería `docpdf` ligera y apta para compilación con TinyGo y uso en navegadores.
 
-**Objetivo de este Plan:** Implementar un renderizado *directo* de los elementos del gráfico (líneas, rectángulos, texto) sobre la página PDF utilizando las primitivas vectoriales de `pdfEngine`. Esto eliminará la necesidad de formatos intermedios (SVG/PNG), la dependencia de `freetype`, y permitirá usar el sistema de fuentes unificado de `pdfEngine`, alineándose con los objetivos de `fontUnitRefactor.md` y la meta de una librería más ligera.
+**Objetivo de este Plan:** Implementar un renderizado *directo* de los elementos del gráfico (líneas, rectángulos, texto) sobre la página PDF utilizando las primitivas vectoriales de `PdfEngine`. Esto eliminará la necesidad de formatos intermedios (SVG/PNG), la dependencia de `freetype`, y permitirá usar el sistema de fuentes unificado de `PdfEngine`, alineándose con los objetivos de `fontUnitRefactor.md` y la meta de una librería más ligera.
 
 ## 2. Solución Propuesta: `pdfRenderer`
 
-La solución consiste en crear un adaptador que traduzca las instrucciones de dibujo de la librería `chart` a las instrucciones de dibujo de `pdfEngine`.
+La solución consiste en crear un adaptador que traduzca las instrucciones de dibujo de la librería `chart` a las instrucciones de dibujo de `PdfEngine`.
 
 1.  **Implementar `chart.Renderer`:**
     *   Crear un nuevo tipo `pdfRenderer` dentro del paquete `docpdf`.
     *   Este tipo implementará la interfaz `chart.Renderer` (definida en `c:\Users\Cesar\Packages\Internal\docpdf\chart\renderer.go`).
-    *   Cada método de la interfaz `chart.Renderer` implementado por `pdfRenderer` (ej. `LineTo(x, y)`, `SetFillColor(c)`, `Circle(r, x, y)`, `Text(body, x, y)`) realizará una llamada al método correspondiente en la instancia de `pdfEngine` (`gp *pdfEngine`).
+    *   Cada método de la interfaz `chart.Renderer` implementado por `pdfRenderer` (ej. `LineTo(x, y)`, `SetFillColor(c)`, `Circle(r, x, y)`, `Text(body, x, y)`) realizará una llamada al método correspondiente en la instancia de `PdfEngine` (`gp *PdfEngine`).
 
 2.  **Manejo de Coordenadas y Estilos:**
     *   El `pdfRenderer` recibirá la posición de inicio (`x`, `y` en puntos PDF) y las dimensiones deseadas (`width`, `height` en puntos PDF) en la página.
     *   Internamente, `pdfRenderer` deberá realizar las transformaciones necesarias:
         *   **Offset:** Sumar las coordenadas `x`, `y` de inicio (en puntos PDF) a todas las coordenadas recibidas de `chart`. Se asume que `chart` proporcionará coordenadas relativas al origen del gráfico (0,0) y en una escala compatible con puntos PDF.
         *   **Sin Escalado DPI:** El `pdfRenderer` **no** aplicará un factor de escala basado en DPI. La librería `chart` (en su Fase 3 de modificación) deberá realizar sus cálculos de layout y proporcionar sus comandos de dibujo directamente en unidades compatibles con puntos PDF, utilizando las dimensiones (`targetW`, `targetH` en puntos) y DPI proporcionados si es necesario internamente.
-    *   Mantendrá el estado del estilo actual (color de trazo, relleno, grosor de línea, fuente, etc., **en puntos PDF**) y lo aplicará a `pdfEngine` antes de ejecutar los comandos de dibujo.
+    *   Mantendrá el estado del estilo actual (color de trazo, relleno, grosor de línea, fuente, etc., **en puntos PDF**) y lo aplicará a `PdfEngine` antes de ejecutar los comandos de dibujo.
 
 3.  **Integración en `docChart`:**
     *   Se creará un nuevo método `DrawDirect()` en `docChart`.
     *   Este método calculará la posición y dimensiones finales del gráfico en la página PDF.
-    *   Instanciará `pdfRenderer` pasándole la instancia de `pdfEngine`, la posición, dimensiones y DPI.
+    *   Instanciará `pdfRenderer` pasándole la instancia de `PdfEngine`, la posición, dimensiones y DPI.
     *   Llamará a un **nuevo método** (que debe ser expuesto por la librería `chart`) en el objeto del gráfico (`chart.BarChart`, `chart.DonutChart`, etc.) que acepte un `chart.Renderer` como argumento (ej. `chartObject.Draw(pdfRenderer)`).
     *   La librería `chart`, al recibir `pdfRenderer`, ejecutará su lógica de dibujo llamando a los métodos de *nuestro* renderer, que a su vez dibujará directamente en el PDF.
 
@@ -75,7 +75,7 @@ La solución consiste en crear un adaptador que traduzca las instrucciones de di
 
     // pdfRenderer implementa la interfaz chartengine.Renderer
     type pdfRenderer struct {
-        pdf         *pdfEngine // Referencia al motor PDF
+        pdf         *PdfEngine // Referencia al motor PDF
         offsetX     float64    // Desplazamiento X en puntos PDF
         offsetY     float64    // Desplazamiento Y en puntos PDF
         targetW     float64    // Ancho objetivo en puntos PDF (para referencia de chartengine)
@@ -88,16 +88,16 @@ La solución consiste en crear un adaptador que traduzca las instrucciones de di
         fontColor   drawing.Color
         strokeWidth float64 // En puntos PDF
         fontSize    float64 // En puntos PDF
-        fontName    string // Nombre/Identificador de la fuente actual en pdfEngine
+        fontName    string // Nombre/Identificador de la fuente actual en PdfEngine
         fontStyle   string // Estilo (ej. "B", "I", "BI", "")
         // ... otros estados necesarios
     }
 
     // Constructor
-    func newPdfRenderer(pdf *pdfEngine, x, y, w, h, dpi float64) *pdfRenderer {
+    func newPdfRenderer(pdf *PdfEngine, x, y, w, h, dpi float64) *pdfRenderer {
         // DPI se pasa para información, no para escalar en este renderer
         if dpi <= 0 {
-            dpi = chart.DefaultDPI // O el DPI por defecto de pdfEngine si existe
+            dpi = chart.DefaultDPI // O el DPI por defecto de PdfEngine si existe
         }
         return &pdfRenderer{
             pdf:     pdf,
@@ -106,7 +106,7 @@ La solución consiste en crear un adaptador que traduzca las instrucciones de di
             targetW: w,
             targetH: h,
             dpi:     dpi,
-            // Inicializar fontName/fontStyle/fontSize con los valores por defecto de pdfEngine si es posible
+            // Inicializar fontName/fontStyle/fontSize con los valores por defecto de PdfEngine si es posible
             // Los estilos específicos (ChartLabel, ChartAxisLabel) se aplicarán
             // a través de las llamadas SetFont/SetFontSize/SetFontColor desde la librería chart,
             // la cual habrá sido configurada previamente usando FontConfig.
@@ -130,9 +130,9 @@ La solución consiste en crear un adaptador que traduzca las instrucciones de di
         r.strokeWidth = width // Asume puntos PDF
         // r.pdf.SetLineWidth(r.strokeWidth)
     }
-    // ... etc para MoveTo, LineTo, Rect, Text, SetFont, SetFontSize ...
+    // ... etc para MoveTo, LineTo, canvas.Rect, Text, SetFont, SetFontSize ...
     ```
-3.  **Completar Implementación:** Implementar *todos* los métodos de la interfaz `chartengine.Renderer`, asegurando la correcta traducción a la API de `pdfEngine`.
+3.  **Completar Implementación:** Implementar *todos* los métodos de la interfaz `chartengine.Renderer`, asegurando la correcta traducción a la API de `PdfEngine`.
 
 **Fase 2: Modificar `docChart` en `docpdf`**
 
@@ -147,7 +147,7 @@ La solución consiste en crear un adaptador que traduzca las instrucciones de di
 **Fase 3 (Nueva): Crear Librería Interna `chartengine`**
 
 1.  **Crear Directorio:** Crear un nuevo directorio `chartengine` dentro de `c:\Users\Cesar\Packages\Internal\docpdf\`.
-2.  **Definir Interfaz `Renderer`:** Crear `chartengine/renderer.go` y definir la interfaz `Renderer`. Puede ser un subconjunto de `chart.Renderer` para empezar, conteniendo solo los métodos necesarios para un gráfico de barras (ej. `SetStrokeColor`, `SetFillColor`, `SetLineWidth`, `SetFont`, `SetFontSize`, `SetFontColor`, `MoveTo`, `LineTo`, `Rect`, `Text`, `MeasureText`). Asegurarse de que las unidades esperadas (puntos PDF) estén claras en la documentación de la interfaz.
+2.  **Definir Interfaz `Renderer`:** Crear `chartengine/renderer.go` y definir la interfaz `Renderer`. Puede ser un subconjunto de `chart.Renderer` para empezar, conteniendo solo los métodos necesarios para un gráfico de barras (ej. `SetStrokeColor`, `SetFillColor`, `SetLineWidth`, `SetFont`, `SetFontSize`, `SetFontColor`, `MoveTo`, `LineTo`, `canvas.Rect`, `Text`, `MeasureText`). Asegurarse de que las unidades esperadas (puntos PDF) estén claras en la documentación de la interfaz.
     ```go
     // filepath: c:\Users\Cesar\Packages\Internal\docpdf\chartengine\renderer.go
     package chartengine
@@ -161,7 +161,7 @@ La solución consiste en crear un adaptador que traduzca las instrucciones de di
         SetStrokeColor(c drawing.Color)
         SetFillColor(c drawing.Color)
         SetLineWidth(width float64)
-        SetFont(name, style string) // Usar nombres/estilos de pdfEngine
+        SetFont(name, style string) // Usar nombres/estilos de PdfEngine
         SetFontSize(size float64)   // Tamaño en puntos PDF
         SetFontColor(c drawing.Color)
         // ... otros métodos de estilo (dash array?)
@@ -169,7 +169,7 @@ La solución consiste en crear un adaptador que traduzca las instrucciones de di
         // Comandos de Dibujo (coordenadas/dimensiones en puntos PDF)
         MoveTo(x, y float64)
         LineTo(x, y float64)
-        Rect(x, y, w, h float64) // Dibujar un rectángulo
+        canvas.Rect(x, y, w, h float64) // Dibujar un rectángulo
         Text(text string, x, y float64)
         // ... otros comandos (Circle, Arc, Path?)
 
@@ -210,7 +210,7 @@ La solución consiste en crear un adaptador que traduzca las instrucciones de di
         *   Calcular el layout (posiciones X/Y, ancho/alto de barras, ejes) basándose en `Values`, `BarWidth`, `BarSpacing`, y las dimensiones obtenidas de `r.GetTargetDimensions()`. **Todos los cálculos deben hacerse en puntos PDF.**
         *   Iterar sobre las barras:
             *   Configurar el estilo de la barra en el renderer: `r.SetFillColor(bar.Style.FillColor)`, `r.SetStrokeColor(...)`, `r.SetLineWidth(...)`.
-            *   Dibujar el rectángulo de la barra: `r.Rect(x, y, w, h)`.
+            *   Dibujar el rectángulo de la barra: `r.canvas.Rect(x, y, w, h)`.
         *   Iterar sobre las etiquetas/valores:
             *   Configurar el estilo de texto: `r.SetFont(...)`, `r.SetFontSize(...)`, `r.SetFontColor(...)`.
             *   Dibujar el texto: `r.Text(bar.Label, x, y)`.
@@ -230,8 +230,8 @@ La solución consiste en crear un adaptador que traduzca las instrucciones de di
 ## 5. Consideraciones y Desafíos
 
 *   **Reimplementación:** Se reimplementará lógica de layout de gráficos de barras (aunque simplificada).
-*   **API de `pdfEngine`:** Sigue siendo crucial que `pdfEngine` exponga los métodos primitivos necesarios.
+*   **API de `PdfEngine`:** Sigue siendo crucial que `PdfEngine` exponga los métodos primitivos necesarios.
 *   **Coordenadas y Unidades:** `chartengine` debe operar consistentemente en puntos PDF.
-*   **Fuentes:** El manejo de fuentes depende de la correcta interacción entre `FontConfig`, `docChart`, `chartengine`, `pdfRenderer` y `pdfEngine`.
+*   **Fuentes:** El manejo de fuentes depende de la correcta interacción entre `FontConfig`, `docChart`, `chartengine`, `pdfRenderer` y `PdfEngine`.
 *   **Expansión Futura:** Si se necesitan más tipos de gráficos, se añadirán a `chartengine` o se podría reconsiderar la integración con la librería externa `chart` una vez validado el modelo.
 *   **Completitud:** Implementar los métodos necesarios en `pdfRenderer` para satisfacer la interfaz `chartengine.Renderer` y las necesidades de `chartengine.BarChart`.

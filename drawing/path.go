@@ -63,7 +63,7 @@ func (p *Path) LastPoint() (x, y float64) {
 	return p.x, p.y
 }
 
-// MoveTo starts a new path at (x, y) position
+// MoveTo starts a new path at (x, y) alignment.Alignment
 func (p *Path) MoveTo(x, y float64) {
 	p.appendToPath(MoveToComponent, x, y)
 	p.x = x

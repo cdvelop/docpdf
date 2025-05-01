@@ -12,6 +12,7 @@ import (
 	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
+	"github.com/cdvelop/docpdf/style"
 )
 
 // SVG returns a new png/raster renderer.
@@ -79,12 +80,12 @@ func (vr *vectorRenderer) SetClassName(classname string) {
 }
 
 // SetStrokeColor implements the interface method.
-func (vr *vectorRenderer) SetStrokeColor(c drawing.Color) {
+func (vr *vectorRenderer) SetStrokeColor(c style.Color) {
 	vr.s.StrokeColor = c
 }
 
 // SetFillColor implements the interface method.
-func (vr *vectorRenderer) SetFillColor(c drawing.Color) {
+func (vr *vectorRenderer) SetFillColor(c style.Color) {
 	vr.s.FillColor = c
 }
 
@@ -176,7 +177,7 @@ func (vr *vectorRenderer) SetFont(f *truetype.Font) {
 }
 
 // SetFontColor implements the interface method.
-func (vr *vectorRenderer) SetFontColor(c drawing.Color) {
+func (vr *vectorRenderer) SetFontColor(c style.Color) {
 	vr.s.FontColor = c
 }
 

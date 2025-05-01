@@ -16,7 +16,7 @@ import (
 
 // These constants determine the size of the glyph cache. The cache is keyed
 // primarily by the glyph index modulo nGlyphs, and secondarily by sub-pixel
-// position for the mask image. Sub-pixel positions are quantized to
+// alignment.Alignment for the mask image. Sub-pixel positions are quantized to
 // nXFractions possible values in both the x and y directions.
 const (
 	nGlyphs     = 256

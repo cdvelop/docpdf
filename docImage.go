@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"image"
 
+	"github.com/cdvelop/docpdf/alignment"
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/env"
 	"github.com/cdvelop/docpdf/errs"
 )
@@ -15,7 +17,7 @@ type docImage struct {
 	width         float64
 	height        float64
 	keepRatio     bool
-	alignment     position
+	alignment     alignment.Alignment
 	x, y          float64
 	hasPos        bool
 	inline        bool // New property to track inline status
@@ -30,7 +32,7 @@ func (doc *Document) AddImage(imagePathOrContent any) *docImage {
 		doc:           doc,
 		pathOrContent: imagePathOrContent,
 		keepRatio:     true,
-		alignment:     Left,
+		alignment:     alignment.Left,
 	}
 }
 
@@ -67,19 +69,19 @@ func (img *docImage) FixedPosition(x, y float64) *docImage {
 
 // AlignLeft aligns the image to the left margin
 func (img *docImage) AlignLeft() *docImage {
-	img.alignment = Left
+	img.alignment = alignment.Left
 	return img
 }
 
 // AlignCenter centers the image horizontally
 func (img *docImage) AlignCenter() *docImage {
-	img.alignment = Center
+	img.alignment = alignment.Center
 	return img
 }
 
 // AlignRight aligns the image to the right margin
 func (img *docImage) AlignRight() *docImage {
-	img.alignment = Right
+	img.alignment = alignment.Right
 	return img
 }
 
@@ -124,33 +126,33 @@ func (img *docImage) Draw() error {
 	// Calculate final dimensions
 	finalWidth, finalHeight := img.calculateDimensions(imgWidth, imgHeight)
 
-	// Check if the image has a fixed position
+	// Check if the image has a fixed alignment.Alignment
 	if !img.hasPos {
 		// Skip page break check if we're in header/footer drawing mode
 		if !img.doc.inHeaderFooterDraw {
 			// Check if the image fits on current page
 			newY := img.doc.ensureElementFits(finalHeight)
 
-			// Only update Y position if this is not an inline element
+			// Only update Y alignment.Alignment if this is not an inline element
 			if !img.inline {
 				img.doc.SetY(newY)
 			}
 		}
 	}
 
-	// Determine position (after possible page break)
+	// Determine alignment.Alignment (after possible page break)
 	x, y := img.calculatePosition(finalWidth)
 
-	// Adjust vertical position for inline images based on alignment
+	// Adjust vertical alignment.Alignment for inline images based on alignment
 	if img.inline {
 		lineHeight := img.doc.GetLineHeight()
 
 		switch img.valign {
-		case 0: // Top alignment
+		case 0: // alignment.Top alignment
 			// No adjustment needed
-		case 1: // Middle alignment
+		case 1: // alignment.Middle alignment
 			y = y + (lineHeight-finalHeight)/2
-		case 2: // Bottom alignment
+		case 2: // alignment.Bottom alignment
 			y = y + lineHeight - finalHeight
 		default:
 			// Default to middle alignment
@@ -159,31 +161,31 @@ func (img *docImage) Draw() error {
 	}
 
 	// Create rectangle for the image
-	rect := &Rect{
+	rect := &canvas.Rect{
 		W: finalWidth,
 		H: finalHeight,
 	}
-	// Draw the image using the underlying pdfEngine instance
+	// Draw the image using the underlying PdfEngine instance
 	err = img.doc.drawImageInPdf(imageContent, x, y, rect)
 	if err != nil {
 		return err
 	}
 
-	// Handle position updates based on inline setting
+	// Handle alignment.Alignment updates based on inline setting
 	if img.inline {
-		// For inline images, advance X position but keep Y unchanged
+		// For inline images, advance X alignment.Alignment but keep Y unchanged
 		img.doc.SetX(x + finalWidth)
 
 		// Store that we have an inline element active
 		img.doc.inlineMode = true
 	} else {
-		// For block images, advance Y position to avoid text overlapping with the image
+		// For block images, advance Y alignment.Alignment to avoid text overlapping with the image
 		if !img.hasPos {
 			img.doc.newLineBreakBasedOnDefaultFont(y + finalHeight)
 		}
 
-		// Reset X position to left margin since this is a block element
-		img.doc.SetX(img.doc.margins.Left)
+		// Reset X alignment.Alignment to left margin since this is a block element
+		img.doc.SetX(img.doc.canvas.Margins.alignment.Left)
 
 		// Reset inline mode
 		img.doc.inlineMode = false
@@ -211,7 +213,7 @@ func (img *docImage) calculateDimensions(imgWidth, imgHeight float64) (float64, 
 	finalHeight := imgHeight
 
 	// Scale down if original image is too large
-	contentAreaWidth := img.doc.contentAreaWidth - img.doc.margins.Left - img.doc.margins.Right
+	contentAreaWidth := img.doc.contentAreaWidth - img.doc.canvas.Margins.alignment.Left - img.doc.canvas.Margins.alignment.Right
 	if finalWidth > contentAreaWidth {
 		ratio := contentAreaWidth / finalWidth
 		finalWidth = contentAreaWidth
@@ -244,15 +246,15 @@ func (img *docImage) calculatePosition(width float64) (float64, float64) {
 		return img.x, img.y
 	}
 
-	x := img.doc.margins.Left
+	x := img.doc.canvas.Margins.alignment.Left
 	y := img.doc.GetY()
 
 	// Apply alignment
 	switch img.alignment {
-	case Center:
-		x = img.doc.margins.Left + (img.doc.contentAreaWidth-width)/2
-	case Right:
-		x = img.doc.margins.Left + img.doc.contentAreaWidth - width
+	case alignment.Center:
+		x = img.doc.canvas.Margins.alignment.Left + (img.doc.contentAreaWidth-width)/2
+	case alignment.Right:
+		x = img.doc.canvas.Margins.alignment.Left + img.doc.contentAreaWidth - width
 	}
 
 	return x, y

@@ -3,17 +3,19 @@ package docpdf
 import (
 	"strconv"
 	"strings"
+
+	"github.com/cdvelop/docpdf/alignment"
 )
 
 // tableFormat represents the formatting options for a table header
 type tableFormat struct {
-	HeaderTitle     string         // The displayed title text
-	HeaderAlignment position       // Alignment of the header text (Left, Center, Right)
-	ColumnAlignment position       // Alignment of the column values (Left, Center, Right)
-	Prefix          string         // Prefix to add before each value in the column
-	Suffix          string         // Suffix to add after each value in the column
-	Width           float64        // Width of the column (0 = auto)
-	WidthMode       tableWidthMode // Table width mode: auto, fixed, or percent
+	HeaderTitle     string              // The displayed title text
+	HeaderAlignment alignment.Alignment // Alignment of the header text (alignment.Left, alignment.Center, alignment.Right)
+	ColumnAlignment alignment.Alignment // Alignment of the column values (alignment.Left, alignment.Center, alignment.Right)
+	Prefix          string              // Prefix to add before each value in the column
+	Suffix          string              // Suffix to add after each value in the column
+	Width           float64             // Width of the column (0 = auto)
+	WidthMode       tableWidthMode      // Table width mode: auto, fixed, or percent
 }
 
 // parseTableFormat parses a header, column string with format options
@@ -21,16 +23,16 @@ type tableFormat struct {
 //
 // Examples:
 //
-//	"Name" -> {HeaderTitle: "Name", HeaderAlignment: Center, ColumnAlignment: Left}
-//	"Price|HR,CR" -> {HeaderTitle: "Price", HeaderAlignment: Right, ColumnAlignment: Right}
-//	"Amount|HR,CR,P:$" -> {HeaderTitle: "Amount", HeaderAlignment: Right, ColumnAlignment: Right, Prefix: "$"}
-//	"Percent|HC,CC,S:%" -> {HeaderTitle: "Percent", HeaderAlignment: Center, ColumnAlignment: Center, Suffix: "%"}
-//	"Name|HL,CL,W:30%" -> {HeaderTitle: "Name", HeaderAlignment: Left, ColumnAlignment: Left, Width: 30, WidthMode: percent}
+//	"Name" -> {HeaderTitle: "Name", HeaderAlignment: alignment.Center, ColumnAlignment: alignment.Left}
+//	"Price|HR,CR" -> {HeaderTitle: "Price", HeaderAlignment: alignment.Right, ColumnAlignment: alignment.Right}
+//	"Amount|HR,CR,P:$" -> {HeaderTitle: "Amount", HeaderAlignment: alignment.Right, ColumnAlignment: alignment.Right, Prefix: "$"}
+//	"Percent|HC,CC,S:%" -> {HeaderTitle: "Percent", HeaderAlignment: alignment.Center, ColumnAlignment: alignment.Center, Suffix: "%"}
+//	"Name|HL,CL,W:30%" -> {HeaderTitle: "Name", HeaderAlignment: alignment.Left, ColumnAlignment: alignment.Left, Width: 30, WidthMode: percent}
 func parseTableFormat(headerStr string) tableFormat {
 	result := tableFormat{
-		HeaderAlignment: Center,        // Default header alignment is center
-		ColumnAlignment: Left,          // Default column alignment is left
-		WidthMode:       widthModeAuto, // Default width mode is auto (enum)
+		HeaderAlignment: alignment.Center, // Default header alignment is center
+		ColumnAlignment: alignment.Left,   // Default column alignment is left
+		WidthMode:       widthModeAuto,    // Default width mode is auto (enum)
 	}
 
 	// Split by the separator character
@@ -53,22 +55,22 @@ func parseTableFormat(headerStr string) tableFormat {
 		// Process header alignment
 		if strings.HasPrefix(option, "H") {
 			if option == "HL" {
-				result.HeaderAlignment = Left
+				result.HeaderAlignment = alignment.Left
 			} else if option == "HR" {
-				result.HeaderAlignment = Right
+				result.HeaderAlignment = alignment.Right
 			} else if option == "HC" {
-				result.HeaderAlignment = Center
+				result.HeaderAlignment = alignment.Center
 			}
 		}
 
 		// Process column alignment
 		if strings.HasPrefix(option, "C") {
 			if option == "CL" {
-				result.ColumnAlignment = Left
+				result.ColumnAlignment = alignment.Left
 			} else if option == "CR" {
-				result.ColumnAlignment = Right
+				result.ColumnAlignment = alignment.Right
 			} else if option == "CC" {
-				result.ColumnAlignment = Center
+				result.ColumnAlignment = alignment.Center
 			}
 		}
 
@@ -111,12 +113,12 @@ func createDefaultTableStyles(doc *Document) (headerStyle CellStyle, cellStyle C
 	// Estilo para el encabezado
 	headerStyle = CellStyle{
 		BorderStyle: BorderStyle{
-			Top:      true,
-			Left:     true,
-			Bottom:   true,
-			Right:    true,
-			Width:    1.0,
-			RGBColor: RGBColor{R: 100, G: 100, B: 100},
+			alignment.Top:    true,
+			alignment.Left:   true,
+			alignment.Bottom: true,
+			alignment.Right:  true,
+			Width:            1.0,
+			RGBColor:         RGBColor{R: 100, G: 100, B: 100},
 		},
 		FillColor: RGBColor{R: 240, G: 240, B: 240},
 		TextColor: RGBColor{R: 0, G: 0, B: 0},
@@ -127,12 +129,12 @@ func createDefaultTableStyles(doc *Document) (headerStyle CellStyle, cellStyle C
 	// Estilo para las celdas normales
 	cellStyle = CellStyle{
 		BorderStyle: BorderStyle{
-			Top:      true,
-			Left:     true,
-			Bottom:   true,
-			Right:    true,
-			Width:    0.5,
-			RGBColor: RGBColor{R: 200, G: 200, B: 200},
+			alignment.Top:    true,
+			alignment.Left:   true,
+			alignment.Bottom: true,
+			alignment.Right:  true,
+			Width:            0.5,
+			RGBColor:         RGBColor{R: 200, G: 200, B: 200},
 		},
 		FillColor: RGBColor{R: 255, G: 255, B: 255},
 		TextColor: RGBColor{R: 0, G: 0, B: 0},

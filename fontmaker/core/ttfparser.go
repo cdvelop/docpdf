@@ -87,7 +87,7 @@ func (t *TTFParser) Kern() *KernTable {
 	return t.kern
 }
 
-// UnderlinePosition position of underline
+// UnderlinePosition alignment.Alignment of underline
 func (t *TTFParser) UnderlinePosition() int {
 	return t.underlinePosition
 }

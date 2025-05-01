@@ -1,39 +1,39 @@
 package docpdf
 
 // ensureElementFits checks if an element with the specified height will fit on the current page.
-// If it doesn't fit, it adds a new page and returns the new Y position.
+// If it doesn't fit, it adds a new page and returns the new Y alignment.Alignment.
 // Parameters:
 //   - height: height of the element in document units
 //   - minBottomMargin: optional minimum margin to leave at bottom of page
 // Returns:
-//   - positionY: the Y position where the element should be drawn
+//   - positionY: the Y alignment.Alignment where the element should be drawn
 //   - newPageAdded: true if a new page was added
 func (doc *Document) ensureElementFits(height float64, minBottomMargin ...float64) float64 {
 	// Convert height to points (internal PDF unit)
-	doc.unitsToPointsVar(&height)
+	doc.UnitsToPointsVar(&height)
 
 	// Default minimum bottom margin
-	bottomMargin := doc.margins.Bottom
+	bottomMargin := doc.Margins.alignment.Bottom
 	if len(minBottomMargin) > 0 && minBottomMargin[0] > 0 {
 		bottomMargin = minBottomMargin[0]
-		doc.unitsToPointsVar(&bottomMargin)
+		doc.UnitsToPointsVar(&bottomMargin)
 	}
 
-	// Get current Y position
-	currentY := doc.curr.Y
+	// Get current Y alignment.Alignment
+	currentY := doc.Curr.Y
 
 	// Calculate header/footer space if they exist
 	headerSpace := 0.0
 	footerSpace := 0.0
 
-	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.numOfPagesObj > 1) {
+	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.NumOfPagesObj > 1) {
 		// Considerar tanto el tamaño de la fuente como los espaciados
 		headerSpace = doc.fontConfig.PageHeader.Size +
 			doc.fontConfig.PageHeader.SpaceBefore +
 			doc.fontConfig.PageHeader.SpaceAfter
 	}
 
-	if doc.footer != nil && doc.footer.initialized && (!doc.footer.hideOnFirstPage || doc.numOfPagesObj > 1) {
+	if doc.footer != nil && doc.footer.initialized && (!doc.footer.hideOnFirstPage || doc.NumOfPagesObj > 1) {
 		// Considerar tanto el tamaño de la fuente como los espaciados
 		footerSpace = doc.fontConfig.PageFooter.Size +
 			doc.fontConfig.PageFooter.SpaceBefore +
@@ -41,49 +41,49 @@ func (doc *Document) ensureElementFits(height float64, minBottomMargin ...float6
 	}
 
 	// Calculate available space considering header/footer
-	availableSpace := doc.curr.pageSize.H - currentY - bottomMargin - (headerSpace + footerSpace)
+	availableSpace := doc.GetCurrentPageSize().H - currentY - bottomMargin - (headerSpace + footerSpace)
 
 	// Check if we need to add a page
 	if height > availableSpace {
 		// Guardar el estado actual de la fuente antes de añadir la página
-		currentFont := doc.curr.FontFontCount
-		currentFontSize := doc.curr.FontSize
-		currentFontStyle := doc.curr.FontStyle
-		currentFontType := doc.curr.FontType
-		currentIndexOfFontObj := doc.curr.IndexOfFontObj
-		currentCharSpacing := doc.curr.CharSpacing
+		currentFont := doc.Curr.FontFontCount
+		currentFontSize := doc.Curr.FontSize
+		currentFontStyle := doc.Curr.FontStyle
+		currentFontType := doc.Curr.FontType
+		currentIndexOfFontObj := doc.Curr.IndexOfFontObj
+		currentCharSpacing := doc.Curr.CharSpacing
 
 		// Guardar el actual modo de color del texto y valor de grayFill
-		currentTextMode := doc.curr.txtColorMode
-		currentGrayFill := doc.curr.grayFill
+		currentTextMode := doc.Curr.txtColorMode
+		currentGrayFill := doc.Curr.grayFill
 
 		// Si hay una estructura para el color de texto actual, guardarla
 		var currentTxtColor iCacheColorText
-		if doc.curr.txtColor != nil {
-			currentTxtColor = doc.curr.txtColor
+		if doc.Curr.txtColor != nil {
+			currentTxtColor = doc.Curr.txtColor
 		}
 
 		// Añadir nueva página
 		doc.AddPage()
 
 		// Restaurar el estado de la fuente después de añadir la página
-		doc.curr.FontFontCount = currentFont
-		doc.curr.FontSize = currentFontSize
-		doc.curr.FontStyle = currentFontStyle
-		doc.curr.FontType = currentFontType
-		doc.curr.IndexOfFontObj = currentIndexOfFontObj
-		doc.curr.CharSpacing = currentCharSpacing
+		doc.Curr.FontFontCount = currentFont
+		doc.Curr.FontSize = currentFontSize
+		doc.Curr.FontStyle = currentFontStyle
+		doc.Curr.FontType = currentFontType
+		doc.Curr.IndexOfFontObj = currentIndexOfFontObj
+		doc.Curr.CharSpacing = currentCharSpacing
 
 		// Restaurar el modo de color y el grayFill
-		doc.curr.txtColorMode = currentTextMode
-		doc.curr.grayFill = currentGrayFill
+		doc.Curr.txtColorMode = currentTextMode
+		doc.Curr.grayFill = currentGrayFill
 
 		// Restaurar el color del texto si existía
 		if currentTxtColor != nil {
-			doc.curr.txtColor = currentTxtColor
+			doc.Curr.txtColor = currentTxtColor
 		}
 
-		return doc.curr.Y // Return the top margin position of the new page
+		return doc.Curr.Y // Return the top margin alignment.Alignment of the new page
 	}
 
 	// The element fits on the current page

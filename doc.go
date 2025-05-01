@@ -1,15 +1,15 @@
 package docpdf
 
 import (
-	"strconv"
-
-	"github.com/cdvelop/docpdf/errs"
+	"github.com/cdvelop/docpdf/alignment"
+	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/pdfengine"
 )
 
 type Document struct {
-	*pdfEngine
+	*pdfengine.PdfEngine
 	fontConfig         FontConfig
-	contentAreaWidth   float64       // Width of the content area (page width - margins)
+	contentAreaWidth   float64       // Width of the content area (page width - canvas.Margins)
 	inlineMode         bool          // Add this field to track inline element state
 	lastInlineWidth    float64       // Track the width of the last inline element
 	header             *headerFooter // New field for document header
@@ -24,18 +24,18 @@ type Document struct {
 // Optional configurations include:
 //   - FontConfig: Custom font configuration
 //   - Font: Custom font family
-//   - Margins: Custom margins in millimeters (more intuitive than points)
-//   - PageSize: Custom page size with desired units
-//   - *Rect: Predefined page size (like PageSizeLetter, PageSizeA4, etc.)
+//   - canvas.Margins: Custom canvas.Margins in millimeters (more intuitive than points)
+//   - canvas.PageSize: Custom page size with desired units
+//   - *canvas.Rect: Predefined page size (like PageSizeLetter, canvas.PageSizeA4, etc.)
 //   - func(string, []byte) error: Custom file writer function (if not provided, defaults to env.SetupDefaultFileWriter())
 //
 // Examples:
 //   - NewDocument() // Uses default file writer
 //   - NewDocument(os.WriteFile) // Custom file writer
-//   - NewDocument(Margins{Left: 15, Top: 10, Right: 10, Bottom: 10})
-//   - NewDocument(PageSize{Width: 210, Height: 297, Unit: UnitMM}) // A4 size in mm
-//   - NewDocument(PageSizeA4) // Using predefined page size
-//   - NewDocument(os.WriteFile, PageSizeA4, Margins{Left: 20, Top: 10, Right: 20, Bottom: 10})
+//   - NewDocument(canvas.Margins{alignment.Left: 15, alignment.Top: 10, alignment.Right: 10, alignment.Bottom: 10})
+//   - NewDocument(canvas.PageSize{Width: 210, Height: 297, Unit: canvas.UnitMM}) // A4 size in mm
+//   - NewDocument(canvas.PageSizeA4) // Using predefined page size
+//   - NewDocument(os.WriteFile, canvas.PageSizeA4, canvas.Margins{alignment.Left: 20, alignment.Top: 10, alignment.Right: 20, alignment.Bottom: 10})
 //
 // For web applications:
 //   - NewDocument(func(filename string, data []byte) error {
@@ -46,34 +46,33 @@ type Document struct {
 func NewDocument(configs ...any) *Document {
 
 	doc := &Document{
-		pdfEngine:       &pdfEngine{},
+		PdfEngine:       &pdfengine.PdfEngine{},
 		fontConfig:      defaultFontConfig(),
 		inlineMode:      false,
 		lastInlineWidth: 0,
 	}
 
-	// Default margins: 1.5 cm left, 1 cm on other sides
+	// Default canvas.Margins: 1.5 cm left, 1 cm on other sides
 	leftMargin := 42.52   // 1.5 cm in points
 	otherMargins := 28.35 // 1 cm in points
 
-	// Default page size (will be used if no PageSize is provided)
-	defaultPageSize := PageSizeLetter
+	// Default page size (will be used if no canvas.PageSize is provided)
+	defaultPageSize := canvas.PageSizeLetter
 
 	// Process all configurations in one place
 	for _, v := range configs {
 		switch v := v.(type) {
-		case func(string, []byte) error:
+		case pdfengine.FileWriter:
 			// Set custom file writer if provided
-			doc.fileWriter = v
-
+			doc.FileWriter = v
 		case func(...any):
 			// Custom logger
-			doc.log = v
+			doc.Log = v
 		case FontConfig:
 			doc.fontConfig = v
 		case Font:
 			doc.fontConfig.Family = v
-		case Margins:
+		case canvas.Margins:
 			// Convert millimeters to points (1 mm = 72.0/25.4 points)
 			doc.SetMargins(
 				v.Left*(72.0/25.4),
@@ -81,30 +80,30 @@ func NewDocument(configs ...any) *Document {
 				v.Right*(72.0/25.4),
 				v.Bottom*(72.0/25.4),
 			)
-		case PageSize:
+		case canvas.PageSize:
 			// User provided a custom page size with specific units
 			// User provided a custom page size with specific units
 			defaultPageSize = v.ToRect()
-		case *Rect:
-			// User provided a predefined page size (like PageSizeLetter, PageSizeA4, etc.)
+		case *canvas.Rect:
+			// User provided a predefined page size (like PageSizeLetter, canvas.PageSizeA4, etc.)
 			defaultPageSize = v
 		}
 	}
 
-	// Start with default page configuration (will be overridden if PageSize is provided)
-	doc.Start(config{
+	// Start with default page configuration (will be overridden if canvas.PageSize is provided)
+	doc.Start(pdfengine.Config{
 		PageSize: *defaultPageSize,
 	})
 
-	// Set default margins explicitly
+	// Set default canvas.Margins explicitly
 	doc.SetMargins(leftMargin, otherMargins, otherMargins, otherMargins)
 
 	err := doc.loadFonts()
 	if err != nil {
-		doc.log("Error loading fonts: ", err)
+		doc.Log("Error loading fonts: ", err)
 	}
 
-	doc.contentAreaWidth = doc.config.PageSize.W - (doc.margins.Left + doc.margins.Right)
+	doc.contentAreaWidth = doc.Config.PageSize.W - (doc.Margins.alignment.Left + doc.Margins.alignment.Right)
 
 	// Initialize header and footer
 	doc.initHeaderFooter()
@@ -119,7 +118,7 @@ func NewDocument(configs ...any) *Document {
 // GetLineHeight returns the current line height based on the active font and size
 func (doc *Document) GetLineHeight() float64 {
 	// Get current font size and add some padding
-	fontSize := doc.curr.FontSize
+	fontSize := doc.Curr.FontSize
 	if fontSize <= 0 {
 		fontSize = doc.fontConfig.Normal.Size // Default font size as fallback
 	}
@@ -129,112 +128,43 @@ func (doc *Document) GetLineHeight() float64 {
 	return fontSize * 1.2
 }
 
-// AddPage : add new page
-func (gp *pdfEngine) AddPage() {
-	emptyOpt := pageOption{}
-	gp.AddPageWithOption(emptyOpt)
-}
-
-// AddPageWithOption  : add new page with option
-func (gp *pdfEngine) AddPageWithOption(opt pageOption) {
-	opt.TrimBox = opt.TrimBox.unitsToPoints(gp.config.Unit)
-	opt.PageSize = opt.PageSize.unitsToPoints(gp.config.Unit)
-
-	page := new(pageObj)
-	page.init(func() *pdfEngine {
-		return gp
-	})
-
-	if !opt.isEmpty() { //use page option
-		page.setOption(opt)
-		gp.curr.pageSize = opt.PageSize
-
-		if opt.isTrimBoxSet() {
-			gp.curr.trimBox = opt.TrimBox
-		}
-	} else { //use default
-		gp.curr.pageSize = &gp.config.PageSize
-		gp.curr.trimBox = &gp.config.TrimBox
-	}
-
-	page.ResourcesRelate = strconv.Itoa(gp.indexOfProcSet+1) + " 0 R"
-	index := gp.addObj(page)
-	if gp.indexOfFirstPageObj == -1 {
-		gp.indexOfFirstPageObj = index
-	}
-	gp.curr.IndexOfPageObj = index
-
-	gp.numOfPagesObj++
-
-	//reset
-	gp.indexOfContent = -1
-	gp.resetCurrXY()
-
-	if gp.headerFunc != nil {
-		gp.headerFunc()
-		gp.resetCurrXY()
-	}
-
-	if gp.footerFunc != nil {
-		gp.footerFunc()
-		gp.resetCurrXY()
-	}
-}
-
-// SetPage set current page
-func (gp *pdfEngine) SetPage(pageno int) error {
-	var pageIndex int
-	for i := 0; i < len(gp.pdfObjs); i++ {
-		switch gp.pdfObjs[i].(type) {
-		case *contentObj:
-			pageIndex += 1
-			if pageIndex == pageno {
-				gp.indexOfContent = i
-				return nil
-			}
-		}
-	}
-
-	return errs.New("invalid page number")
-}
-
 // AddPage añade una nueva página y actualiza el contador de páginas para el header y footer
 func (doc *Document) AddPage() {
-	// Llamar al método subyacente de pdfEngine
-	doc.pdfEngine.AddPage()
+	// Llamar al método subyacente de PdfEngine
+	doc.PdfEngine.AddPage()
 
 	// Actualizar el contador de página actual para header y footer
 	if doc.header != nil {
-		doc.header.currentPage = doc.numOfPagesObj
+		doc.header.currentPage = doc.NumOfPagesObj
 	}
 	if doc.footer != nil {
-		doc.footer.currentPage = doc.numOfPagesObj
+		doc.footer.currentPage = doc.NumOfPagesObj
 	}
 
 	// Respetar el SpaceAfter del encabezado para el contenido inicial de la página
-	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.numOfPagesObj > 1) {
+	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.NumOfPagesObj > 1) {
 		// Ajustar la posición Y inicial para incluir el espacio después del encabezado
-		doc.SetY(doc.margins.Top + doc.fontConfig.PageHeader.SpaceAfter)
+		doc.SetY(doc.Margins.alignment.Top + doc.fontConfig.PageHeader.SpaceAfter)
 	}
 }
 
 // AddPageWithOption añade una nueva página con opciones y actualiza el contador de páginas para el header y footer
-func (doc *Document) AddPageWithOption(opt pageOption) {
-	// Llamar al método subyacente de pdfEngine
-	doc.pdfEngine.AddPageWithOption(opt)
+func (doc *Document) AddPageWithOption(opt pdfengine.PageOption) {
+	// Llamar al método subyacente de PdfEngine
+	doc.PdfEngine.AddPageWithOption(opt)
 
 	// Actualizar el contador de página actual para header y footer
 	if doc.header != nil {
-		doc.header.currentPage = doc.numOfPagesObj
+		doc.header.currentPage = doc.NumOfPagesObj
 	}
 	if doc.footer != nil {
-		doc.footer.currentPage = doc.numOfPagesObj
+		doc.footer.currentPage = doc.NumOfPagesObj
 	}
 
 	// Respetar el SpaceAfter del encabezado para el contenido inicial de la página
-	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.numOfPagesObj > 1) {
+	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.NumOfPagesObj > 1) {
 		// Ajustar la posición Y inicial para incluir el espacio después del encabezado
-		doc.SetY(doc.margins.Top + doc.fontConfig.PageHeader.SpaceAfter)
+		doc.SetY(doc.Margins.alignment.Top + doc.fontConfig.PageHeader.SpaceAfter)
 	}
 }
 
@@ -244,7 +174,7 @@ func (doc *Document) RedrawHeaderFooter() {
 	prevX, prevY := doc.GetX(), doc.GetY()
 
 	// Si estamos en la primera página y se han modificado las opciones de visibilidad
-	if doc.numOfPagesObj == 1 {
+	if doc.NumOfPagesObj == 1 {
 		// Forzar el redibujado del encabezado si está configurado
 		if doc.header != nil && doc.header.initialized {
 			doc.header.draw()
@@ -261,12 +191,12 @@ func (doc *Document) RedrawHeaderFooter() {
 }
 
 // calculateElementPosition determina la posición X de un elemento basado en su alineación y ancho
-func (doc *Document) calculateElementPosition(width float64, alignment position, withPadding bool) float64 {
+func (doc *Document) calculateElementPosition(width float64, alignment alignment.Alignment, withPadding bool) float64 {
 	// Ancho total disponible en la página (incluyendo márgenes)
 	// totalWidth := doc.contentAreaWidth
 
 	// Ancho disponible para contenido
-	contentWidth := doc.contentAreaWidth - (doc.margins.Left + doc.margins.Right)
+	contentWidth := doc.contentAreaWidth - (doc.Margins.Left + doc.Margins.Right)
 
 	// Padding solo si se requiere
 	padding := 0.0
@@ -278,31 +208,26 @@ func (doc *Document) calculateElementPosition(width float64, alignment position,
 	// Calcular posición X basada en la alineación
 	var x float64
 	switch alignment {
-	case Center:
+	case alignment.Center:
 		// Para centrado: margen izquierdo + mitad del espacio disponible - mitad del ancho
-		x = doc.margins.Left + (contentWidth / 2) - (width / 2)
-	case Right:
+		x = doc.Margins.alignment.Left + (contentWidth / 2) - (width / 2)
+	case alignment.Right:
 		// Para alineado a la derecha: posición derecha - ancho
-		x = doc.contentAreaWidth - doc.margins.Right - width
-	default: // Left
+		x = doc.contentAreaWidth - doc.Margins.alignment.Right - width
+	default: // alignment.Left
 		// Para alineado a la izquierda: simplemente el margen izquierdo
-		x = doc.margins.Left
+		x = doc.Margins.alignment.Left
 	}
 
 	// Aplicar padding solo a la posición, no al cálculo del ancho
 	if withPadding {
-		if alignment == Left {
+		if alignment == alignment.Left {
 			x += padding
-		} else if alignment == Right {
+		} else if alignment == alignment.Right {
 			x -= padding
 		}
 		// Para centrado, no aplicamos padding adicional
 	}
 
 	return x
-}
-
-// returns the current PDF engine instance
-func (doc *Document) PdfEngine() *pdfEngine {
-	return doc.pdfEngine
 }

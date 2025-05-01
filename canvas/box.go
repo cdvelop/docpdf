@@ -22,13 +22,17 @@ func NewBox(top, left, right, bottom int) Box {
 	}
 }
 
-// Box represents the main 4 dimensions of a box.
+// Box represents the main 4 dimensions of a box. in chart graphs,
+// in pdf document box represents a rectangular area with explicit coordinates for all four sides.
+// It is used for defining boundaries in PDF documents, such as margins.Margins, trim boxes, etc.
+// The coordinates are stored in the current unit system (points by default, but can be mm, cm, inches, or pixels).
 type Box struct {
-	Top    int
-	Left   int
-	Right  int
-	Bottom int
-	IsSet  bool // IsSet is true if the box is set to a values explicitly.
+	Top          int
+	Left         int
+	Right        int
+	Bottom       int
+	IsSet        bool // IsSet is true if the box is set to a values explicitly.
+	unitOverride defaultUnitConfig
 }
 
 // IsZero returns if the box is set or not.

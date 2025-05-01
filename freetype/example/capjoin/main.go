@@ -14,13 +14,13 @@
 package main
 
 import (
+	"Log"
 	"bufio"
 	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/png"
-	"log"
 	"os"
 
 	"github.com/cdvelop/docpdf"
@@ -69,19 +69,19 @@ func main() {
 	// Save that RGBA image to disk.
 	outFile, err := os.Create("out.png")
 	if err != nil {
-		log.Println(err)
+		Log.Println(err)
 		os.Exit(1)
 	}
 	defer outFile.Close()
 	b := bufio.NewWriter(outFile)
 	err = png.Encode(b, rgba)
 	if err != nil {
-		log.Println(err)
+		Log.Println(err)
 		os.Exit(1)
 	}
 	err = b.Flush()
 	if err != nil {
-		log.Println(err)
+		Log.Println(err)
 		os.Exit(1)
 	}
 	fmt.Println("Wrote out.png OK.")

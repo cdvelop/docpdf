@@ -1,5 +1,10 @@
 package docpdf
 
+import (
+	"github.com/cdvelop/docpdf/alignment"
+	"github.com/cdvelop/docpdf/canvas"
+)
+
 // FontStyle defines the available font styles
 const (
 	FontRegular = "regular"
@@ -20,9 +25,9 @@ type TextStyle struct {
 	Size        float64
 	Color       RGBColor
 	LineSpacing float64
-	Alignment   position // Uses same alignment constants as cellOption (Left, Center, Right, etc)
-	SpaceBefore float64  // Space before paragraph (in points)
-	SpaceAfter  float64  // Space after paragraph (in points)
+	Alignment   alignment.Alignment // Uses same alignment constants as cellOption (alignment.Left, alignment.Center, alignment.Right, etc)
+	SpaceBefore float64             // Space before paragraph (in points)
+	SpaceAfter  float64             // Space after paragraph (in points)
 }
 
 // docText is a helper struct to build text cells
@@ -30,7 +35,7 @@ type docText struct {
 	doc         *Document
 	text        string
 	opts        cellOption
-	rect        *Rect
+	rect        *canvas.Rect
 	style       TextStyle
 	fontName    string
 	fullWidth   bool            // Por defecto es false (solo usa el ancho necesario)
@@ -48,14 +53,14 @@ func (d *Document) newTextBuilder(text string, style TextStyle, fontName string)
 		fullWidth:   true,            // Por defecto usar ancho completo para mantener compatibilidad
 		positioning: newlinePosition, // Por defecto es newline
 		wordWrap:    true,            // Por defecto usar word wrap (no cortar palabras)
-		rect: &Rect{
+		rect: &canvas.Rect{
 			W: 0, // se calcula en Draw()
 			H: 0,
 		},
 		opts: cellOption{
 			Align: style.Alignment,
 			// Border:         AllBorders,
-			Float:          Bottom,
+			Float:          alignment.Bottom,
 			CoefLineHeight: style.LineSpacing,
 		},
 	}
@@ -101,23 +106,23 @@ func (d *Document) AddJustifiedText(text string) *docText {
 }
 
 func (dt *docText) AlignCenter() *docText {
-	dt.opts.Align = Center | Top
+	dt.opts.Align = alignment.Center | alignment.Top
 	return dt
 }
 
 func (dt *docText) AlignRight() *docText {
-	dt.opts.Align = Right | Top
+	dt.opts.Align = alignment.Right | alignment.Top
 	dt.fullWidth = true
 	return dt
 }
 
 func (dt *docText) AlignLeft() *docText {
-	dt.opts.Align = Left | Top
+	dt.opts.Align = alignment.Left | alignment.Top
 	return dt
 }
 
 func (dt *docText) Justify() *docText {
-	dt.opts.Align = Justify | Top
+	dt.opts.Align = alignment.Justify | alignment.Top
 	return dt
 }
 
@@ -154,7 +159,7 @@ func (d *Document) SpaceBefore(spaces ...float64) {
 	}
 
 	// Get the current font size
-	fontSize := d.curr.FontSize
+	fontSize := d.Curr.FontSize
 	if fontSize <= 0 {
 		fontSize = d.fontConfig.Normal.Size // Default font size if none is set
 	}
@@ -257,7 +262,7 @@ func (dt *docText) Draw() error {
 	}
 
 	// Special handling for right-aligned inline text
-	isRightAligned := (dt.opts.Align == Right || dt.opts.Align == (Right|Top))
+	isRightAligned := (dt.opts.Align == alignment.Right || dt.opts.Align == (alignment.Right|alignment.Top))
 
 	// Configure word wrap to prevent cutting words
 	if dt.wordWrap {
@@ -274,27 +279,27 @@ func (dt *docText) Draw() error {
 
 	// Handle positioning
 	if dt.positioning == inlinePosition {
-		// For right-aligned inline text, calculate position differently
+		// For right-aligned inline text, calculate alignment.Alignment differently
 		if isRightAligned {
 			// First, calculate the width needed for the text
 			dt.minimumWidthRequiredForText()
 
-			// Save current Y position
+			// Save current Y alignment.Alignment
 			currentY := dt.doc.GetY()
 
-			// Set X to maintain right alignment while considering page margins
+			// Set X to maintain right alignment while considering page canvas.Margins
 			textWidth := dt.rect.W
-			dt.doc.SetX(dt.doc.margins.Left + dt.doc.contentAreaWidth - textWidth)
+			dt.doc.SetX(dt.doc.canvas.Margins.alignment.Left + dt.doc.contentAreaWidth - textWidth)
 
-			// Ensure we're at the same Y position
+			// Ensure we're at the same Y alignment.Alignment
 			dt.doc.SetY(currentY)
 		} else {
-			// Keep current X position for regular inline elements
+			// Keep current X alignment.Alignment for regular inline elements
 			// If we're in inline mode, adjust available width
 			if dt.doc.inlineMode && dt.doc.lastInlineWidth > 0 {
 				// Calculate remaining width on the current line
 				currentX := dt.doc.GetX()
-				availableWidth := dt.doc.contentAreaWidth - (currentX - dt.doc.margins.Left)
+				availableWidth := dt.doc.contentAreaWidth - (currentX - dt.doc.canvas.Margins.alignment.Left)
 
 				if !dt.fullWidth {
 					// For auto-width text, adjust rectangle width
@@ -302,7 +307,7 @@ func (dt *docText) Draw() error {
 					// Check if there's enough space
 					if dt.rect.W > availableWidth {
 						// Not enough space, force to next line
-						dt.doc.SetX(dt.doc.margins.Left)
+						dt.doc.SetX(dt.doc.canvas.Margins.alignment.Left)
 						dt.doc.inlineMode = false
 						dt.doc.lastInlineWidth = 0
 					}
@@ -315,7 +320,7 @@ func (dt *docText) Draw() error {
 	} else {
 		// Si no es inline, siempre restauramos la posición X al margen izquierdo
 		// independientemente de si el elemento anterior era inline o no
-		dt.doc.SetX(dt.doc.margins.Left)
+		dt.doc.SetX(dt.doc.canvas.Margins.alignment.Left)
 		dt.doc.inlineMode = false
 		dt.doc.lastInlineWidth = 0
 	}
@@ -333,8 +338,8 @@ func (dt *docText) Draw() error {
 	}
 
 	// Get line height in current font and size
-	_, lineHeight, _, err := createContent(dt.doc.curr.FontISubset, dt.text,
-		dt.doc.curr.FontSize, dt.doc.curr.CharSpacing, nil)
+	_, lineHeight, _, err := createContent(dt.doc.Curr.FontISubset, dt.text,
+		dt.doc.Curr.FontSize, dt.doc.Curr.CharSpacing, nil)
 	if err != nil {
 		return err
 	}
@@ -357,7 +362,7 @@ func (dt *docText) Draw() error {
 		dt.doc.SetY(newY)
 	}
 
-	// Store current X position to calculate width after drawing
+	// Store current X alignment.Alignment to calculate width after drawing
 	startX := dt.doc.GetX()
 
 	// Choose the appropriate drawing method based on text characteristics
@@ -406,7 +411,7 @@ func (doc *Document) newLineBreakBasedOnDefaultFont(originY float64) {
 	var spaceAfter float64
 
 	// Determine which style was used based on font size
-	fontSize := doc.curr.FontSize
+	fontSize := doc.Curr.FontSize
 	if fontSize >= doc.fontConfig.Header1.Size {
 		spaceAfter = doc.fontConfig.Header1.SpaceAfter
 	} else if fontSize >= doc.fontConfig.Header2.Size {

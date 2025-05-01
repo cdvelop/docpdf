@@ -7,7 +7,7 @@ import (
 )
 
 func TestTableCellTextLimitation(t *testing.T) {
-	// Create a simple document with fileWriter function
+	// Create a simple document with FileWriter function
 	doc := NewDocument()
 
 	// Add a title

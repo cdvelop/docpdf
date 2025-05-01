@@ -2,6 +2,8 @@ package docpdf
 
 import (
 	"testing"
+
+	"github.com/cdvelop/docpdf/alignment"
 )
 
 func TestParseHeaderFormat(t *testing.T) {
@@ -15,8 +17,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Name",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Name",
-				HeaderAlignment: Center,
-				ColumnAlignment: Left,
+				HeaderAlignment: alignment.Center,
+				ColumnAlignment: alignment.Left,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           0,
@@ -28,8 +30,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Name|HL",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Name",
-				HeaderAlignment: Left,
-				ColumnAlignment: Left,
+				HeaderAlignment: alignment.Left,
+				ColumnAlignment: alignment.Left,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           0,
@@ -41,8 +43,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Price|HR",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Price",
-				HeaderAlignment: Right,
-				ColumnAlignment: Left,
+				HeaderAlignment: alignment.Right,
+				ColumnAlignment: alignment.Left,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           0,
@@ -54,8 +56,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Amount|CR",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Amount",
-				HeaderAlignment: Center,
-				ColumnAlignment: Right,
+				HeaderAlignment: alignment.Center,
+				ColumnAlignment: alignment.Right,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           0,
@@ -67,8 +69,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Price|HR,CR",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Price",
-				HeaderAlignment: Right,
-				ColumnAlignment: Right,
+				HeaderAlignment: alignment.Right,
+				ColumnAlignment: alignment.Right,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           0,
@@ -80,8 +82,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Price|HR,CR,P:$",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Price",
-				HeaderAlignment: Right,
-				ColumnAlignment: Right,
+				HeaderAlignment: alignment.Right,
+				ColumnAlignment: alignment.Right,
 				Prefix:          "$",
 				Suffix:          "",
 				Width:           0,
@@ -93,8 +95,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Percentage|HC,CC,S:%",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Percentage",
-				HeaderAlignment: Center,
-				ColumnAlignment: Center,
+				HeaderAlignment: alignment.Center,
+				ColumnAlignment: alignment.Center,
 				Prefix:          "",
 				Suffix:          "%",
 				Width:           0,
@@ -106,8 +108,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Balance|HR,CR,P:$,S:USD",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Balance",
-				HeaderAlignment: Right,
-				ColumnAlignment: Right,
+				HeaderAlignment: alignment.Right,
+				ColumnAlignment: alignment.Right,
 				Prefix:          "$",
 				Suffix:          "USD",
 				Width:           0,
@@ -119,8 +121,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Name|HL,CL,W:120",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Name",
-				HeaderAlignment: Left,
-				ColumnAlignment: Left,
+				HeaderAlignment: alignment.Left,
+				ColumnAlignment: alignment.Left,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           120,
@@ -132,8 +134,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Name|HL,CL,W:30%",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Name",
-				HeaderAlignment: Left,
-				ColumnAlignment: Left,
+				HeaderAlignment: alignment.Left,
+				ColumnAlignment: alignment.Left,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           30,
@@ -145,8 +147,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Product|HL,CR,P:Item:,S:USD,W:40%",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Product",
-				HeaderAlignment: Left,
-				ColumnAlignment: Right,
+				HeaderAlignment: alignment.Left,
+				ColumnAlignment: alignment.Right,
 				Prefix:          "Item:",
 				Suffix:          "USD",
 				Width:           40,

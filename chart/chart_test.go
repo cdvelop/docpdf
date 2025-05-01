@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/cdvelop/docpdf/chart/testutil"
-	"github.com/cdvelop/docpdf/drawing"
+	"github.com/cdvelop/docpdf/style"
 )
 
 func TestChartGetDPI(t *testing.T) {
@@ -193,12 +193,12 @@ func TestChartGetBackgroundStyle(t *testing.T) {
 
 	c := Chart{
 		Background: Style{
-			FillColor: drawing.ColorBlack,
+			FillColor: style.ColorBlack,
 		},
 	}
 
 	bs := c.getBackgroundStyle()
-	testutil.AssertEqual(t, bs.FillColor.String(), drawing.ColorBlack.String())
+	testutil.AssertEqual(t, bs.FillColor.String(), style.ColorBlack.String())
 }
 
 func TestChartGetCanvasStyle(t *testing.T) {
@@ -206,12 +206,12 @@ func TestChartGetCanvasStyle(t *testing.T) {
 
 	c := Chart{
 		Canvas: Style{
-			FillColor: drawing.ColorBlack,
+			FillColor: style.ColorBlack,
 		},
 	}
 
 	bs := c.getCanvasStyle()
-	testutil.AssertEqual(t, bs.FillColor.String(), drawing.ColorBlack.String())
+	testutil.AssertEqual(t, bs.FillColor.String(), style.ColorBlack.String())
 }
 
 func TestChartGetDefaultCanvasBox(t *testing.T) {
@@ -475,8 +475,8 @@ func TestChartCheckRangesWithRanges(t *testing.T) {
 	testutil.AssertNil(t, c.checkRanges(xr, yr, yra))
 }
 
-func at(i image.Image, x, y int) drawing.Color {
-	return drawing.ColorFromAlphaMixedRGBA(i.At(x, y).RGBA())
+func at(i image.Image, x, y int) style.Color {
+	return style.ColorFromAlphaMixedRGBA(i.At(x, y).RGBA())
 }
 
 func TestChartE2ELine(t *testing.T) {
@@ -513,14 +513,14 @@ func TestChartE2ELine(t *testing.T) {
 	testutil.AssertNil(t, err)
 
 	// test the bottom and top of the line
-	testutil.AssertEqual(t, drawing.ColorWhite, at(i, 0, 0))
-	testutil.AssertEqual(t, drawing.ColorWhite, at(i, 49, 49))
+	testutil.AssertEqual(t, style.ColorWhite, at(i, 0, 0))
+	testutil.AssertEqual(t, style.ColorWhite, at(i, 49, 49))
 
 	// test a line mid point
 	defaultSeriesColor := GetDefaultColor(0)
 	testutil.AssertEqual(t, defaultSeriesColor, at(i, 0, 49))
 	testutil.AssertEqual(t, defaultSeriesColor, at(i, 49, 0))
-	testutil.AssertEqual(t, drawing.ColorFromHex("bddbf6"), at(i, 24, 24))
+	testutil.AssertEqual(t, style.ColorFromHex("bddbf6"), at(i, 24, 24))
 }
 
 func TestChartE2ELineWithFill(t *testing.T) {
@@ -544,8 +544,8 @@ func TestChartE2ELineWithFill(t *testing.T) {
 		Series: []Series{
 			ContinuousSeries{
 				Style: Style{
-					StrokeColor: drawing.ColorBlue,
-					FillColor:   drawing.ColorRed,
+					StrokeColor: style.ColorBlue,
+					FillColor:   style.ColorRed,
 				},
 				XValues: LinearRangeWithStep(0, 4, 1),
 				YValues: LinearRangeWithStep(0, 4, 1),
@@ -565,11 +565,11 @@ func TestChartE2ELineWithFill(t *testing.T) {
 	testutil.AssertNil(t, err)
 
 	// test the bottom and top of the line
-	testutil.AssertEqual(t, drawing.ColorWhite, at(i, 0, 0))
-	testutil.AssertEqual(t, drawing.ColorRed, at(i, 49, 49))
+	testutil.AssertEqual(t, style.ColorWhite, at(i, 0, 0))
+	testutil.AssertEqual(t, style.ColorRed, at(i, 49, 49))
 
 	// test a line mid point
-	defaultSeriesColor := drawing.ColorBlue
+	defaultSeriesColor := style.ColorBlue
 	testutil.AssertEqual(t, defaultSeriesColor, at(i, 0, 49))
 	testutil.AssertEqual(t, defaultSeriesColor, at(i, 49, 0))
 }

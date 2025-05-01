@@ -14,9 +14,9 @@
 package main
 
 import (
+	"Log"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/cdvelop/docpdf/fixedpoint"
@@ -53,12 +53,12 @@ func main() {
 	fmt.Printf("Loading fontfile %q\n", *fontfile)
 	b, err := os.ReadFile(*fontfile)
 	if err != nil {
-		log.Println(err)
+		Log.Println(err)
 		return
 	}
 	f, err := truetype.Parse(b)
 	if err != nil {
-		log.Println(err)
+		Log.Println(err)
 		return
 	}
 	fupe := fixedpoint.Int26_6(f.FUnitsPerEm())
@@ -72,7 +72,7 @@ func main() {
 	g := &truetype.GlyphBuf{}
 	err = g.Load(f, fupe, i0, font.HintingNone)
 	if err != nil {
-		log.Println(err)
+		Log.Println(err)
 		return
 	}
 	fmt.Printf("'%c' glyph\n", c0)

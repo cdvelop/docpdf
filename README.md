@@ -90,7 +90,7 @@ The library offers multiple ways to specify page sizes for your documents:
    ```go
    doc := NewDocument(
       PageSize{Width: 210, Height: 297, Unit: UnitMM},  // A4 size
-      Margins{Left: 15, Top: 10, Right: 10, Bottom: 10},  // Custom margins
+      margins.Margins{Left: 15, Top: 10, Right: 10, Bottom: 10},  // Custom margins.Margins
       os.WriteFile  // Custom file writer (optional)
    )
    ```
@@ -186,7 +186,7 @@ We are currently working on improving how charts are rendered within PDF documen
 
 **Solution in Progress:** We are implementing a direct rendering approach. This involves:
 1.  Creating a new internal `chartengine` package (starting with bar charts) that calculates layout using PDF units (points).
-2.  Developing a `pdfRenderer` that translates drawing commands from `chartengine` directly into vector drawing commands for the underlying PDF engine (`pdfEngine`).
+2.  Developing a `pdfRenderer` that translates drawing commands from `chartengine` directly into vector drawing commands for the underlying PDF engine (`PdfEngine`).
 
 This will result in true vector graphics for charts within the PDF, eliminate the `freetype` dependency for charts, improve performance, and align with the goal of a smaller, browser-friendly library.
 

@@ -1,10 +1,11 @@
 package docpdf
 
 import (
+	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/chartutils"
-	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/fontbridge"
+	"github.com/cdvelop/docpdf/style"
 )
 
 // chartType define los tipos de gráficos soportados
@@ -74,7 +75,7 @@ func (doc *Document) Chart() *docCharts {
 }
 
 // Bar crea un nuevo elemento de gráfico de barras
-// default alignment: Center
+// default alignment: alignment.Center
 func (c *docCharts) Bar() *docBarChart {
 	// Usar la función de configuración común
 	base := configureBaseChart(c.doc, barChartType)
@@ -90,7 +91,7 @@ func (c *docCharts) Bar() *docBarChart {
 }
 
 // Donut crea un nuevo elemento de gráfico de tipo donut
-// default alignment: Center
+// default alignment: alignment.Center
 func (c *docCharts) Donut() *docDonutChart {
 	// Usar la función de configuración común de todo el gráfico
 	base := configureBaseChart(c.doc, donutChartType)
@@ -153,19 +154,19 @@ func (c *docBarChart) FixedPosition(x, y float64) *docBarChart {
 
 // AlignLeft alinea el gráfico de barras al margen izquierdo
 func (c *docBarChart) AlignLeft() *docBarChart {
-	c.docChart.alignment = Left
+	c.docChart.alignment = alignment.Left
 	return c
 }
 
 // AlignCenter centra el gráfico de barras horizontalmente
 func (c *docBarChart) AlignCenter() *docBarChart {
-	c.docChart.alignment = Center
+	c.docChart.alignment = alignment.Center
 	return c
 }
 
 // AlignRight alinea el gráfico de barras al margen derecho
 func (c *docBarChart) AlignRight() *docBarChart {
-	c.docChart.alignment = Right
+	c.docChart.alignment = alignment.Right
 	return c
 }
 
@@ -241,7 +242,7 @@ func (c *docBarChart) WithoutThousandsSeparator() *docBarChart {
 }
 
 // WithStyle aplica un estilo personalizado al gráfico de barras
-func (c *docBarChart) WithStyle(backgroundColor, barColor drawing.Color) *docBarChart {
+func (c *docBarChart) WithStyle(backgroundColor, barColor style.Color) *docBarChart {
 	c.docChart.WithStyle(backgroundColor, barColor)
 	return c
 }
@@ -293,19 +294,19 @@ func (c *docDonutChart) FixedPosition(x, y float64) *docDonutChart {
 
 // AlignLeft alinea el gráfico de donut al margen izquierdo
 func (c *docDonutChart) AlignLeft() *docDonutChart {
-	c.docChart.alignment = Left
+	c.docChart.alignment = alignment.Left
 	return c
 }
 
 // AlignCenter centra el gráfico de donut horizontalmente
 func (c *docDonutChart) AlignCenter() *docDonutChart {
-	c.docChart.alignment = Center
+	c.docChart.alignment = alignment.Center
 	return c
 }
 
 // AlignRight alinea el gráfico de donut al margen derecho
 func (c *docDonutChart) AlignRight() *docDonutChart {
-	c.docChart.alignment = Right
+	c.docChart.alignment = alignment.Right
 	return c
 }
 
@@ -363,7 +364,7 @@ func (c *docDonutChart) WithoutThousandsSeparator() *docDonutChart {
 }
 
 // WithStyle aplica un estilo personalizado al gráfico de donut
-func (c *docDonutChart) WithStyle(backgroundColor, sliceColor drawing.Color) *docDonutChart {
+func (c *docDonutChart) WithStyle(backgroundColor, sliceColor style.Color) *docDonutChart {
 	c.docChart.WithStyle(backgroundColor, sliceColor)
 	return c
 }

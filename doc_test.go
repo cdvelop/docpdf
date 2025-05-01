@@ -4,10 +4,13 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/cdvelop/docpdf/alignment"
+	"github.com/cdvelop/docpdf/canvas"
 )
 
 func TestDocumentAPIUsage(t *testing.T) {
-	// Create a simple document with fileWriter function
+	// Create a simple document with FileWriter function
 	doc := NewDocument(func(filename string, data []byte) error {
 		// For testing, we'll write to the specified file
 		return os.WriteFile(filename, data, 0644)
@@ -15,7 +18,7 @@ func TestDocumentAPIUsage(t *testing.T) {
 
 	// Setup header and footer with the new API
 	doc.SetPageHeader().
-		SetLeftText("Header Left").
+		SetLeftText("Header alignment.Left").
 		SetCenterText("Document Example").
 		SetRightText("Confidential").
 		// ShowOnFirstPage()
@@ -24,7 +27,7 @@ func TestDocumentAPIUsage(t *testing.T) {
 		doc.SetPageFooter().
 		SetLeftText("Created: 2023-10-01").
 		SetCenterText("footer center example").
-		WithPageTotal(Right).
+		WithPageTotal(alignment.Right).
 		ShowOnFirstPage()
 
 	// add logo image
@@ -89,12 +92,12 @@ func TestDocumentAPIUsage(t *testing.T) {
 
 	doc.AddText("NORMAL TEXT (left-aligned):").Bold().Draw()
 	// Normal text (left-aligned)
-	const multilineText = "This is a sample text that demonstrates normal text flow. The text continues across multiple lines to show how words wrap naturally at the margins. This creates a simple left-aligned paragraph that is easy to read. When text is not justified, it maintains consistent spacing between words while keeping a ragged right edge."
+	const multilineText = "This is a sample text that demonstrates normal text flow. The text continues across multiple lines to show how words wrap naturally at the canvas.Margins. This creates a simple left-aligned paragraph that is easy to read. When text is not justified, it maintains consistent spacing between words while keeping a ragged right edge."
 	doc.AddText(multilineText).Draw()
 
 	// Justified text
 	doc.AddText("JUSTIFIED TEXT:").Bold().Draw()
-	doc.AddText(multilineText).Justify().Draw()
+	doc.AddText(multilineText).alignment.Justify().Draw()
 
 	// Space between examples
 	doc.SpaceBefore(2)
@@ -119,21 +122,21 @@ func TestDocumentAPIUsage(t *testing.T) {
 		"Code|CC,W:8%",                // Centered header and centered content, 8% width
 		"Product|W:15%",               // Default left alignment, 15% width
 		"Description|W:25%",           // Default left alignment, 25% width
-		"Quantity|HR,CR,S: pcs,W:13%", // Right-aligned header and content with "pcs" suffix, 13% width
-		"Price|CR,P:$,W:13%",          // Right-aligned content with "$" prefix, 13% width
-		"Discount|HR,CR,S:%,W:13%",    // Right-aligned header with "%" suffix, 13% width
-		"Total|CR,P:$,W:13%",          // Right-aligned content with "$" prefix, 13% width
+		"Quantity|HR,CR,S: pcs,W:13%", // alignment.Right-aligned header and content with "pcs" suffix, 13% width
+		"Price|CR,P:$,W:13%",          // alignment.Right-aligned content with "$" prefix, 13% width
+		"Discount|HR,CR,S:%,W:13%",    // alignment.Right-aligned header with "%" suffix, 13% width
+		"Total|CR,P:$,W:13%",          // alignment.Right-aligned content with "$" prefix, 13% width
 	)
 
 	// Customize header style
 	comprehensiveTable.HeaderStyle(CellStyle{
 		BorderStyle: BorderStyle{
-			Top:      false,
-			Left:     false,
-			Bottom:   false,
-			Right:    false,
-			Width:    1.0,
-			RGBColor: RGBColor{R: 50, G: 50, B: 150},
+			alignment.Top:    false,
+			alignment.Left:   false,
+			alignment.Bottom: false,
+			alignment.Right:  false,
+			Width:            1.0,
+			RGBColor:         RGBColor{R: 50, G: 50, B: 150},
 		},
 		FillColor: RGBColor{R: 220, G: 230, B: 255},
 		TextColor: RGBColor{R: 20, G: 20, B: 100},
@@ -144,12 +147,12 @@ func TestDocumentAPIUsage(t *testing.T) {
 	// Customize cell style
 	comprehensiveTable.CellStyle(CellStyle{
 		BorderStyle: BorderStyle{
-			Top:      false,
-			Left:     true,
-			Bottom:   true,
-			Right:    true,
-			Width:    0.5,
-			RGBColor: RGBColor{R: 180, G: 180, B: 220},
+			alignment.Top:    false,
+			alignment.Left:   true,
+			alignment.Bottom: true,
+			alignment.Right:  true,
+			Width:            0.5,
+			RGBColor:         RGBColor{R: 180, G: 180, B: 220},
 		},
 		FillColor: RGBColor{R: 255, G: 255, B: 255},
 		TextColor: RGBColor{R: 50, G: 50, B: 80},
@@ -173,7 +176,7 @@ func TestDocumentAPIUsage(t *testing.T) {
 	comprehensiveTable.Draw()
 
 	// Keep only the right-aligned table example
-	doc.AddHeader3("2. Right-aligned Table Example").Draw()
+	doc.AddHeader3("2. alignment.Right-aligned Table Example").Draw()
 	doc.AddText("Table with right alignment:").Draw()
 
 	// Create a right-aligned table with specific column widths
@@ -218,16 +221,16 @@ func TestPageSizeOptions(t *testing.T) {
 		t.Fatalf("Error creating output directory: %v", err)
 	}
 
-	// Common fileWriter for all tests
-	fileWriter := func(filename string, data []byte) error {
+	// Common FileWriter for all tests
+	FileWriter := func(filename string, data []byte) error {
 		return os.WriteFile(filename, data, 0644)
 	}
 
-	// Test 1: Using predefined page size (PageSizeA4)
+	// Test 1: Using predefined page size (canvas.PageSizeA4)
 	t.Run("PredefinedPageSize", func(t *testing.T) {
-		doc := NewDocument(fileWriter, PageSizeA4)
+		doc := NewDocument(FileWriter, canvas.PageSizeA4)
 
-		doc.AddText("This document uses predefined PageSizeA4").Bold().AlignCenter().Draw()
+		doc.AddText("This document uses predefined canvas.PageSizeA4").Bold().AlignCenter().Draw()
 
 		outFilePath := filepath.Join(outDir, "test_predefined_pagesize.pdf")
 		err := doc.WritePdf(outFilePath)
@@ -236,12 +239,12 @@ func TestPageSizeOptions(t *testing.T) {
 		}
 	})
 
-	// Test 2: Using custom PageSize with mm units
+	// Test 2: Using custom canvas.PageSize with mm units
 	t.Run("CustomPageSizeWithUnits", func(t *testing.T) {
 		// Create custom A5 size in mm (148mm x 210mm)
-		doc := NewDocument(fileWriter, PageSize{Width: 148, Height: 210, Unit: UnitMM})
+		doc := NewDocument(FileWriter, canvas.PageSize{Width: 148, Height: 210, Unit: canvas.UnitMM})
 
-		doc.AddText("This document uses custom PageSize (A5 in mm)").Bold().AlignCenter().Draw()
+		doc.AddText("This document uses custom canvas.PageSize (A5 in mm)").Bold().AlignCenter().Draw()
 
 		outFilePath := filepath.Join(outDir, "test_custom_pagesize.pdf")
 		err := doc.WritePdf(outFilePath)
@@ -250,12 +253,12 @@ func TestPageSizeOptions(t *testing.T) {
 		}
 	})
 
-	// Test 3: Using custom PageSize with inches
+	// Test 3: Using custom canvas.PageSize with inches
 	t.Run("CustomPageSizeInches", func(t *testing.T) {
 		// Create custom size in inches (8.5 x 11 inches - US Letter)
-		doc := NewDocument(fileWriter, PageSize{Width: 8.5, Height: 11, Unit: UnitIN})
+		doc := NewDocument(FileWriter, canvas.PageSize{Width: 8.5, Height: 11, Unit: canvas.UnitIN})
 
-		doc.AddText("This document uses custom PageSize (Letter in inches)").Bold().AlignCenter().Draw()
+		doc.AddText("This document uses custom canvas.PageSize (Letter in inches)").Bold().AlignCenter().Draw()
 
 		outFilePath := filepath.Join(outDir, "test_custom_pagesize_inches.pdf")
 		err := doc.WritePdf(outFilePath)
@@ -264,16 +267,16 @@ func TestPageSizeOptions(t *testing.T) {
 		}
 	})
 
-	// Test 4: Combining PageSize with other options
+	// Test 4: Combining canvas.PageSize with other options
 	t.Run("CombinedOptions", func(t *testing.T) {
-		doc := NewDocument(fileWriter,
+		doc := NewDocument(FileWriter,
 			// Custom page size (A4 landscape in mm)
-			PageSize{Width: 297, Height: 210, Unit: UnitMM},
-			// Custom margins
-			Margins{Left: 20, Top: 15, Right: 20, Bottom: 15},
+			canvas.PageSize{Width: 297, Height: 210, Unit: canvas.UnitMM},
+			// Custom canvas.Margins
+			canvas.Margins{alignment.Left: 20, alignment.Top: 15, alignment.Right: 20, alignment.Bottom: 15},
 		)
 
-		doc.AddText("This document combines custom PageSize with custom margins").Bold().AlignCenter().Draw()
+		doc.AddText("This document combines custom canvas.PageSize with custom canvas.Margins").Bold().AlignCenter().Draw()
 
 		outFilePath := filepath.Join(outDir, "test_combined_options.pdf")
 		err := doc.WritePdf(outFilePath)

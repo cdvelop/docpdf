@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/cdvelop/docpdf/chart"
-	"github.com/cdvelop/docpdf/drawing"
+	"github.com/cdvelop/docpdf/style"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 	smaSeries := chart.SMASeries{
 		Name: "SPY - SMA",
 		Style: chart.Style{
-			StrokeColor:     drawing.ColorRed,
+			StrokeColor:     style.ColorRed,
 			StrokeDashArray: []float64{5.0, 5.0},
 		},
 		InnerSeries: priceSeries,
@@ -34,8 +34,8 @@ func main() {
 	bbSeries := &chart.BollingerBandsSeries{
 		Name: "SPY - Bol. Bands",
 		Style: chart.Style{
-			StrokeColor: drawing.ColorFromHex("efefef"),
-			FillColor:   drawing.ColorFromHex("efefef").WithAlpha(64),
+			StrokeColor: style.ColorFromHex("efefef"),
+			FillColor:   style.ColorFromHex("efefef").WithAlpha(64),
 		},
 		InnerSeries: priceSeries,
 	}

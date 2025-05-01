@@ -3,8 +3,8 @@ package chart
 import (
 	"io"
 
-	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/freetype/truetype"
+	"github.com/cdvelop/docpdf/style"
 )
 
 // Renderer represents the basic methods required to draw a chart.
@@ -22,10 +22,10 @@ type Renderer interface {
 	SetClassName(string)
 
 	// SetStrokeColor sets the current stroke color.
-	SetStrokeColor(drawing.Color)
+	SetStrokeColor(style.Color)
 
 	// SetFillColor sets the current fill color.
-	SetFillColor(drawing.Color)
+	SetFillColor(style.Color)
 
 	// SetStrokeWidth sets the stroke width.
 	SetStrokeWidth(width float64)
@@ -67,7 +67,7 @@ type Renderer interface {
 	SetFont(*truetype.Font)
 
 	// SetFontColor sets a font's color
-	SetFontColor(drawing.Color)
+	SetFontColor(style.Color)
 
 	// SetFontSize sets the font size for a text field.
 	SetFontSize(size float64)

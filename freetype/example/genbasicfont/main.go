@@ -16,6 +16,7 @@
 package main
 
 import (
+	"Log"
 	"bytes"
 	"flag"
 	"fmt"
@@ -23,7 +24,6 @@ import (
 	"image"
 	"image/draw"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -59,7 +59,7 @@ func parseHinting(h string) font.Hinting {
 	case "full":
 		return font.HintingFull
 	case "vertical":
-		log.Fatal("TODO: have package truetype implement vertical hinting")
+		Log.Fatal("TODO: have package truetype implement vertical hinting")
 		return font.HintingVertical
 	}
 	return font.HintingNone
@@ -158,11 +158,11 @@ func main() {
 	flag.Parse()
 	b, err := loadFontFile()
 	if err != nil {
-		log.Fatal(err)
+		Log.Fatal(err)
 	}
 	f, err := truetype.Parse(b)
 	if err != nil {
-		log.Fatal(err)
+		Log.Fatal(err)
 	}
 	face := truetype.NewFace(f, &truetype.Options{
 		Size:    *size,
@@ -187,12 +187,12 @@ func main() {
 		for r := rr[0]; r < rr[1]; r++ {
 			dr, mask, maskp, adv, ok := face.Glyph(fixedpoint.Point26_6{}, r)
 			if !ok {
-				log.Fatalf("could not load glyph for %U", r)
+				Log.Fatalf("could not load glyph for %U", r)
 			}
 			if advance < 0 {
 				advance = adv
 			} else if advance != adv {
-				log.Fatalf("advance was not constant: got %v and %v", advance, adv)
+				Log.Fatalf("advance was not constant: got %v and %v", advance, adv)
 			}
 			dst := image.NewGray(iBounds)
 			draw.DrawMask(dst, dr, image.White, image.Point{}, mask, maskp, draw.Src)
@@ -215,7 +215,7 @@ func main() {
 		Height:  %d,
 		Ascent:  %d,
 		Descent: %d,
-		Left: %d,
+		alignment.Left: %d,
 		Mask: &image.Alpha{
 			Stride: %d,
 			Rect: image.Rectangle{Max: image.Point{%d, %d*%d}},
@@ -232,9 +232,9 @@ func main() {
 
 	fmted, err := format.Source(buf.Bytes())
 	if err != nil {
-		log.Fatalf("format.Source: %v", err)
+		Log.Fatalf("format.Source: %v", err)
 	}
 	if err := os.WriteFile(*vr+".go", fmted, 0644); err != nil {
-		log.Fatalf("os.WriteFile: %v", err)
+		Log.Fatalf("os.WriteFile: %v", err)
 	}
 }

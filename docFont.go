@@ -1,6 +1,10 @@
 package docpdf
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/cdvelop/docpdf/alignment"
+)
 
 // FontConfig represents different font configurations for document sections
 type FontConfig struct {
@@ -113,7 +117,7 @@ func defaultFontConfig() FontConfig {
 			Size:        11,
 			Color:       RGBColor{0, 0, 0},
 			LineSpacing: 1.15,
-			Alignment:   Left | Top,
+			Alignment:   alignment.Left | alignment.Top,
 			SpaceBefore: 0,
 			SpaceAfter:  8, // ~0.73x font size (Word default is similar)
 		},
@@ -121,7 +125,7 @@ func defaultFontConfig() FontConfig {
 			Size:        16,
 			Color:       RGBColor{0, 0, 0},
 			LineSpacing: 1.5,
-			Alignment:   Left | Top,
+			Alignment:   alignment.Left | alignment.Top,
 			SpaceBefore: 12,
 			SpaceAfter:  8,
 		},
@@ -129,7 +133,7 @@ func defaultFontConfig() FontConfig {
 			Size:        14,
 			Color:       RGBColor{0, 0, 0},
 			LineSpacing: 1.3,
-			Alignment:   Left | Top,
+			Alignment:   alignment.Left | alignment.Top,
 			SpaceBefore: 10,
 			SpaceAfter:  6,
 		},
@@ -137,7 +141,7 @@ func defaultFontConfig() FontConfig {
 			Size:        12,
 			Color:       RGBColor{0, 0, 0},
 			LineSpacing: 1.2,
-			Alignment:   Left | Top,
+			Alignment:   alignment.Left | alignment.Top,
 			SpaceBefore: 8,
 			SpaceAfter:  4,
 		},
@@ -145,7 +149,7 @@ func defaultFontConfig() FontConfig {
 			Size:        8,
 			Color:       RGBColor{128, 128, 128},
 			LineSpacing: 1.0,
-			Alignment:   Left | Top,
+			Alignment:   alignment.Left | alignment.Top,
 			SpaceBefore: 2,
 			SpaceAfter:  2,
 		},
@@ -153,7 +157,7 @@ func defaultFontConfig() FontConfig {
 			Size:        9,
 			Color:       RGBColor{128, 128, 128},
 			LineSpacing: 1.0,
-			Alignment:   Center | Top,
+			Alignment:   alignment.Center | alignment.Top,
 			SpaceBefore: 0,
 			SpaceAfter:  12,
 		},
@@ -161,14 +165,14 @@ func defaultFontConfig() FontConfig {
 			Size:        9,
 			Color:       RGBColor{128, 128, 128},
 			LineSpacing: 1.0,
-			Alignment:   Right | Top,
+			Alignment:   alignment.Right | alignment.Top,
 			SpaceBefore: 2,
 			SpaceAfter:  0,
 		}, ChartLabel: TextStyle{ // Added default chart style
 			Size:        9,                    // Slightly smaller than Normal (11)
 			Color:       RGBColor{50, 50, 50}, // Dark Gray, less harsh than black
 			LineSpacing: 1.0,
-			Alignment:   Left | Top, // Default alignment, chart might override
+			Alignment:   alignment.Left | alignment.Top, // Default alignment, chart might override
 			SpaceBefore: 0,
 			SpaceAfter:  0,
 		},
@@ -176,7 +180,7 @@ func defaultFontConfig() FontConfig {
 			Size:        8,                    // Smaller than ChartLabel
 			Color:       RGBColor{70, 70, 70}, // Slightly lighter than ChartLabel
 			LineSpacing: 1.0,
-			Alignment:   Center | Top, // Center alignment for axes
+			Alignment:   alignment.Center | alignment.Top, // alignment.Center alignment for axes
 			SpaceBefore: 0,
 			SpaceAfter:  0,
 		},

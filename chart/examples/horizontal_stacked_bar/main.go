@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/cdvelop/docpdf/chart"
-	"github.com/cdvelop/docpdf/drawing"
+	"github.com/cdvelop/docpdf/style"
 )
 
 func main() {
@@ -14,11 +14,11 @@ func main() {
 	barWidth := 80
 
 	var (
-		colorWhite          = drawing.Color{R: 241, G: 241, B: 241, A: 255}
-		colorMariner        = drawing.Color{R: 60, G: 100, B: 148, A: 255}
-		colorLightSteelBlue = drawing.Color{R: 182, G: 195, B: 220, A: 255}
-		colorPoloBlue       = drawing.Color{R: 126, G: 155, B: 200, A: 255}
-		colorSteelBlue      = drawing.Color{R: 73, G: 120, B: 177, A: 255}
+		colorWhite          = style.Color{R: 241, G: 241, B: 241, A: 255}
+		colorMariner        = style.Color{R: 60, G: 100, B: 148, A: 255}
+		colorLightSteelBlue = style.Color{R: 182, G: 195, B: 220, A: 255}
+		colorPoloBlue       = style.Color{R: 126, G: 155, B: 200, A: 255}
+		colorSteelBlue      = style.Color{R: 73, G: 120, B: 177, A: 255}
 	)
 
 	stackedBarChart := chart.StackedBarChart{

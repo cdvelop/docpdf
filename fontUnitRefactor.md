@@ -4,7 +4,7 @@
 
 Actualmente, el sistema `docpdf` se enfrenta a un problema de inconsistencia en el manejo de fuentes:
 
-- **docpdf** utiliza [`fontmaker`](fontmaker ) para preprocesar fuentes TrueType y luego renderizarlas mediante su motor interno ([`pdfEngine`](pdfEngine ))
+- **docpdf** utiliza [`fontmaker`](fontmaker ) para preprocesar fuentes TrueType y luego renderizarlas mediante su motor interno ([`PdfEngine`](PdfEngine ))
 - **chart** (integrado en docpdf) utiliza la biblioteca [`freetype`](freetype ) para renderizar texto en imágenes bitmap
 - Esto provoca una gestión de fuentes fragmentada, incoherente y duplicada
 - [`docFont.go`](docFont.go ) intenta centralizar la configuración de fuentes, pero no resuelve esta duplicidad
@@ -23,7 +23,7 @@ Crear un sistema unificado de manejo de fuentes que:
 ### Componentes existentes:
 
 - **fontmaker**: Preprocesa fuentes TTF para uso en docpdf
-- **pdfEngine**: Motor que renderiza fuentes en PDF
+- **PdfEngine**: Motor que renderiza fuentes en PDF
 - **chart**: Biblioteca que genera gráficos utilizando freetype
 - **[`docFont.go`](docFont.go )**: Define configuraciones de fuentes, pero solo para docpdf. La estructura `FontConfig` contiene la lógica de configuración de fuentes que se desea unificar, pero su ubicación actual crea problemas de dependencias circulares al intentar compartirla con otras partes del sistema.
 - **fontbridge**: Paquete actual que intenta compartir configuraciones entre chart y docpdf, pero resulta muy difícil de mantener debido a la duplicidad de código y la lógica fragmentada
@@ -32,7 +32,7 @@ Crear un sistema unificado de manejo de fuentes que:
 
 1. **Para texto regular en PDF**:
    - Se cargan fuentes procesadas por fontmaker
-   - pdfEngine las renderiza directamente en el PDF
+   - PdfEngine las renderiza directamente en el PDF
 
 2. **Para gráficos**:
    - chart utiliza freetype para renderizar en bitmap

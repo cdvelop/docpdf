@@ -2,6 +2,8 @@ package docpdf
 
 import (
 	"strconv"
+
+	"github.com/cdvelop/docpdf/alignment"
 )
 
 // headerFooterContent represents content that can be placed in a header or footer
@@ -27,16 +29,6 @@ type headerFooter struct {
 	initialized     bool
 	currentPage     int  // Número de página actual para mostrar en el footer
 	hideOnFirstPage bool // Controla si se oculta en la primera página
-}
-
-// AddHeader - add a header function, if present this will be automatically called by AddPage()
-func (gp *pdfEngine) AddHeader(f func()) {
-	gp.headerFunc = f
-}
-
-// AddFooter - add a footer function, if present this will be automatically called by AddPage()
-func (gp *pdfEngine) AddFooter(f func()) {
-	gp.footerFunc = f
 }
 
 // initHeaderFooter initializes the document's header and footer if not already done
@@ -82,7 +74,7 @@ func (hf *headerFooter) draw() {
 
 	// Asegurar que siempre tengamos un número de página válido
 	// Sincronizar con el contador de páginas del documento
-	hf.currentPage = hf.doc.numOfPagesObj
+	hf.currentPage = hf.doc.NumOfPagesObj
 	if hf.currentPage <= 0 {
 		hf.currentPage = 1 // Garantizar que la página mínima sea 1
 	}
@@ -92,7 +84,7 @@ func (hf *headerFooter) draw() {
 		return // No dibujar en la primera página si está configurado para ocultarse
 	}
 
-	// Save current position and drawing settings
+	// Save current alignment.Alignment and drawing settings
 	prevX, prevY := hf.doc.GetX(), hf.doc.GetY()
 
 	// Determinar el estilo de fuente para usar sus propiedades de espaciado
@@ -103,18 +95,18 @@ func (hf *headerFooter) draw() {
 		fontStyle = hf.doc.fontConfig.PageFooter
 	}
 
-	// Determine Y position based on whether this is a header or footer
+	// Determine Y alignment.Alignment based on whether this is a header or footer
 	var y float64
 	if hf.isHeader {
 		// Posicionar el encabezado respetando el margen superior del documento
 		// y agregando el SpaceBefore para mantener distancia adecuada
-		y = hf.doc.margins.Top + fontStyle.SpaceBefore
+		y = hf.doc.Margins.Top + fontStyle.SpaceBefore
 	} else {
 		// Posicionar el pie de página respetando el margen inferior del documento
 		// y considerando SpaceBefore y SpaceAfter para mantener distancia adecuada
-		pageHeight := hf.doc.config.PageSize.H
+		pageHeight := hf.doc.config.canvas.PageSize.H
 		// Calculamos la posición para que quede dentro del margen inferior
-		y = pageHeight - hf.doc.margins.Bottom - fontStyle.Size - fontStyle.SpaceAfter
+		y = pageHeight - hf.doc.Margins.alignment.Bottom - fontStyle.Size - fontStyle.SpaceAfter
 	}
 
 	// Calculate column widths (3 equal sections)
@@ -128,7 +120,7 @@ func (hf *headerFooter) draw() {
 	hf.doc.inHeaderFooterDraw = true
 
 	defer func() {
-		// Restore original position and settings when done
+		// Restore original alignment.Alignment and settings when done
 		hf.doc.SetXY(prevX, prevY)
 		// Reset inline mode
 		hf.doc.inlineMode = false
@@ -143,25 +135,25 @@ func (hf *headerFooter) draw() {
 
 	// Draw left content - también dibujar si tiene paginación configurada
 	if hf.Left.Text != "" || hf.Left.IsImage || hf.Left.WithPage || hf.Left.WithTotalPages {
-		x := hf.doc.margins.Left
-		hf.drawContent(hf.Left, x, y, sectionWidth, Left, fontStyle)
+		x := hf.doc.Margins.Left
+		hf.drawContent(hf.Left, x, y, sectionWidth, alignment.Left, fontStyle)
 	}
 
 	// Draw center content - también dibujar si tiene paginación configurada
 	if hf.Center.Text != "" || hf.Center.IsImage || hf.Center.WithPage || hf.Center.WithTotalPages {
-		x := hf.doc.margins.Left + sectionWidth
-		hf.drawContent(hf.Center, x, y, sectionWidth, Center, fontStyle)
+		x := hf.doc.Margins.Left + sectionWidth
+		hf.drawContent(hf.Center, x, y, sectionWidth, alignment.Center, fontStyle)
 	}
 
 	// Draw right content - también dibujar si tiene paginación configurada
 	if hf.Right.Text != "" || hf.Right.IsImage || hf.Right.WithPage || hf.Right.WithTotalPages {
-		x := hf.doc.margins.Left + 2*sectionWidth
-		hf.drawContent(hf.Right, x, y, sectionWidth, Right, fontStyle)
+		x := hf.doc.Margins.Left + 2*sectionWidth
+		hf.drawContent(hf.Right, x, y, sectionWidth, alignment.Right, fontStyle)
 	}
 }
 
 // drawContent draws a single content item (text or image) in the header/footer
-func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width float64, align position, fontStyle TextStyle) {
+func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width float64, align alignment.Alignment, fontStyle TextStyle) {
 	doc := hf.doc
 
 	if content.IsImage {
@@ -176,15 +168,15 @@ func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width flo
 				img.Height(content.Height)
 			}
 
-			// position based on alignment
+			// alignment.Alignment based on alignment
 			imgX := x
-			if align == Center {
+			if align == alignment.Center {
 				imgX += width/2 - content.Width/2
-			} else if align == Right {
+			} else if align == alignment.Right {
 				imgX += width - content.Width
 			}
 
-			// Place image at fixed position
+			// Place image at fixed alignment.Alignment
 			img.FixedPosition(imgX, y)
 			img.Draw()
 		}
@@ -232,20 +224,20 @@ func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width flo
 		builder := doc.newTextBuilder(text, fontStyle, hf.FontName)
 		builder.positioning = fixedPosition
 
-		// Set position and width
+		// Set alignment.Alignment and width
 		builder.rect.W = width
 
-		// Save and set position
+		// Save and set alignment.Alignment
 		prevX, prevY := doc.GetX(), doc.GetY()
 		doc.SetXY(x, y)
 
 		// Set alignment
 		switch align {
-		case Left:
+		case alignment.Left:
 			builder.AlignLeft()
-		case Center:
+		case alignment.Center:
 			builder.AlignCenter()
-		case Right:
+		case alignment.Right:
 			builder.AlignRight()
 		}
 
@@ -253,13 +245,13 @@ func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width flo
 		builder.Draw()
 
 		// Aplicar espaciado adicional solo en la primera página si es necesario
-		if hf.isHeader && doc.numOfPagesObj == 1 && fontStyle.SpaceAfter > 0 {
+		if hf.isHeader && doc.NumOfPagesObj == 1 && fontStyle.SpaceAfter > 0 {
 			// Para el encabezado en la primera página, ajustamos la posición Y inicial del contenido
-			topWithOffset := doc.margins.Top + fontStyle.SpaceAfter
+			topWithOffset := doc.canvas.Margins.alignment.Top + fontStyle.SpaceAfter
 			doc.SetY(topWithOffset)
 		}
 
-		// Restore position
+		// Restore alignment.Alignment
 		doc.SetXY(prevX, prevY)
 	}
 }
@@ -280,7 +272,7 @@ func (d *Document) SetPageFooter() *headerFooter {
 
 // SetLeftText sets the left-aligned text in the header/footer
 func (hf *headerFooter) SetLeftText(text string) *headerFooter {
-	hf.Left = headerFooterContent{
+	hf.alignment.Left = headerFooterContent{
 		Text:     text,
 		IsImage:  false,
 		WithPage: false,
@@ -290,7 +282,7 @@ func (hf *headerFooter) SetLeftText(text string) *headerFooter {
 
 // SetCenterText sets the center-aligned text in the header/footer
 func (hf *headerFooter) SetCenterText(text string) *headerFooter {
-	hf.Center = headerFooterContent{
+	hf.alignment.Center = headerFooterContent{
 		Text:     text,
 		IsImage:  false,
 		WithPage: false,
@@ -300,7 +292,7 @@ func (hf *headerFooter) SetCenterText(text string) *headerFooter {
 
 // SetRightText sets the right-aligned text in the header/footer
 func (hf *headerFooter) SetRightText(text string) *headerFooter {
-	hf.Right = headerFooterContent{
+	hf.alignment.Right = headerFooterContent{
 		Text:     text,
 		IsImage:  false,
 		WithPage: false,
@@ -310,7 +302,7 @@ func (hf *headerFooter) SetRightText(text string) *headerFooter {
 
 // SetLeftImage sets the left-aligned image in the header/footer
 func (hf *headerFooter) SetLeftImage(imagePath string, width, height float64) *headerFooter {
-	hf.Left = headerFooterContent{
+	hf.alignment.Left = headerFooterContent{
 		Image:   imagePath,
 		Width:   width,
 		Height:  height,
@@ -321,7 +313,7 @@ func (hf *headerFooter) SetLeftImage(imagePath string, width, height float64) *h
 
 // SetCenterImage sets the center-aligned image in the header/footer
 func (hf *headerFooter) SetCenterImage(imagePath string, width, height float64) *headerFooter {
-	hf.Center = headerFooterContent{
+	hf.alignment.Center = headerFooterContent{
 		Image:   imagePath,
 		Width:   width,
 		Height:  height,
@@ -332,7 +324,7 @@ func (hf *headerFooter) SetCenterImage(imagePath string, width, height float64) 
 
 // SetRightImage sets the right-aligned image in the header/footer
 func (hf *headerFooter) SetRightImage(imagePath string, width, height float64) *headerFooter {
-	hf.Right = headerFooterContent{
+	hf.alignment.Right = headerFooterContent{
 		Image:   imagePath,
 		Width:   width,
 		Height:  height,
@@ -342,25 +334,25 @@ func (hf *headerFooter) SetRightImage(imagePath string, width, height float64) *
 }
 
 // WithPageNumber adds the page number to specific section text
-func (hf *headerFooter) WithPageNumber(position position) *headerFooter {
-	switch position {
-	case Left:
-		hf.Left.WithPage = true
-	case Center:
-		hf.Center.WithPage = true
-	case Right:
-		hf.Right.WithPage = true
+func (hf *headerFooter) WithPageNumber(alignment alignment.Alignment) *headerFooter {
+	switch alignment {
+	case alignment.Left:
+		hf.alignment.Left.WithPage = true
+	case alignment.Center:
+		hf.alignment.Center.WithPage = true
+	case alignment.Right:
+		hf.alignment.Right.WithPage = true
 	default:
-		// Default to center if position is invalid
-		hf.Center.WithPage = true
+		// Default to center if alignment.Alignment is invalid
+		hf.alignment.Center.WithPage = true
 	}
 	return hf
 }
 
 // WithPageTotal adds the page number in format "X/Y" to specific section text
 // You can specify a custom separator (default is "/")
-// Example: WithPageTotal(Right, " de ") will display "1 de 3"
-func (hf *headerFooter) WithPageTotal(position position, separator ...string) *headerFooter {
+// Example: WithPageTotal(alignment.Right, " de ") will display "1 de 3"
+func (hf *headerFooter) WithPageTotal(alig alignment.Alignment, separator ...string) *headerFooter {
 	// Set default separator to "/"
 	pageSeparator := "/"
 
@@ -369,21 +361,21 @@ func (hf *headerFooter) WithPageTotal(position position, separator ...string) *h
 		pageSeparator = separator[0]
 	}
 
-	switch position {
-	case Left:
+	switch alig {
+	case alignment.Left:
 		hf.Left.WithTotalPages = true
 		hf.Left.WithPage = false // Disable simple page number if using total format
 		hf.Left.PageSeparator = pageSeparator
-	case Center:
+	case alignment.Center:
 		hf.Center.WithTotalPages = true
 		hf.Center.WithPage = false // Disable simple page number if using total format
 		hf.Center.PageSeparator = pageSeparator
-	case Right:
+	case alignment.Right:
 		hf.Right.WithTotalPages = true
 		hf.Right.WithPage = false // Disable simple page number if using total format
 		hf.Right.PageSeparator = pageSeparator
 	default:
-		// Default to center if position is invalid
+		// Default to center if alignment.Alignment is invalid
 		hf.Center.WithTotalPages = true
 		hf.Center.WithPage = false // Disable simple page number if using total format
 		hf.Center.PageSeparator = pageSeparator
@@ -402,7 +394,7 @@ func (d *Document) AddPageHeader(text string) *docText {
 	// Create text builder with header style
 	builder := d.newTextBuilder(text, d.fontConfig.PageHeader, FontRegular)
 
-	// Mark as fixed position so it doesn't trigger page breaks
+	// Mark as fixed alignment.Alignment so it doesn't trigger page breaks
 	builder.positioning = fixedPosition
 
 	// Use the new header system
@@ -417,7 +409,7 @@ func (d *Document) AddPageFooter(text string) *docText {
 	// Create text builder with footer style
 	builder := d.newTextBuilder(text, d.fontConfig.PageFooter, FontRegular)
 
-	// Mark as fixed position so it doesn't trigger page breaks
+	// Mark as fixed alignment.Alignment so it doesn't trigger page breaks
 	builder.positioning = fixedPosition
 
 	// Use the new footer system
@@ -440,9 +432,9 @@ func (dt *docText) WithPageNumber() *docText {
 
 		// Update the appropriate header/footer
 		if isHeader {
-			dt.doc.header.WithPageNumber(Center)
+			dt.doc.header.WithPageNumber(alignment.Center)
 		} else {
-			dt.doc.footer.WithPageNumber(Center)
+			dt.doc.footer.WithPageNumber(alignment.Center)
 		}
 	}
 
@@ -464,7 +456,7 @@ func (dt *docText) WithPageNumber() *docText {
 func (hf *headerFooter) ShowOnFirstPage() *headerFooter {
 	hf.hideOnFirstPage = false
 	// Si estamos en la primera página, redibujamos para que el cambio tenga efecto inmediato
-	if hf.doc.numOfPagesObj == 1 {
+	if hf.doc.NumOfPagesObj == 1 {
 		hf.doc.RedrawHeaderFooter()
 	}
 	return hf
@@ -474,7 +466,7 @@ func (hf *headerFooter) ShowOnFirstPage() *headerFooter {
 func (hf *headerFooter) HideOnFirstPage() *headerFooter {
 	hf.hideOnFirstPage = true
 	// Si estamos en la primera página, redibujamos para que el cambio tenga efecto inmediato
-	if hf.doc.numOfPagesObj == 1 {
+	if hf.doc.NumOfPagesObj == 1 {
 		hf.doc.RedrawHeaderFooter()
 	}
 	return hf

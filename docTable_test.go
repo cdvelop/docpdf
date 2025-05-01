@@ -5,10 +5,12 @@ import (
 	"path/filepath"
 	"strconv"
 	"testing"
+
+	"github.com/cdvelop/docpdf/alignment"
 )
 
 func TestLargeTablePagination(t *testing.T) {
-	// Create a simple document with fileWriter function
+	// Create a simple document with FileWriter function
 	doc := NewDocument()
 
 	// Setup header and footer
@@ -19,7 +21,7 @@ func TestLargeTablePagination(t *testing.T) {
 		ShowOnFirstPage()
 
 	doc.SetPageFooter().
-		WithPageTotal(Right).
+		WithPageTotal(alignment.Right).
 		ShowOnFirstPage()
 
 	// Add a title
@@ -121,8 +123,8 @@ func TestTableColumnWidths(t *testing.T) {
 		},
 	}
 
-	// Create a common fileWriter function
-	fileWriter := func(filename string, data []byte) error {
+	// Create a common FileWriter function
+	FileWriter := func(filename string, data []byte) error {
 		return os.WriteFile(filename, data, 0644)
 	}
 
@@ -130,7 +132,7 @@ func TestTableColumnWidths(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Create a new document for this test
-			doc := NewDocument(fileWriter)
+			doc := NewDocument(FileWriter)
 
 			// Create table with the test headers
 			table := doc.NewTable(tc.headers...)
@@ -173,7 +175,7 @@ func TestTableColumnWidths(t *testing.T) {
 
 	// Test mixing width types (should ensure consistent approach)
 	t.Run("Mixing_Width_Types", func(t *testing.T) {
-		doc := NewDocument(fileWriter)
+		doc := NewDocument(FileWriter)
 
 		// Test mixing percentage and fixed widths (should convert all to percentage)
 		headers := []string{

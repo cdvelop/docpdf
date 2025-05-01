@@ -6,19 +6,19 @@ import (
 	"os"
 
 	"github.com/cdvelop/docpdf/chart"
-	"github.com/cdvelop/docpdf/drawing"
+	"github.com/cdvelop/docpdf/style"
 )
 
 func main() {
 	profitStyle := chart.Style{
-		FillColor:   drawing.ColorFromHex("13c158"),
-		StrokeColor: drawing.ColorFromHex("13c158"),
+		FillColor:   style.ColorFromHex("13c158"),
+		StrokeColor: style.ColorFromHex("13c158"),
 		StrokeWidth: 0,
 	}
 
 	lossStyle := chart.Style{
-		FillColor:   drawing.ColorFromHex("c11313"),
-		StrokeColor: drawing.ColorFromHex("c11313"),
+		FillColor:   style.ColorFromHex("c11313"),
+		StrokeColor: style.ColorFromHex("c11313"),
 		StrokeWidth: 0,
 	}
 

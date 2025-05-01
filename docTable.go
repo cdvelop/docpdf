@@ -1,6 +1,8 @@
 package docpdf
 
 import (
+	"github.com/cdvelop/docpdf/alignment"
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/tinystring"
 )
 
@@ -24,18 +26,18 @@ type docTable struct {
 	cellPadding               float64
 	headerStyle               CellStyle
 	cellStyle                 CellStyle
-	alignment                 position // Left, Center, or Right alignment
+	alignment                 alignment.Alignment // alignment.Left, alignment.Center, or alignment.Right alignment
 	currentWidth              float64
 }
 
 // tableColumn represents a column in the table
 type tableColumn struct {
-	header      string   // Header text
-	width       float64  // Width of the column
-	headerAlign position // Text alignment for header (Left, Center, Right)
-	align       position // Text alignment within cells (Left, Center, Right)
-	prefix      string   // Prefix to add before each value in the column
-	suffix      string   // Suffix to add after each value in the column
+	header      string              // Header text
+	width       float64             // Width of the column
+	headerAlign alignment.Alignment // Text alignment for header (alignment.Left, alignment.Center, alignment.Right)
+	align       alignment.Alignment // Text alignment within cells (alignment.Left, alignment.Center, alignment.Right)
+	prefix      string              // Prefix to add before each value in the column
+	suffix      string              // Suffix to add after each value in the column
 }
 
 // tableCell represents a cell in the table
@@ -59,11 +61,11 @@ type tableCell struct {
 //
 // Examples:
 //   - "Name" - Normal header, left-aligned column, auto width
-//   - "Price|HR,CR" - Right-aligned header, right-aligned column
-//   - "Price|HR,CR,P:$" - Right-aligned header, right-aligned column with "$" prefix
-//   - "Percentage|HC,CC,S:%" - Center-aligned header, center-aligned column with "%" suffix
-//   - "Name|HL,CL,W:30%" - Left-aligned header, left-aligned column with 30% of available width
-//   - "Age|HC,CR,W:20" - Center-aligned header, right-aligned column with fixed width of 20 units
+//   - "Price|HR,CR" - alignment.Right-aligned header, right-aligned column
+//   - "Price|HR,CR,P:$" - alignment.Right-aligned header, right-aligned column with "$" prefix
+//   - "Percentage|HC,CC,S:%" - alignment.Center-aligned header, center-aligned column with "%" suffix
+//   - "Name|HL,CL,W:30%" - alignment.Left-aligned header, left-aligned column with 30% of available width
+//   - "Age|HC,CR,W:20" - alignment.Center-aligned header, right-aligned column with fixed width of 20 units
 func (doc *Document) NewTable(headers ...string) *docTable {
 	// Almacenar los encabezados para verificación posterior
 	doc.lastTableHeaders = headers
@@ -73,7 +75,7 @@ func (doc *Document) NewTable(headers ...string) *docTable {
 		doc:                       doc,
 		rowHeight:                 25, // Default row height
 		cellPadding:               5,  // Default padding
-		alignment:                 Center,
+		alignment:                 alignment.Center,
 		maxLinesTextForRowInACell: 2, // Limitamos a máximo 2 líneas de texto por fila en cada celda
 	}
 
@@ -190,7 +192,7 @@ func (t *docTable) SetColumnWidth(columnIndex int, width float64) *docTable {
 }
 
 // SetHeaderAlignment sets the text alignment for a specific header
-func (t *docTable) SetHeaderAlignment(columnIndex int, alignment position) *docTable {
+func (t *docTable) SetHeaderAlignment(columnIndex int, alignment alignment.Alignment) *docTable {
 	if columnIndex >= 0 && columnIndex < len(t.columns) {
 		t.columns[columnIndex].headerAlign = alignment
 	}
@@ -215,19 +217,19 @@ func (t *docTable) SetColumnSuffix(columnIndex int, suffix string) *docTable {
 
 // AlignLeft aligns the table to the left margin
 func (t *docTable) AlignLeft() *docTable {
-	t.alignment = Left
+	t.alignment = alignment.Left
 	return t
 }
 
 // AlignCenter centers the table horizontally (default)
 func (t *docTable) AlignCenter() *docTable {
-	t.alignment = Center
+	t.alignment = alignment.Center
 	return t
 }
 
 // AlignRight aligns the table to the right margin
 func (t *docTable) AlignRight() *docTable {
-	t.alignment = Right
+	t.alignment = alignment.Right
 	return t
 }
 
@@ -311,7 +313,7 @@ func (doc *Document) NewStyledCell(content string, style CellStyle) styledCell {
 
 // Draw renders the table on the document
 func (t *docTable) Draw() error {
-	// Calculate starting X position
+	// Calculate starting X alignment.Alignment
 	x := t.calculatePosition()
 
 	// Colección para guardar información de los encabezados para dibujar sus bordes al final
@@ -322,19 +324,19 @@ func (t *docTable) Draw() error {
 	headers := []headerInfo{}
 
 	// Obtenemos la posición Y inicial, considerando el espacio disponible en la página actual
-	y := t.doc.curr.Y
+	y := t.doc.Curr.Y
 
 	// Verificar si al menos la cabecera cabe en la página actual
 	headerHeight := t.rowHeight
-	bottomMargin := t.doc.margins.Bottom
+	bottomMargin := t.doc.canvas.Margins.alignment.Bottom
 
 	// Calcular espacio disponible en la página actual
-	availableSpace := t.doc.curr.pageSize.H - y - bottomMargin
+	availableSpace := t.doc.Curr.pageSize.H - y - bottomMargin
 
 	// Si ni siquiera la cabecera cabe, ir a una nueva página
 	if headerHeight > availableSpace {
 		t.doc.AddPage()
-		y = t.doc.curr.Y
+		y = t.doc.Curr.Y
 	}
 
 	// Dibujar encabezado
@@ -369,12 +371,12 @@ func (t *docTable) Draw() error {
 	// Dibujar filas de datos
 	for _, row := range t.rows {
 		// Verificar si la fila actual cabe en la página actual
-		availableSpace = t.doc.curr.pageSize.H - currentY - bottomMargin
+		availableSpace = t.doc.Curr.pageSize.H - currentY - bottomMargin
 
 		// Si esta fila no cabe en la página actual, crear una nueva página
 		if t.rowHeight > availableSpace {
 			t.doc.AddPage()
-			currentY = t.doc.curr.Y
+			currentY = t.doc.Curr.Y
 
 			// Limpiar la lista de encabezados para la nueva página
 			headers = []headerInfo{}
@@ -455,7 +457,7 @@ func (t *docTable) drawCellContent(
 	width float64,
 	height float64,
 	content string,
-	align position,
+	align alignment.Alignment,
 	style CellStyle,
 ) {
 	// Fill the cell background if a fill color is specified
@@ -482,11 +484,11 @@ func (t *docTable) drawCellContent(
 	numLines := len(lines)
 
 	if numLines >= 2 {
-		cellAlign = Justify // Justificar texto multilínea
+		cellAlign = alignment.Justify // Justificar texto multilínea
 	}
 
 	// Calcular altura de línea y posicionamiento vertical
-	lineHeight := t.doc.curr.FontSize * 1.2
+	lineHeight := t.doc.Curr.FontSize * 1.2
 
 	// Altura estimada del texto (con límite de 2 líneas)
 	estimatedLines := min(numLines, t.maxLinesTextForRowInACell)
@@ -519,13 +521,13 @@ func (t *docTable) drawCellContent(
 	t.doc.SetXY(textX, drawY)
 	drawRectH := totalTextHeight + (lineHeight * 0.1)
 	err := t.doc.MultiCellWithOption(
-		&Rect{W: textWidth, H: drawRectH},
+		&canvas.Rect{W: textWidth, H: drawRectH},
 		content,
 		cellOpt,
 	)
 
 	if err != nil && err.Error() != "empty string" {
-		t.doc.log("Error drawing table cell content:", err)
+		t.doc.Log("Error drawing table cell content:", err)
 	}
 }
 
@@ -545,16 +547,16 @@ func (t *docTable) drawCellBorder(
 			borderStyle.RGBColor.B,
 		)
 
-		if borderStyle.Top {
+		if borderStyle.alignment.Top {
 			t.doc.Line(x, y, x+width, y)
 		}
-		if borderStyle.Bottom {
+		if borderStyle.alignment.Bottom {
 			t.doc.Line(x, y+height, x+width, y+height)
 		}
-		if borderStyle.Left {
+		if borderStyle.alignment.Left {
 			t.doc.Line(x, y, x, y+height)
 		}
-		if borderStyle.Right {
+		if borderStyle.alignment.Right {
 			t.doc.Line(x+width, y, x+width, y+height)
 		}
 	}
@@ -567,7 +569,7 @@ func (t *docTable) drawCell(
 	width float64,
 	height float64,
 	content string,
-	align position,
+	align alignment.Alignment,
 	style CellStyle,
 ) {
 	// Primero dibujamos el contenido y el fondo
@@ -580,19 +582,19 @@ func (t *docTable) drawCell(
 // calculatePosition determina donde colocar la tabla
 func (t *docTable) calculatePosition() float64 {
 	// Posición X inicial (margen izquierdo)
-	x := t.doc.margins.Left
+	x := t.doc.canvas.Margins.alignment.Left
 
 	// Aplicar alineación
 	switch t.alignment {
-	case Center:
+	case alignment.Center:
 		// Centrar la tabla: margen izquierdo + (espacio disponible - ancho tabla) / 2
-		x = t.doc.margins.Left + (t.doc.contentAreaWidth-t.width)/2
-	case Right:
+		x = t.doc.canvas.Margins.alignment.Left + (t.doc.contentAreaWidth-t.width)/2
+	case alignment.Right:
 		// Alinear a la derecha: margen izquierdo + espacio disponible - ancho tabla
-		x = t.doc.margins.Left + t.doc.contentAreaWidth - t.width
-	case Left:
+		x = t.doc.canvas.Margins.alignment.Left + t.doc.contentAreaWidth - t.width
+	case alignment.Left:
 		// Alinear a la izquierda: simplemente el margen izquierdo
-		x = t.doc.margins.Left
+		x = t.doc.canvas.Margins.alignment.Left
 	}
 
 	return x

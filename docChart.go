@@ -4,10 +4,11 @@ package docpdf
 import (
 	"bytes"
 
+	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/chartutils"
-	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/fontbridge"
+	"github.com/cdvelop/docpdf/style"
 	"github.com/cdvelop/tinystring"
 )
 
@@ -17,7 +18,7 @@ type docChart struct {
 	width     float64
 	height    float64
 	keepRatio bool
-	alignment position
+	alignment alignment.Alignment
 	x, y      float64
 	hasPos    bool
 	inline    bool
@@ -47,7 +48,7 @@ type docChart struct {
 }
 
 // WithStyle aplica un estilo personalizado al gráfico
-func (c *docChart) WithStyle(backgroundColor, chartColor drawing.Color) *docChart {
+func (c *docChart) WithStyle(backgroundColor, chartColor style.Color) *docChart {
 	c.background = chart.Style{
 		FillColor: backgroundColor,
 	}
@@ -192,7 +193,7 @@ func (c *docChart) Draw() error {
 		// Intentar cargar la fuente predeterminada como última opción
 		defaultFont, errDefault := chart.GetDefaultFont()
 		if errDefault != nil {
-			c.doc.log("FATAL: Could not load default chart font:", errDefault)
+			c.doc.Log("FATAL: Could not load default chart font:", errDefault)
 			return errDefault
 		}
 		fontbridge.SharedFontConfig.Font = defaultFont
@@ -457,7 +458,7 @@ func configureBaseChart(doc *Document, chartType chartType) *docChart {
 		width:          500, // Ancho predeterminado
 		height:         300, // Alto predeterminado
 		keepRatio:      true,
-		alignment:      Center,
+		alignment:      alignment.Center,
 		dpi:            150,                                   // DPI reducido a 150
 		strokeWidth:    1.0,                                   // Ancho de línea por defecto
 		valueFormatter: chartutils.FormatNumberValueFormatter, // Formateador de valores predeterminado con separadores de miles

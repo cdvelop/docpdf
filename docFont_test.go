@@ -99,7 +99,7 @@ func TestNewDocument(t *testing.T) {
 	t.Run("Logger captures errors", func(t *testing.T) {
 		var logOutput []any
 
-		// Create a custom logger to capture log output
+		// Create a custom logger to capture Log output
 		customLogger := func(a ...any) {
 			logOutput = append(logOutput, a...)
 		}

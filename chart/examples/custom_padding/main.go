@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/cdvelop/docpdf/chart"
-	"github.com/cdvelop/docpdf/drawing"
+	"github.com/cdvelop/docpdf/style"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 				Right:  25,
 				Bottom: 10,
 			},
-			FillColor: drawing.ColorFromHex("efefef"),
+			FillColor: style.ColorFromHex("efefef"),
 		},
 		Series: []chart.Series{
 			chart.ContinuousSeries{

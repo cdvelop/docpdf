@@ -14,16 +14,18 @@
 package main
 
 import (
+	"Log"
 	"bufio"
 	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/png"
-	"log"
 	"os"
 
+	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/raster"
+	"github.com/cdvelop/docpdf/style"
 )
 
 type node struct {
@@ -128,7 +130,7 @@ func showNodes(m *image.RGBA, ns []node) {
 		if !(image.Point{x, y}).In(m.Bounds()) {
 			continue
 		}
-		var c color.Color
+		var c style.Color
 		switch n.degree {
 		case 0:
 			c = color.RGBA{0, 255, 255, 255}
@@ -167,19 +169,19 @@ func main() {
 	// Save that RGBA image to disk.
 	outFile, err := os.Create("out.png")
 	if err != nil {
-		log.Println(err)
+		Log.Println(err)
 		os.Exit(1)
 	}
 	defer outFile.Close()
 	b := bufio.NewWriter(outFile)
 	err = png.Encode(b, rgba)
 	if err != nil {
-		log.Println(err)
+		Log.Println(err)
 		os.Exit(1)
 	}
 	err = b.Flush()
 	if err != nil {
-		log.Println(err)
+		Log.Println(err)
 		os.Exit(1)
 	}
 	fmt.Println("Wrote out.png OK.")

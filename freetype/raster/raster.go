@@ -42,7 +42,7 @@ type Rasterizer struct {
 	// to decompose a quadratic or cubic segment into a linear approximation.
 	splitScale2, splitScale3 int
 
-	// The current pen position.
+	// The current pen alignment.Alignment.
 	a fixedpoint.Point26_6
 	// The current cell and its area/coverage being accumulated.
 	xi, yi      int

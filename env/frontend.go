@@ -14,12 +14,12 @@ import (
 // SetupDefaultLogger configures the default logger for frontend environments
 func SetupDefaultLogger() func(a ...any) {
 	return func(a ...any) {
-		// Use console.log in browser environment
+		// Use console.Log in browser environment
 		args := make([]any, len(a))
 		for i, arg := range a {
 			args[i] = js.ValueOf(utils.AnyToString(arg))
 		}
-		js.Global().Get("console").Call("log", args...)
+		js.Global().Get("console").Call("Log", args...)
 	}
 }
 
@@ -106,7 +106,7 @@ func FileExists(pathOrContent any) ([]byte, error) {
 			return FetchURL(v)
 		} else {
 			// If it's a local file path, we can't access it directly
-			console.Call("log", "FileExists: Local file system access not supported in browser", v)
+			console.Call("Log", "FileExists: Local file system access not supported in browser", v)
 			return nil, js.Error{Value: js.ValueOf("Local file system access not supported in browser")}
 		}
 
@@ -116,7 +116,7 @@ func FileExists(pathOrContent any) ([]byte, error) {
 
 	default:
 		errMsg := fmt.Sprintf("unsupported type: %T, expected string or []byte", pathOrContent)
-		console.Call("log", "FileExists error:", errMsg)
+		console.Call("Log", "FileExists error:", errMsg)
 		return nil, js.Error{Value: js.ValueOf(errMsg)}
 	}
 }

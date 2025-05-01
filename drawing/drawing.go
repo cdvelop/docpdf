@@ -1,9 +1,8 @@
 package drawing
 
 import (
-	"image/color"
-
 	"github.com/cdvelop/docpdf/freetype/truetype"
+	"github.com/cdvelop/docpdf/style"
 )
 
 // FillRule defines the type for fill rules
@@ -53,7 +52,7 @@ const (
 // that is used by the Stroke method of a Drawer
 type StrokeStyle struct {
 	// Color defines the color of stroke
-	Color color.Color
+	Color style.Color
 	// Line width
 	Width float64
 	// Line cap style rounded, butt or square
@@ -70,7 +69,7 @@ type StrokeStyle struct {
 // SolidFillStyle define style attributes for a solid fill style
 type SolidFillStyle struct {
 	// Color defines the line color
-	Color color.Color
+	Color style.Color
 	// FillRule defines the file rule to used
 	FillRule FillRule
 }
@@ -104,7 +103,7 @@ const (
 // TextStyle describe text property
 type TextStyle struct {
 	// Color defines the color of text
-	Color color.Color
+	Color style.Color
 	// Size font size
 	Size float64
 	// The font to use

@@ -2,18 +2,18 @@ package drawing
 
 import (
 	"image"
-	"image/color"
 
 	"golang.org/x/image/draw"
 	"golang.org/x/image/math/f64"
 
 	"github.com/cdvelop/docpdf/freetype/raster"
+	"github.com/cdvelop/docpdf/style"
 )
 
 // Painter implements the freetype raster.Painter and has a SetColor method like the RGBAPainter
 type Painter interface {
 	raster.Painter
-	SetColor(color color.Color)
+	SetColor(color style.Color)
 }
 
 // DrawImage draws an image into dest using an affine transformation matrix, an op and a filter

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
+	"github.com/cdvelop/docpdf/style"
 )
 
 const (
@@ -50,19 +50,19 @@ type Style struct {
 	ClassName string
 
 	StrokeWidth     float64
-	StrokeColor     drawing.Color
+	StrokeColor     style.Color
 	StrokeDashArray []float64
 
-	DotColor drawing.Color
+	DotColor style.Color
 	DotWidth float64
 
 	DotWidthProvider SizeProvider
 	DotColorProvider DotColorProvider
 
-	FillColor drawing.Color
+	FillColor style.Color
 
 	FontSize  float64
-	FontColor drawing.Color
+	FontColor style.Color
 	Font      *truetype.Font
 
 	TextHorizontalAlign TextHorizontalAlign
@@ -185,34 +185,34 @@ func (s Style) GetClassName(defaults ...string) string {
 }
 
 // GetStrokeColor returns the stroke color.
-func (s Style) GetStrokeColor(defaults ...drawing.Color) drawing.Color {
+func (s Style) GetStrokeColor(defaults ...style.Color) style.Color {
 	if s.StrokeColor.IsZero() {
 		if len(defaults) > 0 {
 			return defaults[0]
 		}
-		return drawing.ColorTransparent
+		return style.ColorTransparent
 	}
 	return s.StrokeColor
 }
 
 // GetFillColor returns the fill color.
-func (s Style) GetFillColor(defaults ...drawing.Color) drawing.Color {
+func (s Style) GetFillColor(defaults ...style.Color) style.Color {
 	if s.FillColor.IsZero() {
 		if len(defaults) > 0 {
 			return defaults[0]
 		}
-		return drawing.ColorTransparent
+		return style.ColorTransparent
 	}
 	return s.FillColor
 }
 
 // GetDotColor returns the stroke color.
-func (s Style) GetDotColor(defaults ...drawing.Color) drawing.Color {
+func (s Style) GetDotColor(defaults ...style.Color) style.Color {
 	if s.DotColor.IsZero() {
 		if len(defaults) > 0 {
 			return defaults[0]
 		}
-		return drawing.ColorTransparent
+		return style.ColorTransparent
 	}
 	return s.DotColor
 }
@@ -262,12 +262,12 @@ func (s Style) GetFontSize(defaults ...float64) float64 {
 }
 
 // GetFontColor gets the font size.
-func (s Style) GetFontColor(defaults ...drawing.Color) drawing.Color {
+func (s Style) GetFontColor(defaults ...style.Color) style.Color {
 	if s.FontColor.IsZero() {
 		if len(defaults) > 0 {
 			return defaults[0]
 		}
-		return drawing.ColorTransparent
+		return style.ColorTransparent
 	}
 	return s.FontColor
 }

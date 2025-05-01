@@ -1,8 +1,8 @@
 package chart
 
-import "github.com/cdvelop/docpdf/drawing"
+import "github.com/cdvelop/docpdf/style"
 
-var viridisColors = [256]drawing.Color{
+var viridisColors = [256]style.Color{
 	{R: 0x44, G: 0x1, B: 0x54, A: 0xff},
 	{R: 0x44, G: 0x2, B: 0x55, A: 0xff},
 	{R: 0x45, G: 0x3, B: 0x57, A: 0xff},
@@ -262,7 +262,7 @@ var viridisColors = [256]drawing.Color{
 }
 
 // Viridis creates a color map provider.
-func Viridis(v, vmin, vmax float64) drawing.Color {
+func Viridis(v, vmin, vmax float64) style.Color {
 	normalized := (v - vmin) / (vmax - vmin)
 	index := uint8(normalized * 255)
 	return viridisColors[index]
