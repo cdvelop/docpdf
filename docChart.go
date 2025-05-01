@@ -3,6 +3,7 @@ package docpdf
 
 import (
 	"bytes"
+	"math"
 
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/chartutils"
@@ -393,34 +394,73 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 	if len(c.values) == 0 {
 		return nil // No hay valores para mostrar
 	}
-
 	// Si tenemos un formateador de etiquetas, aplicarlo a cada valor
 	formattedValues := make([]chart.Value, len(c.values))
 	for i, val := range c.values {
 		formattedValues[i] = val
 
-		// Aplicar formateador de valores si existe (para etiquetas)
+		// Aplicar formateador de etiquetas si existe
+		if c.labelFormatter != nil {
+			// Usar un ancho fijo para las etiquetas del donut
+			formattedValues[i].Label = c.labelFormatter(val.Label, 30)
+		}
+
+		// Aplicar formateador de valores si existe (para mostrar valores junto a etiquetas)
 		if c.valueFormatter != nil {
 			formattedValues[i].Label = formattedValues[i].Label + " (" + c.valueFormatter(val.Value) + ")"
 		}
-	}
+	} // Crear el gráfico de tipo donut con tamaño más compacto
+	// Calcular un tamaño adecuado para el donut (aproximadamente 65-70% del tamaño original)
+	scaledWidth := int(float64(widthInPixels) * 0.7)
+	scaledHeight := int(float64(heightInPixels) * 0.7)
 
-	// Crear el gráfico de tipo donut
 	donutChart := chart.DonutChart{
 		Title:      c.title,
-		Width:      widthInPixels,
-		Height:     heightInPixels,
+		Width:      scaledWidth,
+		Height:     scaledHeight,
 		DPI:        c.dpi,
 		Values:     formattedValues,
 		TitleStyle: titleStyle,
 		Background: backgroundStyle,
 		Font:       fontbridge.SharedFontConfig.Font,
+		// Usar una paleta de colores alternativa que proporciona colores diferentes automáticamente
+		ColorPalette: chart.AlternateColorPalette,
+	}
+	// Configurar el estilo para las porciones del donut
+	sliceStyle := chart.Style{
+		StrokeColor: chart.ColorWhite, // Borde blanco entre porciones
+		StrokeWidth: 2.0,              // Líneas aún más finas para un aspecto más limpio
+		FontSize:    fontbridge.SharedFontConfig.ValueLabelSize,
+		FontColor:   fontbridge.SharedFontConfig.ValueLabelColor,
+		Font:        fontbridge.SharedFontConfig.Font,
 	}
 
-	// Configurar el estilo para las porciones del donut
-	sliceStyle := chart.Style{}
+	// Aplicar la configuración de estilo desde fontbridge
 	fontbridge.ApplyToChartStyle(&sliceStyle, "value")
 	donutChart.SliceStyle = sliceStyle
+
+	// Crear elementos personalizados para el donut
+	// Este elemento modifica el tamaño del agujero central (haciéndolo más grande)
+	donutChart.Elements = []chart.Renderable{
+		func(r chart.Renderer, canvasBox chart.Box, defaults chart.Style) {
+			// Este código se ejecuta después de dibujar el donut
+			// Dibuja un círculo blanco en el centro para crear el agujero
+			cx, cy := canvasBox.Center()
+			diameter := math.Min(float64(canvasBox.Width()), float64(canvasBox.Height()))
+
+			// Radio para el "donut hole" - usar un valor más pequeño para un agujero más grande
+			// 2.5 es el valor por defecto en la librería, usamos 2.0 para un agujero más grande
+			holeRadius := diameter / 4.5
+
+			// Dibujar el círculo central (el "agujero")
+			r.SetFillColor(chart.ColorWhite)
+			r.SetStrokeColor(chart.ColorWhite)
+			r.SetStrokeWidth(1.0)
+			r.MoveTo(cx, cy)
+			r.Circle(holeRadius, cx, cy)
+			r.FillStroke()
+		},
+	}
 
 	// Aplicar estilos personalizados al canvas si están configurados
 	if c.canvas.FillColor.A > 0 {
