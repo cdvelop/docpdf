@@ -1,6 +1,8 @@
 package docpdf
 
 import (
+	"math"
+
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/chartutils"
 	"github.com/cdvelop/docpdf/drawing"
@@ -107,6 +109,12 @@ func (c *docCharts) Bar() *docBarChart {
 func (c *docCharts) Donut() *docDonutChart {
 	// Usar la función de configuración común
 	base := configureBaseChart(c.doc, DonutChartType)
+
+	// Para el donut, preferimos dimensiones cuadradas para garantizar un círculo perfecto
+	// Si se desea un tamaño específico, se puede configurar posteriormente
+	minDimension := math.Min(base.width, base.height)
+	base.width = minDimension
+	base.height = minDimension
 
 	// Crear el gráfico específico de tipo donut
 	donutChart := &docDonutChart{

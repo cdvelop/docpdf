@@ -419,14 +419,13 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 		if c.valueFormatter != nil {
 			formattedValues[i].Label = formattedValues[i].Label + " (" + c.valueFormatter(val.Value) + ")"
 		}
-	}
+	} // Para el donut, necesitamos ajustar el tamaño del área de dibujo efectiva
+	// para mantener la proporción adecuada entre el donut y el agujero central
 
-	// Mantener las dimensiones originales para consistencia con el gráfico de barras
-	// Ya no escalamos el tamaño a un porcentaje menor
 	donutChart := chart.DonutChart{
 		Title:      c.title,
-		Width:      widthInPixels,
-		Height:     heightInPixels,
+		Width:      widthInPixels,  // Mantener dimensiones externas consistentes
+		Height:     heightInPixels, // Mantener dimensiones externas consistentes
 		DPI:        c.dpi,
 		Values:     formattedValues,
 		TitleStyle: titleStyle,
@@ -437,7 +436,7 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 	} // Configurar el estilo para las porciones del donut usando la misma configuración del ValueLabelSize
 	sliceStyle := chart.Style{
 		StrokeColor: chart.ColorWhite, // Borde blanco entre porciones
-		StrokeWidth: 2.0,              // Líneas más finas para un aspecto más limpio
+		StrokeWidth: 1.0,              // Líneas más finas para separación visual clara pero sutil
 	}
 
 	// Aplicar la configuración de estilo desde fontbridge de forma consistente
@@ -449,19 +448,16 @@ func (c *docChart) drawDonutChart(buf *bytes.Buffer, widthInPixels, heightInPixe
 		valueStyle := chart.Style{}
 		fontbridge.ApplyToChartStyle(&valueStyle, "value")
 		formattedValues[i].Style = valueStyle
-	}
-	// Crear elementos personalizados para el donut
+	} // Crear elementos personalizados para el donut
 	// Este elemento modifica el tamaño del agujero central
 	donutChart.Elements = []chart.Renderable{
 		func(r chart.Renderer, canvasBox chart.Box, defaults chart.Style) {
 			// Este código se ejecuta después de dibujar el donut
 			// Dibuja un círculo blanco en el centro para crear el agujero
 			cx, cy := canvasBox.Center()
-			diameter := math.Min(float64(canvasBox.Width()), float64(canvasBox.Height()))
-
-			// Radio para el "donut hole" - usar un valor proporcionado que se ve bien
-			// con las nuevas dimensiones del gráfico (un tercio del diámetro)
-			holeRadius := diameter / 3.0
+			diameter := math.Min(float64(canvasBox.Width()), float64(canvasBox.Height())) // Usar un valor mayor para el divisor crea un agujero más pequeño
+			// y viceversa. Usamos un valor ajustado para crear un donut con buen aspecto
+			holeRadius := diameter * 0.25 // 25% del diámetro
 
 			// Dibujar el círculo central (el "agujero")
 			r.SetFillColor(chart.ColorWhite)
