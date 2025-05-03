@@ -9,13 +9,13 @@ type encodingObj struct {
 	font iFont
 }
 
-func (e *encodingObj) init(funcGetRoot func() *PdfEngine) {
+func (e *encodingObj) Init(funcGetRoot func() *PdfEngine) {
 
 }
-func (e *encodingObj) getType() string {
+func (e *encodingObj) GetType() string {
 	return "Encoding"
 }
-func (e *encodingObj) write(w io.Writer, objID int) error {
+func (e *encodingObj) Write(w Writer, objID int) error {
 	io.WriteString(w, "<</Type /Encoding /BaseEncoding /WinAnsiEncoding /Differences [")
 	io.WriteString(w, e.font.GetDiff())
 	io.WriteString(w, "]>>\n")

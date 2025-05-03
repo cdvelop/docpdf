@@ -31,14 +31,14 @@ func getCachedTransparencyXObjectGroup(opts transparencyXObjectGroupOptions, gp 
 		ExtGStateIndexes: opts.ExtGStateIndexes,
 	}
 	group.Index = gp.addObj(group)
-	group.init(func() *PdfEngine {
+	group.Init(func() *PdfEngine {
 		return gp
 	})
 
 	return group, nil
 }
 
-func (s transparencyXObjectGroup) init(funcGetRoot func() *PdfEngine) {
+func (s transparencyXObjectGroup) Init(funcGetRoot func() *PdfEngine) {
 	s.getRoot = funcGetRoot
 }
 
@@ -50,16 +50,16 @@ func (s transparencyXObjectGroup) protection() *pdfProtection {
 	return s.pdfProtection
 }
 
-func (s transparencyXObjectGroup) getType() string {
+func (s transparencyXObjectGroup) GetType() string {
 	return "XObject"
 }
 
-func (s transparencyXObjectGroup) write(w io.Writer, objId int) error {
+func (s transparencyXObjectGroup) Write(w Writer, objId int) error {
 	streamBuff := getBuffer()
 	defer putBuffer(streamBuff)
 
 	for _, XObject := range s.XObjects {
-		if err := XObject.write(streamBuff, nil); err != nil {
+		if err := XObject.Write(streamBuff, nil); err != nil {
 			return err
 		}
 	}
@@ -67,7 +67,7 @@ func (s transparencyXObjectGroup) write(w io.Writer, objId int) error {
 	content := "<<\n"
 	content += "\t/FormType 1\n"
 	content += "\t/Subtype /Form\n"
-	content += fmt.Sprintf("\t/Type /%s\n", s.getType())
+	content += fmt.Sprintf("\t/Type /%s\n", s.GetType())
 	content += fmt.Sprintf("\t/Matrix [1 0 0 1 0 0]\n")
 	content += fmt.Sprintf("\t/BBox [%.3F %.3F %.3F %.3F]\n", s.BBox[0], s.BBox[1], s.BBox[2], s.BBox[3])
 	content += "\t/Group<</CS /deviceGray /S /transparency>>\n"

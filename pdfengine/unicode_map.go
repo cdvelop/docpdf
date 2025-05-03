@@ -12,7 +12,7 @@ type unicodeMap struct {
 	pdfProtection *pdfProtection
 }
 
-func (u *unicodeMap) init(funcGetRoot func() *PdfEngine) {
+func (u *unicodeMap) Init(funcGetRoot func() *PdfEngine) {
 	//u.getRoot = funcGetRoot
 }
 
@@ -29,11 +29,11 @@ func (u *unicodeMap) SetPtrToSubsetFontObj(ptr *subsetFontObj) {
 	u.PtrToSubsetFontObj = ptr
 }
 
-func (u *unicodeMap) getType() string {
+func (u *unicodeMap) GetType() string {
 	return "Unicode"
 }
 
-func (u *unicodeMap) write(w io.Writer, objID int) error {
+func (u *unicodeMap) Write(w Writer, objID int) error {
 	//stream
 	//characterToGlyphIndex := u.PtrToSubsetFontObj.CharacterToGlyphIndex
 	prefix :=

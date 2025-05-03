@@ -26,7 +26,7 @@ var errContentTypeNotFound = errs.New("contentType not found")
 type cacheContentText struct {
 	//---setup---
 	rectangle      *canvas.Rect
-	textColor      iCacheColorText
+	textColor      ICacheColorText
 	grayFill       float64
 	txtColorMode   string
 	fontCountIndex int //Curr.FontFontCount+1
@@ -55,7 +55,7 @@ func (c *cacheContentText) isSame(cache cacheContentText) bool {
 
 	// if both colors are nil we assume them equal
 	if ((c.textColor == nil && cache.textColor == nil) ||
-		(c.textColor != nil && c.textColor.equal(cache.textColor))) &&
+		(c.textColor != nil && c.textColor.Equal(cache.textColor))) &&
 		c.grayFill == cache.grayFill &&
 		c.fontCountIndex == cache.fontCountIndex &&
 		c.fontSize == cache.fontSize &&
@@ -136,7 +136,7 @@ func formatFloatTrim(floatval float64) (formatted string) {
 	return strconv.FormatFloat(roundedFontSize, 'f', -1, 64)
 }
 
-func (c *cacheContentText) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentText) Write(w Writer, protection *pdfProtection) error {
 	x, err := c.calX()
 	if err != nil {
 		return err
@@ -161,7 +161,7 @@ func (c *cacheContentText) write(w io.Writer, protection *pdfProtection) error {
 	fmt.Fprintf(w, "/F%d %s Tf %s Tc\n", c.fontCountIndex, formatFloatTrim(c.fontSize), formatFloatTrim(c.charSpacing))
 
 	if c.txtColorMode == "color" {
-		c.textColor.write(w, protection)
+		c.textColor.Write(w, protection)
 	}
 	io.WriteString(w, "[<")
 
@@ -205,7 +205,7 @@ func (c *cacheContentText) write(w io.Writer, protection *pdfProtection) error {
 	return nil
 }
 
-func (c *cacheContentText) drawBorder(w io.Writer) error {
+func (c *cacheContentText) drawBorder(w Writer) error {
 
 	//stream.WriteString(fmt.Sprintf("%.2f w\n", 0.1))
 	lineOffset := c.lineWidth * 0.5
@@ -258,7 +258,7 @@ func (c *cacheContentText) drawBorder(w io.Writer) error {
 	return nil
 }
 
-func (c *cacheContentText) underline(w io.Writer) error {
+func (c *cacheContentText) underline(w Writer) error {
 	if c.fontSubset == nil {
 		return errs.New("error AppendUnderline not found font")
 	}
@@ -298,9 +298,9 @@ func (c *cacheContentText) underline(w io.Writer) error {
 	return nil
 }
 
-func (c *cacheContentText) createContent() (float64, float64, error) {
+func (c *cacheContentText) CreateContent() (float64, float64, error) {
 
-	cellWidthPdfUnit, cellHeightPdfUnit, textWidthPdfUnit, err := createContent(c.fontSubset, c.text, c.fontSize, c.charSpacing, c.rectangle)
+	cellWidthPdfUnit, cellHeightPdfUnit, textWidthPdfUnit, err := CreateContent(c.fontSubset, c.text, c.fontSize, c.charSpacing, c.rectangle)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -310,7 +310,7 @@ func (c *cacheContentText) createContent() (float64, float64, error) {
 	return cellWidthPdfUnit, cellHeightPdfUnit, nil
 }
 
-func createContent(f *subsetFontObj, text string, fontSize float64, charSpacing float64, rectangle *canvas.Rect) (float64, float64, float64, error) {
+func CreateContent(f *subsetFontObj, text string, fontSize float64, charSpacing float64, rectangle *canvas.Rect) (float64, float64, float64, error) {
 
 	unitsPerEm := int(f.ttfp.UnitsPerEm())
 	var leftRune rune
@@ -389,7 +389,7 @@ type cacheContent struct {
 
 // Setup setup all information for cacheContent
 func (c *cacheContent) Setup(rectangle *canvas.Rect,
-	textColor iCacheColorText,
+	textColor ICacheColorText,
 	grayFill float64,
 	fontCountIndex int, //Curr.FontFontCount+1
 	fontSize float64,

@@ -617,8 +617,8 @@ func TestClearValue(t *testing.T) {
 	pdf2.Start(pdfengine.Config{PageSize: *canvas.PageSizeA4})
 
 	//check
-	if pdf.GetMargins() != pdf2.GetMargins() {
-		t.Fatal("pdf.GetMargins != pdf2.GetMargins")
+	if pdf.Margins() != pdf2.Margins() {
+		t.Fatal("pdf.Margins != pdf2.Margins")
 	}
 
 	if len(pdf2.GetPdfObjs()) != len(pdf.GetPdfObjs()) {

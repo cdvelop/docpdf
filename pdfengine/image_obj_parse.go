@@ -21,7 +21,7 @@ const (
 	deviceGray = "deviceGray"
 )
 
-func writeMaskImgProps(w io.Writer, imginfo imgInfo) error {
+func writeMaskImgProps(w Writer, imginfo imgInfo) error {
 	if err := writeBaseImgProps(w, imginfo, deviceGray); err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func writeMaskImgProps(w io.Writer, imginfo imgInfo) error {
 	return nil
 }
 
-func writeImgProps(w io.Writer, imginfo imgInfo, splittedMask bool) error {
+func writeImgProps(w Writer, imginfo imgInfo, splittedMask bool) error {
 	if err := writeBaseImgProps(w, imginfo, imginfo.colspace); err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func writeImgProps(w io.Writer, imginfo imgInfo, splittedMask bool) error {
 	return nil
 }
 
-func writeBaseImgProps(w io.Writer, imginfo imgInfo, colorSpace string) error {
+func writeBaseImgProps(w Writer, imginfo imgInfo, colorSpace string) error {
 	content := "<<\n"
 	content += "\t/Type /XObject\n"
 	content += "\t/Subtype /Image\n"

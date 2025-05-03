@@ -131,7 +131,7 @@ func (img *docImage) Draw() error {
 		// Skip page break check if we're in header/footer drawing mode
 		if !img.doc.inHeaderFooterDraw {
 			// Check if the image fits on current page
-			newY := img.doc.ensureElementFits(finalHeight)
+			newY := img.doc.EnsureElementFits(finalHeight)
 
 			// Only update Y alignment.Alignment if this is not an inline element
 			if !img.inline {
@@ -166,7 +166,7 @@ func (img *docImage) Draw() error {
 		H: finalHeight,
 	}
 	// Draw the image using the underlying PdfEngine instance
-	err = img.doc.drawImageInPdf(imageContent, x, y, rect)
+	err = img.doc.DrawImageInPdf(imageContent, x, y, rect)
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func (img *docImage) Draw() error {
 		}
 
 		// Reset X alignment.Alignment to left margin since this is a block element
-		img.doc.SetX(img.doc.canvas.Margins.alignment.Left)
+		img.doc.SetX(img.doc.Margins().Left)
 
 		// Reset inline mode
 		img.doc.inlineMode = false
@@ -213,7 +213,7 @@ func (img *docImage) calculateDimensions(imgWidth, imgHeight float64) (float64, 
 	finalHeight := imgHeight
 
 	// Scale down if original image is too large
-	contentAreaWidth := img.doc.contentAreaWidth - img.doc.canvas.Margins.alignment.Left - img.doc.canvas.Margins.alignment.Right
+	contentAreaWidth := img.doc.contentAreaWidth - img.doc.Margins().Left - img.doc.Margins().Right
 	if finalWidth > contentAreaWidth {
 		ratio := contentAreaWidth / finalWidth
 		finalWidth = contentAreaWidth
@@ -246,15 +246,15 @@ func (img *docImage) calculatePosition(width float64) (float64, float64) {
 		return img.x, img.y
 	}
 
-	x := img.doc.canvas.Margins.alignment.Left
+	x := img.doc.Margins().Left
 	y := img.doc.GetY()
 
 	// Apply alignment
 	switch img.alignment {
 	case alignment.Center:
-		x = img.doc.canvas.Margins.alignment.Left + (img.doc.contentAreaWidth-width)/2
+		x = img.doc.Margins().Left + (img.doc.contentAreaWidth-width)/2
 	case alignment.Right:
-		x = img.doc.canvas.Margins.alignment.Left + img.doc.contentAreaWidth - width
+		x = img.doc.Margins().Left + img.doc.contentAreaWidth - width
 	}
 
 	return x, y

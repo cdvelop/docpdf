@@ -36,7 +36,7 @@ func (smask sMaskOptions) GetId() string {
 }
 
 func getCachedMask(opts sMaskOptions, gp *PdfEngine) sMask {
-	smask, ok := gp.Curr.sMasksMap.Find(opts)
+	smask, ok := gp.curr.sMasksMap.Find(opts)
 	if !ok {
 		smask = sMask{
 			S:                             string(opts.Subtype),
@@ -44,13 +44,13 @@ func getCachedMask(opts sMaskOptions, gp *PdfEngine) sMask {
 		}
 		smask.Index = gp.addObj(smask)
 
-		gp.Curr.sMasksMap.Save(opts.GetId(), smask)
+		gp.curr.sMasksMap.Save(opts.GetId(), smask)
 	}
 
 	return smask
 }
 
-func (s sMask) init(func() *PdfEngine) {}
+func (s sMask) Init(func() *PdfEngine) {}
 
 func (s *sMask) setProtection(p *pdfProtection) {
 	s.pdfProtection = p
@@ -60,11 +60,11 @@ func (s sMask) protection() *pdfProtection {
 	return s.pdfProtection
 }
 
-func (s sMask) getType() string {
+func (s sMask) GetType() string {
 	return "Mask"
 }
 
-func (s sMask) write(w io.Writer, objID int) error {
+func (s sMask) Write(w Writer, objID int) error {
 	if s.TransparencyXObjectGroupIndex != 0 {
 		content := "<<\n"
 		content += "\t/Type /Mask\n"

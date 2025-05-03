@@ -15,13 +15,13 @@ type procSetObj struct {
 	getRoot             func() *PdfEngine
 }
 
-func (pr *procSetObj) init(funcGetRoot func() *PdfEngine) {
+func (pr *procSetObj) Init(funcGetRoot func() *PdfEngine) {
 	pr.getRoot = funcGetRoot
 	pr.ImportedTemplateIds = make(map[string]int, 0)
 	pr.ExtGStates = make([]extGS, 0)
 }
 
-func (pr *procSetObj) write(w io.Writer, objID int) error {
+func (pr *procSetObj) Write(w Writer, objID int) error {
 	content := "<<\n"
 	content += "\t/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]\n"
 
@@ -62,7 +62,7 @@ func (pr *procSetObj) write(w io.Writer, objID int) error {
 	return nil
 }
 
-func (pr *procSetObj) getType() string {
+func (pr *procSetObj) GetType() string {
 	return "ProcSet"
 }
 

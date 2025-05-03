@@ -43,7 +43,7 @@ func (extOpt extGStateOptions) GetId() string {
 }
 
 func getCachedExtGState(opts extGStateOptions, gp *PdfEngine) (extGState, error) {
-	state, ok := gp.Curr.extGStatesMap.Find(opts)
+	state, ok := gp.curr.extGStatesMap.Find(opts)
 	if !ok {
 		state = extGState{
 			BM:         opts.BlendMode,
@@ -62,19 +62,19 @@ func getCachedExtGState(opts extGStateOptions, gp *PdfEngine) (extGState, error)
 
 		procSet.Index = state.Index
 
-		gp.Curr.extGStatesMap.Save(opts.GetId(), state)
+		gp.curr.extGStatesMap.Save(opts.GetId(), state)
 	}
 
 	return state, nil
 }
 
-func (egs extGState) init(func() *PdfEngine) {}
+func (egs extGState) Init(func() *PdfEngine) {}
 
-func (egs extGState) getType() string {
+func (egs extGState) GetType() string {
 	return "extGState"
 }
 
-func (egs extGState) write(w io.Writer, objID int) error {
+func (egs extGState) Write(w Writer, objID int) error {
 	content := "<<\n"
 	content += "\t/Type /extGState\n"
 

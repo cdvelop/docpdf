@@ -11,7 +11,7 @@ import (
 type (
 	countingWriter struct {
 		offset int64
-		writer io.Writer
+		writer Writer
 	}
 )
 
@@ -37,15 +37,15 @@ func (gp *PdfEngine) WritePdf(pdfPath string) error {
 }
 
 // WritePdf implements the io.WriterTo interface and can
-// be used to stream the PDF as it is compiled to an io.Writer.
-func (gp *PdfEngine) WriteTo(w io.Writer) (n int64, err error) {
+// be used to stream the PDF as it is compiled to an Writer.
+func (gp *PdfEngine) WriteTo(w Writer) (n int64, err error) {
 	return gp.compilePdf(w)
 }
 
-// Write streams the pdf as it is compiled to an io.Writer
+// Write streams the pdf as it is compiled to an Writer
 //
 // Deprecated: use the WritePdf method instead.
-func (gp *PdfEngine) Write(w io.Writer) error {
+func (gp *PdfEngine) Write(w Writer) error {
 	_, err := gp.compilePdf(w)
 	return err
 }
@@ -65,7 +65,7 @@ func (gp *PdfEngine) Close() error {
 	return nil
 }
 
-func (gp *PdfEngine) compilePdf(w io.Writer) (n int64, err error) {
+func (gp *PdfEngine) compilePdf(w Writer) (n int64, err error) {
 	gp.prepare()
 	err = gp.Close()
 	if err != nil {
@@ -83,7 +83,7 @@ func (gp *PdfEngine) compilePdf(w io.Writer) (n int64, err error) {
 		pdfObj := gp.pdfObjs[i]
 		io.WriteString(writer, strconv.Itoa(objID))
 		io.WriteString(writer, " 0 obj\n")
-		pdfObj.write(writer, objID)
+		pdfObj.Write(writer, objID)
 		io.WriteString(writer, "endobj\n\n")
 		i++
 	}
@@ -91,7 +91,7 @@ func (gp *PdfEngine) compilePdf(w io.Writer) (n int64, err error) {
 	return writer.offset, nil
 }
 
-func newCountingWriter(w io.Writer) *countingWriter {
+func newCountingWriter(w Writer) *countingWriter {
 	return &countingWriter{writer: w}
 }
 

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/cdvelop/docpdf/alignment"
+	"github.com/cdvelop/docpdf/style"
 )
 
 // tableFormat represents the formatting options for a table header
@@ -109,35 +110,35 @@ func parseTableFormat(headerStr string) tableFormat {
 
 // createDefaultTableStyles crea los estilos predeterminados para una tabla basados en la configuración del documento
 // Devuelve los estilos para el encabezado y las celdas normales
-func createDefaultTableStyles(doc *Document) (headerStyle CellStyle, cellStyle CellStyle) {
+func createDefaultTableStyles(doc *Document) (headerStyle, cellStyle style.Cell) {
 	// Estilo para el encabezado
-	headerStyle = CellStyle{
-		BorderStyle: BorderStyle{
-			alignment.Top:    true,
-			alignment.Left:   true,
-			alignment.Bottom: true,
-			alignment.Right:  true,
-			Width:            1.0,
-			RGBColor:         RGBColor{R: 100, G: 100, B: 100},
+	headerStyle = style.Cell{
+		Border: style.Border{
+			Top:    true,
+			Left:   true,
+			Bottom: true,
+			Right:  true,
+			Width:  1.0,
+			Color:  style.Color{R: 100, G: 100, B: 100},
 		},
-		FillColor: RGBColor{R: 240, G: 240, B: 240},
-		TextColor: RGBColor{R: 0, G: 0, B: 0},
+		FillColor: style.Color{R: 240, G: 240, B: 240},
+		TextColor: style.Color{R: 0, G: 0, B: 0},
 		Font:      FontBold,
 		FontSize:  doc.fontConfig.Header3.Size,
 	}
 
 	// Estilo para las celdas normales
-	cellStyle = CellStyle{
-		BorderStyle: BorderStyle{
-			alignment.Top:    true,
-			alignment.Left:   true,
-			alignment.Bottom: true,
-			alignment.Right:  true,
-			Width:            0.5,
-			RGBColor:         RGBColor{R: 200, G: 200, B: 200},
+	cellStyle = style.Cell{
+		Border: style.Border{
+			Top:    true,
+			Left:   true,
+			Bottom: true,
+			Right:  true,
+			Width:  0.5,
+			Color:  style.Color{R: 200, G: 200, B: 200},
 		},
-		FillColor: RGBColor{R: 255, G: 255, B: 255},
-		TextColor: RGBColor{R: 0, G: 0, B: 0},
+		FillColor: style.Color{R: 255, G: 255, B: 255},
+		TextColor: style.Color{R: 0, G: 0, B: 0},
 		Font:      FontRegular,
 		FontSize:  doc.fontConfig.Normal.Size,
 	}

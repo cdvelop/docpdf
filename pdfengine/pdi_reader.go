@@ -40,7 +40,7 @@ func newPdfReaderFromStream(sourceFile string, rs io.ReadSeeker, Log func(...any
 		return nil, errs.New("failed to determine stream length")
 	}
 	parser := &pdfReader{f: rs, sourceFile: sourceFile, nBytes: length, Log: Log}
-	if err := parser.init(); err != nil {
+	if err := parser.Init(); err != nil {
 		Log("Failed to initialize parser:", err)
 		return nil, errs.New("parser initialization failed")
 	}
@@ -64,7 +64,7 @@ func newPdfReader(filename string, Log func(...any)) (*pdfReader, error) {
 	}
 
 	parser := &pdfReader{f: f, sourceFile: filename, nBytes: info.Size(), Log: Log}
-	if err = parser.init(); err != nil {
+	if err = parser.Init(); err != nil {
 		Log("Parser init failed:", err)
 		return nil, errs.New("parser initialization failed")
 	}
@@ -75,7 +75,7 @@ func newPdfReader(filename string, Log func(...any)) (*pdfReader, error) {
 	return parser, nil
 }
 
-func (this *pdfReader) init() error {
+func (this *pdfReader) Init() error {
 	this.availableBoxes = []string{"/MediaBox", "/CropBox", "/BleedBox", "/TrimBox", "/ArtBox"}
 	this.xref = make(map[int]map[int]int, 0)
 	this.xrefStream = make(map[int][2]int, 0)

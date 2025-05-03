@@ -64,7 +64,7 @@ type CellOption struct {
 // Text write text start at current x,y ( current y is the baseline of text )
 func (gp *PdfEngine) Text(text string) error {
 
-	text, err := gp.Curr.FontISubset.AddChars(text)
+	text, err := gp.curr.FontISubset.AddChars(text)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (gp *PdfEngine) CellWithOption(rectangle *canvas.Rect, text string, opt Cel
 	}
 
 	rectangle = rectangle.UnitsToPoints(gp.Config.Unit)
-	text, err = gp.Curr.FontISubset.AddChars(text)
+	text, err = gp.curr.FontISubset.AddChars(text)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (gp *PdfEngine) Cell(rectangle *canvas.Rect, text string) error {
 		Float:  alignment.Right,
 	}
 
-	text, err := gp.Curr.FontISubset.AddChars(text)
+	text, err := gp.curr.FontISubset.AddChars(text)
 	if err != nil {
 		return err
 	}
@@ -127,12 +127,12 @@ func (gp *PdfEngine) Cell(rectangle *canvas.Rect, text string) error {
 func (gp *PdfEngine) PlaceHolderText(placeHolderName string, placeHolderWidth float64) error {
 
 	//placeHolderText := fmt.Sprintf("{%s}", placeHolderName)
-	_, err := gp.Curr.FontISubset.AddChars("")
+	_, err := gp.curr.FontISubset.AddChars("")
 	if err != nil {
 		return err
 	}
 
-	gp.pointsToUnitsVar(&placeHolderWidth)
+	gp.PointsToUnitsVar(&placeHolderWidth)
 	err = gp.getContent().appendStreamPlaceHolderText(placeHolderWidth)
 	if err != nil {
 		return err
@@ -141,7 +141,7 @@ func (gp *PdfEngine) PlaceHolderText(placeHolderName string, placeHolderWidth fl
 	content := gp.pdfObjs[gp.indexOfContent].(*contentObj)
 	indexInContent := len(content.listCache.caches) - 1
 	indexOfContent := gp.indexOfContent
-	fontISubset := gp.Curr.FontISubset
+	fontISubset := gp.curr.FontISubset
 
 	gp.placeHolderTexts[placeHolderName] = append(
 		gp.placeHolderTexts[placeHolderName],
@@ -150,8 +150,8 @@ func (gp *PdfEngine) PlaceHolderText(placeHolderName string, placeHolderWidth fl
 			indexInContent:   indexInContent,
 			fontISubset:      fontISubset,
 			placeHolderWidth: placeHolderWidth,
-			fontSize:         gp.Curr.FontSize,
-			charSpacing:      gp.Curr.CharSpacing,
+			fontSize:         gp.curr.FontSize,
+			charSpacing:      gp.curr.CharSpacing,
 		},
 	)
 
@@ -181,7 +181,7 @@ func (gp *PdfEngine) FillInPlaceHoldText(placeHolderName string, text string, al
 		contentText.text = text
 
 		//Calculate alignment.Alignment
-		_, _, textWidthPdfUnit, err := createContent(gp.Curr.FontISubset, text, info.fontSize, info.charSpacing, nil)
+		_, _, textWidthPdfUnit, err := CreateContent(gp.curr.FontISubset, text, info.fontSize, info.charSpacing, nil)
 		if err != nil {
 			return err
 		}
@@ -207,15 +207,15 @@ func (gp *PdfEngine) MultiCell(rectangle *canvas.Rect, text string) error {
 	length := len([]rune(text))
 
 	// get lineHeight
-	text, err := gp.Curr.FontISubset.AddChars(text)
+	text, err := gp.curr.FontISubset.AddChars(text)
 	if err != nil {
 		return err
 	}
-	_, lineHeight, _, err := createContent(gp.Curr.FontISubset, text, gp.Curr.FontSize, gp.Curr.CharSpacing, nil)
+	_, lineHeight, _, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontSize, gp.curr.CharSpacing, nil)
 	if err != nil {
 		return err
 	}
-	gp.pointsToUnitsVar(&lineHeight)
+	gp.PointsToUnitsVar(&lineHeight)
 
 	for i, v := range []rune(text) {
 		if totalLineHeight+lineHeight > rectangle.H {
@@ -250,16 +250,16 @@ func (gp *PdfEngine) IsFitMultiCell(rectangle *canvas.Rect, text string) (bool, 
 	length := len([]rune(text))
 
 	// get lineHeight
-	text, err := gp.Curr.FontISubset.AddChars(text)
+	text, err := gp.curr.FontISubset.AddChars(text)
 	if err != nil {
 		return false, totalLineHeight, err
 	}
-	_, lineHeight, _, err := createContent(gp.Curr.FontISubset, text, gp.Curr.FontSize, gp.Curr.CharSpacing, nil)
+	_, lineHeight, _, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontSize, gp.curr.CharSpacing, nil)
 
 	if err != nil {
 		return false, totalLineHeight, err
 	}
-	gp.pointsToUnitsVar(&lineHeight)
+	gp.PointsToUnitsVar(&lineHeight)
 
 	for i, v := range []rune(text) {
 		if totalLineHeight+lineHeight > rectangle.H {
@@ -334,15 +334,15 @@ func (gp *PdfEngine) MultiCellWithOption(rectangle *canvas.Rect, text string, op
 	x := gp.GetX()
 
 	// get lineHeight
-	itext, err := gp.Curr.FontISubset.AddChars(text)
+	itext, err := gp.curr.FontISubset.AddChars(text)
 	if err != nil {
 		return err
 	}
-	_, lineHeight, _, err := createContent(gp.Curr.FontISubset, itext, gp.Curr.FontSize, gp.Curr.CharSpacing, nil)
+	_, lineHeight, _, err := CreateContent(gp.curr.FontISubset, itext, gp.curr.FontSize, gp.curr.CharSpacing, nil)
 	if err != nil {
 		return err
 	}
-	gp.pointsToUnitsVar(&lineHeight)
+	gp.PointsToUnitsVar(&lineHeight)
 
 	textSplits, err := gp.SplitTextWithOption(text, rectangle.W, opt.BreakOption)
 	if err != nil {

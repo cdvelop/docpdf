@@ -104,19 +104,19 @@ type fontObj struct {
 	CountOfFont int
 }
 
-func (f *fontObj) init(funcGetRoot func() *PdfEngine) {
+func (f *fontObj) Init(funcGetRoot func() *PdfEngine) {
 	f.IsEmbedFont = false
 	//me.CountOfFont = -1
 }
 
-func (f *fontObj) write(w io.Writer, objID int) error {
+func (f *fontObj) Write(w Writer, objID int) error {
 	baseFont := f.Family
 	if f.Font != nil {
 		baseFont = f.Font.GetName()
 	}
 
 	io.WriteString(w, "<<\n")
-	fmt.Fprintf(w, "  /Type /%s\n", f.getType())
+	fmt.Fprintf(w, "  /Type /%s\n", f.GetType())
 	io.WriteString(w, "  /Subtype /TrueType\n")
 	fmt.Fprintf(w, "  /BaseFont /%s\n", baseFont)
 	if f.IsEmbedFont {
@@ -129,7 +129,7 @@ func (f *fontObj) write(w io.Writer, objID int) error {
 	return nil
 }
 
-func (f *fontObj) getType() string {
+func (f *fontObj) GetType() string {
 	return "Font"
 }
 
@@ -160,15 +160,15 @@ func (gp *PdfEngine) SetFontWithStyle(family string, style int, size any) error 
 	i := 0
 	max := len(gp.pdfObjs)
 	for i < max {
-		if gp.pdfObjs[i].getType() == subsetFont {
+		if gp.pdfObjs[i].GetType() == subsetFont {
 			obj := gp.pdfObjs[i]
 			sub, ok := obj.(*subsetFontObj)
 			if ok {
 				if sub.GetFamily() == family && sub.GetTtfFontOption().Style == style&^Underline {
-					gp.Curr.FontSize = fontSize
-					gp.Curr.FontStyle = style
-					gp.Curr.FontFontCount = sub.CountOfFont
-					gp.Curr.FontISubset = sub
+					gp.curr.FontSize = fontSize
+					gp.curr.FontStyle = style
+					gp.curr.FontFontCount = sub.CountOfFont
+					gp.curr.FontISubset = sub
 					found = true
 					break
 				}
@@ -194,14 +194,14 @@ func (gp *PdfEngine) SetFont(family string, style string, size any) error {
 // SetFontSize : set the font size (and only the font size) of the currently
 // active font
 func (gp *PdfEngine) SetFontSize(fontSize float64) error {
-	gp.Curr.FontSize = fontSize
+	gp.curr.FontSize = fontSize
 	return nil
 }
 
 // SetCharSpacing : set the character spacing of the currently active font
 func (gp *PdfEngine) SetCharSpacing(charSpacing float64) error {
 	gp.UnitsToPointsVar(&charSpacing)
-	gp.Curr.CharSpacing = charSpacing
+	gp.curr.CharSpacing = charSpacing
 	return nil
 }
 
@@ -229,11 +229,11 @@ type fontDescriptorObj struct {
 	fontFileObjRelate string
 }
 
-func (f *fontDescriptorObj) init(funcGetRoot func() *PdfEngine) {
+func (f *fontDescriptorObj) Init(funcGetRoot func() *PdfEngine) {
 
 }
 
-func (f *fontDescriptorObj) write(w io.Writer, objID int) error {
+func (f *fontDescriptorObj) Write(w Writer, objID int) error {
 
 	fmt.Fprintf(w, "<</Type /FontDescriptor /FontName /%s ", f.font.GetName())
 	descs := f.font.GetDesc()
@@ -244,7 +244,7 @@ func (f *fontDescriptorObj) write(w io.Writer, objID int) error {
 		i++
 	}
 
-	if f.getType() == "Type1" {
+	if f.GetType() == "Type1" {
 		io.WriteString(w, "/FontFile ")
 	} else {
 		io.WriteString(w, "/FontFile2 ")
@@ -256,7 +256,7 @@ func (f *fontDescriptorObj) write(w io.Writer, objID int) error {
 	return nil
 }
 
-func (f *fontDescriptorObj) getType() string {
+func (f *fontDescriptorObj) GetType() string {
 	return "FontDescriptor"
 }
 

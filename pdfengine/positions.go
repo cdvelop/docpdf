@@ -9,13 +9,13 @@ type point struct {
 // SetX : set current alignment.Alignment X
 func (gp *PdfEngine) SetX(x float64) {
 	gp.UnitsToPointsVar(&x)
-	gp.Curr.setXCount++
-	gp.Curr.X = x
+	gp.curr.setXCount++
+	gp.curr.X = x
 }
 
 // GetX : get current alignment.Alignment X
 func (gp *PdfEngine) GetX() float64 {
-	return gp.pointsToUnits(gp.Curr.X)
+	return gp.pointsToUnits(gp.curr.X)
 }
 
 // SetNewY : set current alignment.Alignment y, and modified y if add a new page.
@@ -29,11 +29,11 @@ func (gp *PdfEngine) GetX() float64 {
 func (gp *PdfEngine) SetNewY(y float64, h float64) {
 	gp.UnitsToPointsVar(&y)
 	gp.UnitsToPointsVar(&h)
-	if gp.Curr.Y+h > gp.Curr.pageSize.H-gp.MarginBottom() {
+	if gp.curr.Y+h > gp.curr.pageSize.H-gp.MarginBottom() {
 		gp.AddPage()
 		y = gp.MarginTop() // reset to top of the page.
 	}
-	gp.Curr.Y = y
+	gp.curr.Y = y
 }
 
 // SetNewYIfNoOffset : set current alignment.Alignment y, and modified y if add a new page.
@@ -41,15 +41,15 @@ func (gp *PdfEngine) SetNewY(y float64, h float64) {
 // For example, if the page height is set to 841px, MarginTop is 20px,
 // MarginBottom is 10px, and the height of the element(such as image) to be inserted is 200px,
 // because 10<200, you need to add another page and set y to 20px.
-// Tips: gp.Curr.X and gp.Curr.Y do not change when pdf.Image() is called.
+// Tips: gp.curr.X and gp.curr.Y do not change when pdf.Image() is called.
 func (gp *PdfEngine) SetNewYIfNoOffset(y float64, h float64) {
 	gp.UnitsToPointsVar(&y)
 	gp.UnitsToPointsVar(&h)
-	if y+h > gp.Curr.pageSize.H-gp.MarginBottom() { // using new y(*y) instead of gp.Curr.Y
+	if y+h > gp.curr.pageSize.H-gp.MarginBottom() { // using new y(*y) instead of gp.curr.Y
 		gp.AddPage()
 		y = gp.MarginTop() // reset to top of the page.
 	}
-	gp.Curr.Y = y
+	gp.curr.Y = y
 }
 
 // SetNewXY : set current alignment.Alignment x and y, and modified y if add a new page.
@@ -62,31 +62,31 @@ func (gp *PdfEngine) SetNewYIfNoOffset(y float64, h float64) {
 func (gp *PdfEngine) SetNewXY(y float64, x, h float64) {
 	gp.UnitsToPointsVar(&y)
 	gp.UnitsToPointsVar(&h)
-	if gp.Curr.Y+h > gp.Curr.pageSize.H-gp.MarginBottom() {
+	if gp.curr.Y+h > gp.curr.pageSize.H-gp.MarginBottom() {
 		gp.AddPage()
 		y = gp.MarginTop() // reset to top of the page.
 	}
-	gp.Curr.Y = y
+	gp.curr.Y = y
 	gp.SetX(x)
 }
 
 // SetY : set current alignment.Alignment y
 func (gp *PdfEngine) SetY(y float64) {
 	gp.UnitsToPointsVar(&y)
-	gp.Curr.Y = y
+	gp.curr.Y = y
 }
 
 // GetY : get current alignment.Alignment y
 func (gp *PdfEngine) GetY() float64 {
-	return gp.pointsToUnits(gp.Curr.Y)
+	return gp.pointsToUnits(gp.curr.Y)
 }
 
 // SetXY : set current alignment.Alignment x and y
 func (gp *PdfEngine) SetXY(x, y float64) {
 	gp.UnitsToPointsVar(&x)
-	gp.Curr.setXCount++
-	gp.Curr.X = x
+	gp.curr.setXCount++
+	gp.curr.X = x
 
 	gp.UnitsToPointsVar(&y)
-	gp.Curr.Y = y
+	gp.curr.Y = y
 }

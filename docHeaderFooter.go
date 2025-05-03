@@ -100,13 +100,13 @@ func (hf *headerFooter) draw() {
 	if hf.isHeader {
 		// Posicionar el encabezado respetando el margen superior del documento
 		// y agregando el SpaceBefore para mantener distancia adecuada
-		y = hf.doc.Margins.Top + fontStyle.SpaceBefore
+		y = hf.doc.Margins().Top + fontStyle.SpaceBefore
 	} else {
 		// Posicionar el pie de página respetando el margen inferior del documento
 		// y considerando SpaceBefore y SpaceAfter para mantener distancia adecuada
-		pageHeight := hf.doc.config.canvas.PageSize.H
+		pageHeight := hf.doc.Config.PageSize.H
 		// Calculamos la posición para que quede dentro del margen inferior
-		y = pageHeight - hf.doc.Margins.alignment.Bottom - fontStyle.Size - fontStyle.SpaceAfter
+		y = pageHeight - hf.doc.Margins().Bottom - fontStyle.Size - fontStyle.SpaceAfter
 	}
 
 	// Calculate column widths (3 equal sections)
@@ -135,19 +135,19 @@ func (hf *headerFooter) draw() {
 
 	// Draw left content - también dibujar si tiene paginación configurada
 	if hf.Left.Text != "" || hf.Left.IsImage || hf.Left.WithPage || hf.Left.WithTotalPages {
-		x := hf.doc.Margins.Left
+		x := hf.doc.Margins().Left
 		hf.drawContent(hf.Left, x, y, sectionWidth, alignment.Left, fontStyle)
 	}
 
 	// Draw center content - también dibujar si tiene paginación configurada
 	if hf.Center.Text != "" || hf.Center.IsImage || hf.Center.WithPage || hf.Center.WithTotalPages {
-		x := hf.doc.Margins.Left + sectionWidth
+		x := hf.doc.Margins().Left + sectionWidth
 		hf.drawContent(hf.Center, x, y, sectionWidth, alignment.Center, fontStyle)
 	}
 
 	// Draw right content - también dibujar si tiene paginación configurada
 	if hf.Right.Text != "" || hf.Right.IsImage || hf.Right.WithPage || hf.Right.WithTotalPages {
-		x := hf.doc.Margins.Left + 2*sectionWidth
+		x := hf.doc.Margins().Left + 2*sectionWidth
 		hf.drawContent(hf.Right, x, y, sectionWidth, alignment.Right, fontStyle)
 	}
 }
@@ -247,7 +247,7 @@ func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width flo
 		// Aplicar espaciado adicional solo en la primera página si es necesario
 		if hf.isHeader && doc.NumOfPagesObj == 1 && fontStyle.SpaceAfter > 0 {
 			// Para el encabezado en la primera página, ajustamos la posición Y inicial del contenido
-			topWithOffset := doc.canvas.Margins.alignment.Top + fontStyle.SpaceAfter
+			topWithOffset := doc.Margins().Top + fontStyle.SpaceAfter
 			doc.SetY(topWithOffset)
 		}
 
@@ -272,7 +272,7 @@ func (d *Document) SetPageFooter() *headerFooter {
 
 // SetLeftText sets the left-aligned text in the header/footer
 func (hf *headerFooter) SetLeftText(text string) *headerFooter {
-	hf.alignment.Left = headerFooterContent{
+	hf.Left = headerFooterContent{
 		Text:     text,
 		IsImage:  false,
 		WithPage: false,
@@ -282,7 +282,7 @@ func (hf *headerFooter) SetLeftText(text string) *headerFooter {
 
 // SetCenterText sets the center-aligned text in the header/footer
 func (hf *headerFooter) SetCenterText(text string) *headerFooter {
-	hf.alignment.Center = headerFooterContent{
+	hf.Center = headerFooterContent{
 		Text:     text,
 		IsImage:  false,
 		WithPage: false,
@@ -292,7 +292,7 @@ func (hf *headerFooter) SetCenterText(text string) *headerFooter {
 
 // SetRightText sets the right-aligned text in the header/footer
 func (hf *headerFooter) SetRightText(text string) *headerFooter {
-	hf.alignment.Right = headerFooterContent{
+	hf.Right = headerFooterContent{
 		Text:     text,
 		IsImage:  false,
 		WithPage: false,
@@ -302,7 +302,7 @@ func (hf *headerFooter) SetRightText(text string) *headerFooter {
 
 // SetLeftImage sets the left-aligned image in the header/footer
 func (hf *headerFooter) SetLeftImage(imagePath string, width, height float64) *headerFooter {
-	hf.alignment.Left = headerFooterContent{
+	hf.Left = headerFooterContent{
 		Image:   imagePath,
 		Width:   width,
 		Height:  height,
@@ -313,7 +313,7 @@ func (hf *headerFooter) SetLeftImage(imagePath string, width, height float64) *h
 
 // SetCenterImage sets the center-aligned image in the header/footer
 func (hf *headerFooter) SetCenterImage(imagePath string, width, height float64) *headerFooter {
-	hf.alignment.Center = headerFooterContent{
+	hf.Center = headerFooterContent{
 		Image:   imagePath,
 		Width:   width,
 		Height:  height,
@@ -324,7 +324,7 @@ func (hf *headerFooter) SetCenterImage(imagePath string, width, height float64) 
 
 // SetRightImage sets the right-aligned image in the header/footer
 func (hf *headerFooter) SetRightImage(imagePath string, width, height float64) *headerFooter {
-	hf.alignment.Right = headerFooterContent{
+	hf.Right = headerFooterContent{
 		Image:   imagePath,
 		Width:   width,
 		Height:  height,
@@ -334,17 +334,17 @@ func (hf *headerFooter) SetRightImage(imagePath string, width, height float64) *
 }
 
 // WithPageNumber adds the page number to specific section text
-func (hf *headerFooter) WithPageNumber(alignment alignment.Alignment) *headerFooter {
-	switch alignment {
+func (hf *headerFooter) WithPageNumber(align alignment.Alignment) *headerFooter {
+	switch align {
 	case alignment.Left:
-		hf.alignment.Left.WithPage = true
+		hf.Left.WithPage = true
 	case alignment.Center:
-		hf.alignment.Center.WithPage = true
+		hf.Center.WithPage = true
 	case alignment.Right:
-		hf.alignment.Right.WithPage = true
+		hf.Right.WithPage = true
 	default:
 		// Default to center if alignment.Alignment is invalid
-		hf.alignment.Center.WithPage = true
+		hf.Center.WithPage = true
 	}
 	return hf
 }

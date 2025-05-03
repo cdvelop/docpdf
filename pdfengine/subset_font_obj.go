@@ -28,14 +28,14 @@ type subsetFontObj struct {
 	addCharsBuff          []rune
 }
 
-func (s *subsetFontObj) init(funcGetRoot func() *PdfEngine) {
+func (s *subsetFontObj) Init(funcGetRoot func() *PdfEngine) {
 	s.CharacterToGlyphIndex = newMapOfCharacterToGlyphIndex() //make(map[rune]uint)
 	s.funcKernOverride = nil
 	s.funcGetRoot = funcGetRoot
 
 }
 
-func (s *subsetFontObj) write(w io.Writer, objID int) error {
+func (s *subsetFontObj) Write(w Writer, objID int) error {
 	//me.AddChars("จ")
 	io.WriteString(w, "<<\n")
 	fmt.Fprintf(w, "/BaseFont /%s\n", createEmbeddedFontSubsetName(s.Family))
@@ -233,7 +233,7 @@ func (s *subsetFontObj) CharWidth(r rune) (uint, error) {
 	return 0, errCharNotFound
 }
 
-func (s *subsetFontObj) getType() string {
+func (s *subsetFontObj) GetType() string {
 	return "SubsetFont"
 }
 

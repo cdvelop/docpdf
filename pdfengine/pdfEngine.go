@@ -44,7 +44,7 @@ type PdfEngine struct {
 	indexOfFirstPageObj int
 
 	// currentPdf alignment.Alignment
-	Curr currentPdf
+	curr currentPdf
 
 	indexEncodingObjFonts []int
 	indexOfContent        int
@@ -82,6 +82,11 @@ type PdfEngine struct {
 
 	// Log function for debugging
 	Log func(...any)
+}
+
+// metodo que retorna currentPdf
+func (gp *PdfEngine) CurrentPdf() *currentPdf {
+	return &gp.curr
 }
 
 const subsetFont = "SubsetFont"
@@ -142,7 +147,7 @@ type polygonOptions struct {
 
 // SetLineWidth : set line width
 func (gp *PdfEngine) SetLineWidth(width float64) {
-	gp.Curr.lineWidth = gp.UnitsToPoints(width)
+	gp.curr.lineWidth = gp.UnitsToPoints(width)
 	gp.getContent().AppendStreamSetLineWidth(gp.UnitsToPoints(width))
 }
 
@@ -169,11 +174,6 @@ func (gp *PdfEngine) SetCompressLevel(level int) {
 // SetNoCompression : compressLevel = 0
 func (gp *PdfEngine) SetNoCompression() {
 	gp.compressLevel = zlib.NoCompression
-}
-
-// funcion que retorna estrucutua de margenes
-func (gp *PdfEngine) GetMargins() canvas.Margins {
-	return gp.margins
 }
 
 // metodo que retorna anchors
@@ -346,30 +346,30 @@ func (gp *PdfEngine) Oval(x1 float64, y1 float64, x2 float64, y2 float64) {
 // Br : new line
 func (gp *PdfEngine) Br(h float64) {
 	gp.UnitsToPointsVar(&h)
-	gp.Curr.Y += h
-	gp.Curr.X = gp.margins.Left
+	gp.curr.Y += h
+	gp.curr.X = gp.margins.Left
 }
 
 // SetGrayFill set the grayscale for the fill, takes a float64 between 0.0 and 1.0
 func (gp *PdfEngine) SetGrayFill(grayScale float64) {
-	gp.Curr.txtColorMode = "gray"
-	gp.Curr.grayFill = grayScale
+	gp.curr.txtColorMode = "gray"
+	gp.curr.grayFill = grayScale
 	gp.getContent().AppendStreamSetGrayFill(grayScale)
 }
 
 // SetGrayStroke set the grayscale for the stroke, takes a float64 between 0.0 and 1.0
 func (gp *PdfEngine) SetGrayStroke(grayScale float64) {
-	gp.Curr.grayStroke = grayScale
+	gp.curr.grayStroke = grayScale
 	gp.getContent().AppendStreamSetGrayStroke(grayScale)
 }
 
 func (gp *PdfEngine) AddOutline(title string) {
-	gp.outlines.AddOutline(gp.Curr.IndexOfPageObj+1, title)
+	gp.outlines.AddOutline(gp.curr.IndexOfPageObj+1, title)
 }
 
 // AddOutlineWithPosition add an outline with alignment.Alignment
 func (gp *PdfEngine) AddOutlineWithPosition(title string) *outlineObj {
-	return gp.outlines.AddOutlinesWithPosition(gp.Curr.IndexOfPageObj+1, title, gp.Config.PageSize.H-gp.Curr.Y+20)
+	return gp.outlines.AddOutlinesWithPosition(gp.curr.IndexOfPageObj+1, title, gp.Config.PageSize.H-gp.curr.Y+20)
 }
 
 // Start : init gopdf
@@ -398,18 +398,18 @@ func (gp *PdfEngine) start(Config Config, importer ...*importer) {
 	}
 
 	gp.Config = Config
-	gp.init(importer...)
+	gp.Init(importer...)
 	//init all basic obj
 	catalog := new(catalogObj)
-	catalog.init(func() *PdfEngine {
+	catalog.Init(func() *PdfEngine {
 		return gp
 	})
 	pages := new(pagesObj)
-	pages.init(func() *PdfEngine {
+	pages.Init(func() *PdfEngine {
 		return gp
 	})
 	gp.outlines = new(outlinesObj)
-	gp.outlines.init(func() *PdfEngine {
+	gp.outlines.Init(func() *PdfEngine {
 		return gp
 	})
 	gp.indexOfCatalogObj = gp.addObj(catalog)
@@ -419,7 +419,7 @@ func (gp *PdfEngine) start(Config Config, importer ...*importer) {
 
 	//IndexOfProcSet
 	procset := new(procSetObj)
-	procset.init(func() *PdfEngine {
+	procset.Init(func() *PdfEngine {
 		return gp
 	})
 	gp.indexOfProcSet = gp.addObj(procset)
@@ -620,7 +620,7 @@ func (gp *PdfEngine) AddInternalLink(anchor string, x, y, w, h float64) {
 }
 
 func (gp *PdfEngine) addLink(option linkOption) {
-	page := gp.pdfObjs[gp.Curr.IndexOfPageObj].(*pageObj)
+	page := gp.pdfObjs[gp.curr.IndexOfPageObj].(*pageObj)
 	linkObj := gp.addObj(annotObj{option, func() *PdfEngine {
 		return gp
 	}})
@@ -629,8 +629,8 @@ func (gp *PdfEngine) addLink(option linkOption) {
 
 // SetAnchor creates a new anchor.
 func (gp *PdfEngine) SetAnchor(name string) {
-	y := gp.Config.PageSize.H - gp.Curr.Y + float64(gp.Curr.FontSize)
-	gp.anchors[name] = anchorOption{gp.Curr.IndexOfPageObj, y}
+	y := gp.Config.PageSize.H - gp.curr.Y + float64(gp.curr.FontSize)
+	gp.anchors[name] = anchorOption{gp.curr.IndexOfPageObj, y}
 }
 
 // AddTTFFontByReader adds font data by reader.
@@ -641,7 +641,7 @@ func (gp *PdfEngine) AddTTFFontData(family string, fontData []byte) error {
 // AddTTFFontDataWithOption adds font data with option.
 func (gp *PdfEngine) AddTTFFontDataWithOption(family string, fontData []byte, option TtfOption) error {
 	subsetFont := new(subsetFontObj)
-	subsetFont.init(func() *PdfEngine {
+	subsetFont.Init(func() *PdfEngine {
 		return gp
 	})
 	subsetFont.SetTtfFontOption(option)
@@ -662,7 +662,7 @@ func (gp *PdfEngine) AddTTFFontByReader(family string, rd io.Reader) error {
 // AddTTFFontByReaderWithOption adds font file by reader with option.
 func (gp *PdfEngine) AddTTFFontByReaderWithOption(family string, rd io.Reader, option TtfOption) error {
 	subsetFont := new(subsetFontObj)
-	subsetFont.init(func() *PdfEngine {
+	subsetFont.Init(func() *PdfEngine {
 		return gp
 	})
 	subsetFont.SetTtfFontOption(option)
@@ -679,7 +679,7 @@ func (gp *PdfEngine) AddTTFFontByReaderWithOption(family string, rd io.Reader, o
 // The given subsetFontObj is expected to be configured in advance.
 func (gp *PdfEngine) setSubsetFontObject(subsetFont *subsetFontObj, family string, option TtfOption) error {
 	unicodemap := new(unicodeMap)
-	unicodemap.init(func() *PdfEngine {
+	unicodemap.Init(func() *PdfEngine {
 		return gp
 	})
 	unicodemap.setProtection(gp.protection())
@@ -687,7 +687,7 @@ func (gp *PdfEngine) setSubsetFontObject(subsetFont *subsetFontObj, family strin
 	unicodeindex := gp.addObj(unicodemap)
 
 	pdfdic := new(pdfDictionaryObj)
-	pdfdic.init(func() *PdfEngine {
+	pdfdic.Init(func() *PdfEngine {
 		return gp
 	})
 	pdfdic.setProtection(gp.protection())
@@ -695,7 +695,7 @@ func (gp *PdfEngine) setSubsetFontObject(subsetFont *subsetFontObj, family strin
 	pdfdicindex := gp.addObj(pdfdic)
 
 	subfontdesc := new(subfontDescriptorObj)
-	subfontdesc.init(func() *PdfEngine {
+	subfontdesc.Init(func() *PdfEngine {
 		return gp
 	})
 	subfontdesc.SetPtrToSubsetFontObj(subsetFont)
@@ -703,7 +703,7 @@ func (gp *PdfEngine) setSubsetFontObject(subsetFont *subsetFontObj, family strin
 	subfontdescindex := gp.addObj(subfontdesc)
 
 	cidfont := new(cidFontObj)
-	cidfont.init(func() *PdfEngine {
+	cidfont.Init(func() *PdfEngine {
 		return gp
 	})
 	cidfont.SetPtrToSubsetFontObj(subsetFont)
@@ -717,9 +717,9 @@ func (gp *PdfEngine) setSubsetFontObject(subsetFont *subsetFontObj, family strin
 	if gp.indexOfProcSet != -1 {
 		procset := gp.pdfObjs[gp.indexOfProcSet].(*procSetObj)
 		if !procset.Relates.IsContainsFamilyAndStyle(family, option.Style&^Underline) {
-			procset.Relates = append(procset.Relates, relateFont{Family: family, IndexOfObj: index, CountOfFont: gp.Curr.CountOfFont, Style: option.Style &^ Underline})
-			subsetFont.CountOfFont = gp.Curr.CountOfFont
-			gp.Curr.CountOfFont++
+			procset.Relates = append(procset.Relates, relateFont{Family: family, IndexOfObj: index, CountOfFont: gp.curr.CountOfFont, Style: option.Style &^ Underline})
+			subsetFont.CountOfFont = gp.curr.CountOfFont
+			gp.curr.CountOfFont++
 		}
 	}
 	return nil
@@ -749,7 +749,7 @@ func (gp *PdfEngine) KernOverride(family string, fn funcKernOverride) error {
 	i := 0
 	max := len(gp.pdfObjs)
 	for i < max {
-		if gp.pdfObjs[i].getType() == subsetFont {
+		if gp.pdfObjs[i].GetType() == subsetFont {
 			obj := gp.pdfObjs[i]
 			sub, ok := obj.(*subsetFontObj)
 			if ok {
@@ -764,34 +764,34 @@ func (gp *PdfEngine) KernOverride(family string, fn funcKernOverride) error {
 	return errs.MissingFontFamily
 }
 
-func (c *currentPdf) setTextColor(color iCacheColorText) {
+func (c *currentPdf) setTextColor(color ICacheColorText) {
 	c.txtColor = color
 }
 
-func (c *currentPdf) textColor() iCacheColorText {
+func (c *currentPdf) textColor() ICacheColorText {
 	return c.txtColor
 }
 
 // SetTextColor :  function sets the text color
 func (gp *PdfEngine) SetTextColor(r uint8, g uint8, b uint8) {
-	gp.Curr.txtColorMode = "color"
+	gp.curr.txtColorMode = "color"
 	rgb := cacheContentTextColorRGB{
 		r: r,
 		g: g,
 		b: b,
 	}
-	gp.Curr.setTextColor(rgb)
+	gp.curr.setTextColor(rgb)
 }
 
 func (gp *PdfEngine) SetTextColorCMYK(c, m, y, k uint8) {
-	gp.Curr.txtColorMode = "color"
+	gp.curr.txtColorMode = "color"
 	cmyk := cacheContentTextColorCMYK{
 		c: c,
 		m: m,
 		y: y,
 		k: k,
 	}
-	gp.Curr.setTextColor(cmyk)
+	gp.curr.setTextColor(cmyk)
 }
 
 // SetStrokeColor set the color for the stroke
@@ -817,12 +817,12 @@ func (gp *PdfEngine) SetFillColorCMYK(c, m, y, k uint8) {
 // MeasureTextWidth : measure Width of text (use current font)
 func (gp *PdfEngine) MeasureTextWidth(text string) (float64, error) {
 
-	text, err := gp.Curr.FontISubset.AddChars(text) //AddChars for create CharacterToGlyphIndex
+	text, err := gp.curr.FontISubset.AddChars(text) //AddChars for create CharacterToGlyphIndex
 	if err != nil {
 		return 0, err
 	}
 
-	_, _, textWidthPdfUnit, err := createContent(gp.Curr.FontISubset, text, gp.Curr.FontSize, gp.Curr.CharSpacing, nil)
+	_, _, textWidthPdfUnit, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontSize, gp.curr.CharSpacing, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -832,12 +832,12 @@ func (gp *PdfEngine) MeasureTextWidth(text string) (float64, error) {
 // MeasureCellHeightByText : measure Height of cell by text (use current font)
 func (gp *PdfEngine) MeasureCellHeightByText(text string) (float64, error) {
 
-	text, err := gp.Curr.FontISubset.AddChars(text) //AddChars for create CharacterToGlyphIndex
+	text, err := gp.curr.FontISubset.AddChars(text) //AddChars for create CharacterToGlyphIndex
 	if err != nil {
 		return 0, err
 	}
 
-	_, cellHeightPdfUnit, _, err := createContent(gp.Curr.FontISubset, text, gp.Curr.FontSize, gp.Curr.CharSpacing, nil)
+	_, cellHeightPdfUnit, _, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontSize, gp.curr.CharSpacing, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -1016,7 +1016,7 @@ func (gp *PdfEngine) Rectangle(x0 float64, y0 float64, x1 float64, y1 float64, s
 /*---private---*/
 
 // init
-func (gp *PdfEngine) init(importer ...*importer) {
+func (gp *PdfEngine) Init(importer ...*importer) {
 	gp.pdfObjs = []iObj{}
 	gp.buf = bytes.Buffer{}
 	gp.indexEncodingObjFonts = []int{}
@@ -1033,19 +1033,19 @@ func (gp *PdfEngine) init(importer ...*importer) {
 		Bottom: defaultMargin,
 	}
 
-	//init Curr
+	//init curr
 	gp.resetCurrXY()
-	gp.Curr = currentPdf{}
-	gp.Curr.IndexOfPageObj = -1
-	gp.Curr.CountOfFont = 0
-	gp.Curr.CountOfL = 0
-	gp.Curr.CountOfImg = 0                       //img
-	gp.Curr.ImgCaches = make(map[int]imageCache) //= *new([]imageCache)
-	gp.Curr.sMasksMap = newSMaskMap()
-	gp.Curr.extGStatesMap = newExtGStatesMap()
-	gp.Curr.transparencyMap = newTransparencyMap()
+	gp.curr = currentPdf{}
+	gp.curr.IndexOfPageObj = -1
+	gp.curr.CountOfFont = 0
+	gp.curr.CountOfL = 0
+	gp.curr.CountOfImg = 0                       //img
+	gp.curr.ImgCaches = make(map[int]imageCache) //= *new([]imageCache)
+	gp.curr.sMasksMap = newSMaskMap()
+	gp.curr.extGStatesMap = newExtGStatesMap()
+	gp.curr.transparencyMap = newTransparencyMap()
 	gp.anchors = make(map[string]anchorOption)
-	gp.Curr.txtColorMode = "gray"
+	gp.curr.txtColorMode = "gray"
 
 	//init index
 	gp.indexOfPagesObj = -1
@@ -1054,7 +1054,7 @@ func (gp *PdfEngine) init(importer ...*importer) {
 
 	//No underline
 	//gp.IsUnderline = false
-	gp.Curr.lineWidth = 1
+	gp.curr.lineWidth = 1
 
 	// default to zlib.DefaultCompression
 	gp.compressLevel = zlib.DefaultCompression
@@ -1077,8 +1077,8 @@ func (gp *PdfEngine) importerOrDefault(importer ...*importer) *importer {
 }
 
 func (gp *PdfEngine) resetCurrXY() {
-	gp.Curr.X = gp.margins.Left
-	gp.Curr.Y = gp.margins.Top
+	gp.curr.X = gp.margins.Left
+	gp.curr.Y = gp.margins.Top
 }
 
 // UnitsToPoints converts the units to the documents unit type
@@ -1096,8 +1096,8 @@ func (gp *PdfEngine) pointsToUnits(u float64) float64 {
 	return canvas.PointsToUnits(gp.Config, u)
 }
 
-// pointsToUnitsVar converts the points to the documents unit type for all variables passed in
-func (gp *PdfEngine) pointsToUnitsVar(u ...*float64) {
+// PointsToUnitsVar converts the points to the documents unit type for all variables passed in
+func (gp *PdfEngine) PointsToUnitsVar(u ...*float64) {
 	canvas.PointsToUnitsVarCfg(gp.Config, u...)
 }
 
@@ -1137,7 +1137,7 @@ func (gp *PdfEngine) prepare() {
 		i := 0 //gp.indexOfFirstPageObj
 		max := len(gp.pdfObjs)
 		for i < max {
-			objtype := gp.pdfObjs[i].getType()
+			objtype := gp.pdfObjs[i].GetType()
 			switch objtype {
 			case "Page":
 				pagesObj.Kids = pagesObj.Kids + strconv.Itoa(i+1) + " 0 R "
@@ -1170,7 +1170,7 @@ func (gp *PdfEngine) prepare() {
 	}
 }
 
-func (gp *PdfEngine) xref(w io.Writer, xrefbyteoffset int64, linelens []int64, i int) error {
+func (gp *PdfEngine) xref(w Writer, xrefbyteoffset int64, linelens []int64, i int) error {
 	io.WriteString(w, "xref\n")
 	io.WriteString(w, "0 "+strconv.Itoa(i+1)+"\n")
 	io.WriteString(w, "0000000000 65535 f \n")
@@ -1201,7 +1201,7 @@ func (gp *PdfEngine) xref(w io.Writer, xrefbyteoffset int64, linelens []int64, i
 	return nil
 }
 
-func (gp *PdfEngine) writeInfo(w io.Writer) {
+func (gp *PdfEngine) writeInfo(w Writer) {
 	var zerotime time.Time
 	io.WriteString(w, "/Info <<\n")
 
@@ -1251,7 +1251,7 @@ func (gp *PdfEngine) getContent() *contentObj {
 	var content *contentObj
 	if gp.indexOfContent <= -1 {
 		content = new(contentObj)
-		content.init(func() *PdfEngine {
+		content.Init(func() *PdfEngine {
 			return gp
 		})
 		gp.indexOfContent = gp.addObj(content)
@@ -1302,18 +1302,18 @@ func (gp *PdfEngine) SetTransparency(transparency transparency) error {
 		return err
 	}
 
-	gp.Curr.transparency = t
+	gp.curr.transparency = t
 
 	return nil
 }
 
 func (gp *PdfEngine) ClearTransparency() {
-	gp.Curr.transparency = nil
+	gp.curr.transparency = nil
 }
 
 func (gp *PdfEngine) getCachedTransparency(transparency *transparency) (*transparency, error) {
 	if transparency == nil {
-		transparency = gp.Curr.transparency
+		transparency = gp.curr.transparency
 	} else {
 		cached, err := gp.saveTransparency(transparency)
 		if err != nil {
@@ -1327,7 +1327,7 @@ func (gp *PdfEngine) getCachedTransparency(transparency *transparency) (*transpa
 }
 
 func (gp *PdfEngine) saveTransparency(transparency *transparency) (*transparency, error) {
-	cached, ok := gp.Curr.transparencyMap.Find(*transparency)
+	cached, ok := gp.curr.transparencyMap.Find(*transparency)
 	if ok {
 		return &cached, nil
 	} else if transparency.Alpha != defaultAplhaValue {
@@ -1345,7 +1345,7 @@ func (gp *PdfEngine) saveTransparency(transparency *transparency) (*transparency
 
 		transparency.extGStateIndex = extGState.Index + 1
 
-		gp.Curr.transparencyMap.Save(*transparency)
+		gp.curr.transparencyMap.Save(*transparency)
 
 		return transparency, nil
 	}
@@ -1356,7 +1356,7 @@ func (gp *PdfEngine) saveTransparency(transparency *transparency) (*transparency
 // IsCurrFontContainGlyph defines is current font contains to a glyph
 // r:           any rune
 func (gp *PdfEngine) IsCurrFontContainGlyph(r rune) (bool, error) {
-	fontISubset := gp.Curr.FontISubset
+	fontISubset := gp.curr.FontISubset
 	if fontISubset == nil {
 		return false, nil
 	}

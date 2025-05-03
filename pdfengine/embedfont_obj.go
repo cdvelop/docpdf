@@ -14,7 +14,7 @@ type embedFontObj struct {
 	getRoot   func() *PdfEngine
 }
 
-func (e *embedFontObj) init(funcGetRoot func() *PdfEngine) {
+func (e *embedFontObj) Init(funcGetRoot func() *PdfEngine) {
 	e.getRoot = funcGetRoot
 }
 
@@ -22,7 +22,7 @@ func (e *embedFontObj) protection() *pdfProtection {
 	return e.getRoot().protection()
 }
 
-func (e *embedFontObj) write(w io.Writer, objID int) error {
+func (e *embedFontObj) Write(w Writer, objID int) error {
 	b, err := os.ReadFile(e.zfontpath)
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func (e *embedFontObj) write(w io.Writer, objID int) error {
 	return nil
 }
 
-func (e *embedFontObj) getType() string {
+func (e *embedFontObj) GetType() string {
 	return "EmbedFont"
 }
 

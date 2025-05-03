@@ -133,7 +133,7 @@ func ApplyToChartStyle(style *chart.Style, fontType string) {
 	}
 }
 
-// GetDrawingColor convierte RGBColor de docpdf a style.Color para chart
+// GetDrawingColor convierte style.Color de docpdf a style.Color para chart
 func GetDrawingColor(r, g, b uint8) style.Color {
 	return style.Color{
 		R: r,

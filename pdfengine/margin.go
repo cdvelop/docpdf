@@ -40,8 +40,12 @@ func (gp *PdfEngine) SetMarginBottom(margin float64) {
 	gp.margins.Bottom = gp.UnitsToPoints(margin)
 }
 
-// canvas.Margins gets the current canvas.Margins, The canvas.Margins will be converted back to the documents units. Returned values will be in the following order alignment.Left, alignment.Top, alignment.Right, alignment.Bottom
-func (gp *PdfEngine) Margins() (float64, float64, float64, float64) {
+func (gp *PdfEngine) Margins() canvas.Margins {
+	return gp.margins
+}
+
+// AllMargins gets the current Margins, The Margins will be converted back to the documents units. Returned values will be in the following order Left, Top, Right, Bottom
+func (gp *PdfEngine) AllMargins() (float64, float64, float64, float64) {
 	return gp.pointsToUnits(gp.margins.Left),
 		gp.pointsToUnits(gp.margins.Top),
 		gp.pointsToUnits(gp.margins.Right),

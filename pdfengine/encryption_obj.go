@@ -13,15 +13,15 @@ type encryptionObj struct {
 	pValue int    //P entry in pdf document
 }
 
-func (e *encryptionObj) init(func() *PdfEngine) {
+func (e *encryptionObj) Init(func() *PdfEngine) {
 
 }
 
-func (e *encryptionObj) getType() string {
+func (e *encryptionObj) GetType() string {
 	return "Encryption"
 }
 
-func (e *encryptionObj) write(w io.Writer, objID int) error {
+func (e *encryptionObj) Write(w Writer, objID int) error {
 	io.WriteString(w, "<<\n")
 	io.WriteString(w, "/Filter /Standard\n")
 	io.WriteString(w, "/V 1\n")

@@ -2,7 +2,6 @@ package pdfengine
 
 import (
 	"bytes"
-	"io"
 	"sync"
 )
 
@@ -66,8 +65,8 @@ func putBuffer(buf *bytes.Buffer) {
 	buffers.Put(buf)
 }
 
-// writeUInt32  writes a 32-bit unsigned integer value to w io.Writer
-func writeUInt32(w io.Writer, v uint) error {
+// writeUInt32  writes a 32-bit unsigned integer value to w Writer
+func writeUInt32(w Writer, v uint) error {
 	a := byte(v >> 24)
 	b := byte(v >> 16)
 	c := byte(v >> 8)
@@ -79,8 +78,8 @@ func writeUInt32(w io.Writer, v uint) error {
 	return nil
 }
 
-// writeUInt16 writes a 16-bit unsigned integer value to w io.Writer
-func writeUInt16(w io.Writer, v uint) error {
+// writeUInt16 writes a 16-bit unsigned integer value to w Writer
+func writeUInt16(w Writer, v uint) error {
 
 	a := byte(v >> 8)
 	b := byte(v)
@@ -91,8 +90,8 @@ func writeUInt16(w io.Writer, v uint) error {
 	return nil
 }
 
-// writeTag writes string value to w io.Writer
-func writeTag(w io.Writer, tag string) error {
+// writeTag writes string value to w Writer
+func writeTag(w Writer, tag string) error {
 	b := []byte(tag)
 	_, err := w.Write(b)
 	if err != nil {
@@ -101,8 +100,8 @@ func writeTag(w io.Writer, tag string) error {
 	return nil
 }
 
-// writeBytes writes []byte value to w io.Writer
-func writeBytes(w io.Writer, data []byte, offset int, count int) error {
+// writeBytes writes []byte value to w Writer
+func writeBytes(w Writer, data []byte, offset int, count int) error {
 
 	_, err := w.Write(data[offset : offset+count])
 	if err != nil {

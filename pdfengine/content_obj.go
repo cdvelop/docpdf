@@ -20,11 +20,11 @@ func (c *contentObj) protection() *pdfProtection {
 	return c.getRoot().protection()
 }
 
-func (c *contentObj) init(funcGetRoot func() *PdfEngine) {
+func (c *contentObj) Init(funcGetRoot func() *PdfEngine) {
 	c.getRoot = funcGetRoot
 }
 
-func (c *contentObj) write(w io.Writer, objID int) error {
+func (c *contentObj) Write(w Writer, objID int) error {
 	buff := getBuffer()
 	defer putBuffer(buff)
 
@@ -35,14 +35,14 @@ func (c *contentObj) write(w io.Writer, objID int) error {
 			// should never happen...
 			return err
 		}
-		if err := c.listCache.write(ww, c.protection()); err != nil {
+		if err := c.listCache.Write(ww, c.protection()); err != nil {
 			return err
 		}
 		if err := ww.Close(); err != nil {
 			return err
 		}
 	} else {
-		if err := c.listCache.write(buff, c.protection()); err != nil {
+		if err := c.listCache.Write(buff, c.protection()); err != nil {
 			return err
 		}
 	}
@@ -96,7 +96,7 @@ func (c *contentObj) write(w io.Writer, objID int) error {
 	return nil
 }
 
-func (c *contentObj) getType() string {
+func (c *contentObj) GetType() string {
 	return "Content"
 }
 
@@ -104,18 +104,18 @@ func (c *contentObj) getType() string {
 func (c *contentObj) appendStreamPlaceHolderText(placeHolderWidth float64) error {
 
 	//support only CURRENT_FONT_TYPE_SUBSET
-	textColor := c.getRoot().Curr.textColor()
-	grayFill := c.getRoot().Curr.grayFill
-	fontCountIndex := c.getRoot().Curr.FontFontCount + 1
-	fontSize := c.getRoot().Curr.FontSize
-	fontStyle := c.getRoot().Curr.FontStyle
-	charSpacing := c.getRoot().Curr.CharSpacing
-	x := c.getRoot().Curr.X
-	y := c.getRoot().Curr.Y
-	setXCount := c.getRoot().Curr.setXCount
-	fontSubset := c.getRoot().Curr.FontISubset
+	textColor := c.getRoot().curr.textColor()
+	grayFill := c.getRoot().curr.grayFill
+	fontCountIndex := c.getRoot().curr.FontFontCount + 1
+	fontSize := c.getRoot().curr.FontSize
+	fontStyle := c.getRoot().curr.FontStyle
+	charSpacing := c.getRoot().curr.CharSpacing
+	x := c.getRoot().curr.X
+	y := c.getRoot().curr.Y
+	setXCount := c.getRoot().curr.setXCount
+	fontSubset := c.getRoot().curr.FontISubset
 
-	CellOption := CellOption{transparency: c.getRoot().Curr.transparency}
+	CellOption := CellOption{transparency: c.getRoot().curr.transparency}
 
 	cache := cacheContentText{
 		fontSubset:     fontSubset,
@@ -130,20 +130,20 @@ func (c *contentObj) appendStreamPlaceHolderText(placeHolderWidth float64) error
 		x:              x,
 		y:              y,
 		cellOpt:        CellOption,
-		pageheight:     c.getRoot().Curr.pageSize.H,
+		pageheight:     c.getRoot().curr.pageSize.H,
 		contentType:    contentTypeText,
-		lineWidth:      c.getRoot().Curr.lineWidth,
-		txtColorMode:   c.getRoot().Curr.txtColorMode,
+		lineWidth:      c.getRoot().curr.lineWidth,
+		txtColorMode:   c.getRoot().curr.txtColorMode,
 		isPlaceHolder:  true,
 	}
 
 	//var err error
-	//c.getRoot().Curr.X, c.getRoot().Curr.Y, err = c.listCache.appendContentText(cache, "")
+	//c.getRoot().curr.X, c.getRoot().curr.Y, err = c.listCache.appendContentText(cache, "")
 	//if err != nil {
 	//	return err
 	//}
 	c.listCache.append(&cache)
-	c.getRoot().Curr.X += placeHolderWidth
+	c.getRoot().curr.X += placeHolderWidth
 
 	return nil
 }
@@ -152,18 +152,18 @@ func (c *contentObj) appendStreamPlaceHolderText(placeHolderWidth float64) error
 func (c *contentObj) AppendStreamText(text string) error {
 
 	//support only CURRENT_FONT_TYPE_SUBSET
-	textColor := c.getRoot().Curr.textColor()
-	grayFill := c.getRoot().Curr.grayFill
-	fontCountIndex := c.getRoot().Curr.FontFontCount + 1
-	fontSize := c.getRoot().Curr.FontSize
-	fontStyle := c.getRoot().Curr.FontStyle
-	charSpacing := c.getRoot().Curr.CharSpacing
-	x := c.getRoot().Curr.X
-	y := c.getRoot().Curr.Y
-	setXCount := c.getRoot().Curr.setXCount
-	fontSubset := c.getRoot().Curr.FontISubset
+	textColor := c.getRoot().curr.textColor()
+	grayFill := c.getRoot().curr.grayFill
+	fontCountIndex := c.getRoot().curr.FontFontCount + 1
+	fontSize := c.getRoot().curr.FontSize
+	fontStyle := c.getRoot().curr.FontStyle
+	charSpacing := c.getRoot().curr.CharSpacing
+	x := c.getRoot().curr.X
+	y := c.getRoot().curr.Y
+	setXCount := c.getRoot().curr.setXCount
+	fontSubset := c.getRoot().curr.FontISubset
 
-	CellOption := CellOption{transparency: c.getRoot().Curr.transparency}
+	CellOption := CellOption{transparency: c.getRoot().curr.transparency}
 
 	cache := cacheContentText{
 		fontSubset:     fontSubset,
@@ -178,14 +178,14 @@ func (c *contentObj) AppendStreamText(text string) error {
 		x:              x,
 		y:              y,
 		cellOpt:        CellOption,
-		pageheight:     c.getRoot().Curr.pageSize.H,
+		pageheight:     c.getRoot().curr.pageSize.H,
 		contentType:    contentTypeText,
-		lineWidth:      c.getRoot().Curr.lineWidth,
-		txtColorMode:   c.getRoot().Curr.txtColorMode,
+		lineWidth:      c.getRoot().curr.lineWidth,
+		txtColorMode:   c.getRoot().curr.txtColorMode,
 	}
 
 	var err error
-	c.getRoot().Curr.X, c.getRoot().Curr.Y, err = c.listCache.appendContentText(cache, text)
+	c.getRoot().curr.X, c.getRoot().curr.Y, err = c.listCache.appendContentText(cache, text)
 	if err != nil {
 		return err
 	}
@@ -196,16 +196,16 @@ func (c *contentObj) AppendStreamText(text string) error {
 // AppendStreamSubsetFont add stream of text
 func (c *contentObj) AppendStreamSubsetFont(rectangle *canvas.Rect, text string, cellOpt CellOption) error {
 
-	textColor := c.getRoot().Curr.textColor()
-	grayFill := c.getRoot().Curr.grayFill
-	fontCountIndex := c.getRoot().Curr.FontFontCount + 1
-	fontSize := c.getRoot().Curr.FontSize
-	fontStyle := c.getRoot().Curr.FontStyle
-	charSpacing := c.getRoot().Curr.CharSpacing
-	x := c.getRoot().Curr.X
-	y := c.getRoot().Curr.Y
-	setXCount := c.getRoot().Curr.setXCount
-	fontSubset := c.getRoot().Curr.FontISubset
+	textColor := c.getRoot().curr.textColor()
+	grayFill := c.getRoot().curr.grayFill
+	fontCountIndex := c.getRoot().curr.FontFontCount + 1
+	fontSize := c.getRoot().curr.FontSize
+	fontStyle := c.getRoot().curr.FontStyle
+	charSpacing := c.getRoot().curr.CharSpacing
+	x := c.getRoot().curr.X
+	y := c.getRoot().curr.Y
+	setXCount := c.getRoot().curr.setXCount
+	fontSubset := c.getRoot().curr.FontISubset
 
 	cache := cacheContentText{
 		fontSubset:     fontSubset,
@@ -219,14 +219,14 @@ func (c *contentObj) AppendStreamSubsetFont(rectangle *canvas.Rect, text string,
 		setXCount:      setXCount,
 		x:              x,
 		y:              y,
-		pageheight:     c.getRoot().Curr.pageSize.H,
+		pageheight:     c.getRoot().curr.pageSize.H,
 		contentType:    contentTypeCell,
 		cellOpt:        cellOpt,
-		lineWidth:      c.getRoot().Curr.lineWidth,
-		txtColorMode:   c.getRoot().Curr.txtColorMode,
+		lineWidth:      c.getRoot().curr.lineWidth,
+		txtColorMode:   c.getRoot().curr.txtColorMode,
 	}
 	var err error
-	c.getRoot().Curr.X, c.getRoot().Curr.Y, err = c.listCache.appendContentText(cache, text)
+	c.getRoot().curr.X, c.getRoot().curr.Y, err = c.listCache.appendContentText(cache, text)
 	if err != nil {
 		return err
 	}
@@ -238,7 +238,7 @@ func (c *contentObj) AppendStreamLine(x1 float64, y1 float64, x2 float64, y2 flo
 	//h := c.getRoot().Config.canvas.PageSize.H
 	//c.stream.WriteString(fmt.Sprintf("%0.2f %0.2f m %0.2f %0.2f l s\n", x1, h-y1, x2, h-y2))
 	var cache cacheContentLine
-	cache.pageHeight = c.getRoot().Curr.pageSize.H
+	cache.pageHeight = c.getRoot().curr.pageSize.H
 	cache.x1 = x1
 	cache.y1 = y1
 	cache.x2 = x2
@@ -250,7 +250,7 @@ func (c *contentObj) AppendStreamLine(x1 float64, y1 float64, x2 float64, y2 flo
 // AppendStreamImportedTemplate append imported template
 func (c *contentObj) AppendStreamImportedTemplate(tplName string, scaleX float64, scaleY float64, tX float64, tY float64) {
 	var cache cacheContentImportedTemplate
-	cache.pageHeight = c.getRoot().Curr.pageSize.H
+	cache.pageHeight = c.getRoot().curr.pageSize.H
 	cache.tplName = tplName
 	cache.scaleX = scaleX
 	cache.scaleY = scaleY
@@ -260,14 +260,14 @@ func (c *contentObj) AppendStreamImportedTemplate(tplName string, scaleX float64
 }
 
 func (c *contentObj) AppendStreamRectangle(opts drawableRectOptions) {
-	cache := newCacheContentRectangle(c.getRoot().Curr.pageSize.H, opts)
+	cache := newCacheContentRectangle(c.getRoot().curr.pageSize.H, opts)
 	c.listCache.append(cache)
 }
 
 // AppendStreamOval append oval
 func (c *contentObj) AppendStreamOval(x1 float64, y1 float64, x2 float64, y2 float64) {
 	var cache cacheContentOval
-	cache.pageHeight = c.getRoot().Curr.pageSize.H
+	cache.pageHeight = c.getRoot().curr.pageSize.H
 	cache.x1 = x1
 	cache.y1 = y1
 	cache.x2 = x2
@@ -286,7 +286,7 @@ func (c *contentObj) AppendStreamOval(x1 float64, y1 float64, x2 float64, y2 flo
 //     DF or FD: draw and fill
 func (c *contentObj) AppendStreamCurve(x0 float64, y0 float64, x1 float64, y1 float64, x2 float64, y2 float64, x3 float64, y3 float64, style string) {
 	var cache cacheContentCurve
-	cache.pageHeight = c.getRoot().Curr.pageSize.H
+	cache.pageHeight = c.getRoot().curr.pageSize.H
 	cache.x0 = x0
 	cache.y0 = y0
 	cache.x1 = x1
@@ -382,7 +382,7 @@ func (c *contentObj) AppendStreamSetColorFillCMYK(cy, m, y, k uint8) {
 }
 
 func (c *contentObj) GetCacheContentImage(index int, opts ImageOptions) *cacheContentImage {
-	h := c.getRoot().Curr.pageSize.H
+	h := c.getRoot().curr.pageSize.H
 
 	withMask := false
 	maskAngle := float64(0)
@@ -419,7 +419,7 @@ func (c *contentObj) AppendStreamPolygon(points []point, style string, opts poly
 	var cache cacheContentPolygon
 	cache.points = points
 	cache.style = style
-	cache.pageHeight = c.getRoot().Curr.pageSize.H
+	cache.pageHeight = c.getRoot().curr.pageSize.H
 	cache.opts = opts
 	c.listCache.append(&cache)
 }
@@ -427,7 +427,7 @@ func (c *contentObj) AppendStreamPolygon(points []point, style string, opts poly
 func (c *contentObj) appendRotate(angle, x, y float64) {
 	var cache cacheContentRotate
 	cache.isReset = false
-	cache.pageHeight = c.getRoot().Curr.pageSize.H
+	cache.pageHeight = c.getRoot().curr.pageSize.H
 	cache.angle = angle
 	cache.x = x
 	cache.y = y
@@ -488,18 +488,18 @@ type catalogObj struct { //impl iObj
 	outlinesObjID int
 }
 
-func (c *catalogObj) init(funcGetRoot func() *PdfEngine) {
+func (c *catalogObj) Init(funcGetRoot func() *PdfEngine) {
 	c.outlinesObjID = -1
 
 }
 
-func (c *catalogObj) getType() string {
+func (c *catalogObj) GetType() string {
 	return "Catalog"
 }
 
-func (c *catalogObj) write(w io.Writer, objID int) error {
+func (c *catalogObj) Write(w Writer, objID int) error {
 	io.WriteString(w, "<<\n")
-	fmt.Fprintf(w, "  /Type /%s\n", c.getType())
+	fmt.Fprintf(w, "  /Type /%s\n", c.GetType())
 	io.WriteString(w, "  /Pages 2 0 R\n")
 	if c.outlinesObjID >= 0 {
 		io.WriteString(w, "  /PageMode /UseOutlines\n")

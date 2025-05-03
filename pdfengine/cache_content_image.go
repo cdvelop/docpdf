@@ -22,7 +22,7 @@ type cacheContentImage struct {
 	extGStateIndexes []int
 }
 
-func (c *cacheContentImage) openImageRotateTrMt(writer io.Writer, protection *pdfProtection) error {
+func (c *cacheContentImage) openImageRotateTrMt(writer Writer, protection *pdfProtection) error {
 	w := c.rect.W
 	h := c.rect.H
 
@@ -40,17 +40,17 @@ func (c *cacheContentImage) openImageRotateTrMt(writer io.Writer, protection *pd
 		pageHeight: c.pageHeight,
 		angle:      c.imageAngle,
 	}
-	if err := cacheRotate.write(writer, protection); err != nil {
+	if err := cacheRotate.Write(writer, protection); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *cacheContentImage) closeImageRotateTrMt(writer io.Writer, protection *pdfProtection) error {
+func (c *cacheContentImage) closeImageRotateTrMt(writer Writer, protection *pdfProtection) error {
 	resetCacheRotate := cacheContentRotate{isReset: true}
 
-	return resetCacheRotate.write(writer, protection)
+	return resetCacheRotate.Write(writer, protection)
 }
 
 func (c *cacheContentImage) computeMaskImageRotateTrMt() string {
@@ -67,7 +67,7 @@ func (c *cacheContentImage) computeMaskImageRotateTrMt() string {
 	return rotateMat
 }
 
-func (c *cacheContentImage) write(writer io.Writer, protection *pdfProtection) error {
+func (c *cacheContentImage) Write(writer Writer, protection *pdfProtection) error {
 	width := c.rect.W
 	height := c.rect.H
 

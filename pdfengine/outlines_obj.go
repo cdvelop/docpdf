@@ -16,19 +16,19 @@ type outlinesObj struct { //impl iObj
 	lastObj *outlineObj
 }
 
-func (o *outlinesObj) init(funcGetRoot func() *PdfEngine) {
+func (o *outlinesObj) Init(funcGetRoot func() *PdfEngine) {
 	o.getRoot = funcGetRoot
 	o.first = -1
 	o.last = -1
 }
 
-func (o *outlinesObj) getType() string {
+func (o *outlinesObj) GetType() string {
 	return "Outlines"
 }
 
-func (o *outlinesObj) write(w io.Writer, objID int) error {
+func (o *outlinesObj) Write(w Writer, objID int) error {
 	content := "<<\n"
-	content += fmt.Sprintf("\t/Type /%s\n", o.getType())
+	content += fmt.Sprintf("\t/Type /%s\n", o.GetType())
 	content += fmt.Sprintf("\t/Count %d\n", o.count)
 
 	if o.first >= 0 {
@@ -98,7 +98,7 @@ type outlineObj struct { //impl iObj
 	height float64
 }
 
-func (o *outlineObj) init(funcGetRoot func() *PdfEngine) {
+func (o *outlineObj) Init(funcGetRoot func() *PdfEngine) {
 }
 
 func (o *outlineObj) SetFirst(first int) {
@@ -125,11 +125,11 @@ func (o *outlineObj) GetIndex() int {
 	return o.index
 }
 
-func (o *outlineObj) getType() string {
+func (o *outlineObj) GetType() string {
 	return "Outline"
 }
 
-//func (o *outlineObj) write(w io.Writer, objID int) error {
+//func (o *outlineObj) Write(w Writer, objID int) error {
 //	io.WriteString(w, "<<\n")
 //	fmt.Fprintf(w, "  /Parent %d 0 R\n", o.parent)
 //	if o.prev >= 0 {
@@ -144,7 +144,7 @@ func (o *outlineObj) getType() string {
 //	return nil
 //}
 
-func (o *outlineObj) write(w io.Writer, objID int) error {
+func (o *outlineObj) Write(w Writer, objID int) error {
 	io.WriteString(w, "<<\n")
 	fmt.Fprintf(w, "  /Parent %d 0 R\n", o.parent)
 	if o.prev >= 0 {

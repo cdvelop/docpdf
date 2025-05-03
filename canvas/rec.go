@@ -39,7 +39,7 @@ func (rect *Rect) pointsToUnits(t int) (r *Rect) {
 	}
 
 	r = &Rect{W: rect.W, H: rect.H}
-	pointsToUnitsVar(unitCfg, &r.W, &r.H)
+	PointsToUnitsVar(unitCfg, &r.W, &r.H)
 	return
 }
 
@@ -159,15 +159,15 @@ func unitsToPointsVarCfg(unitCfg unitConfigurator, u ...*float64) {
 	}
 }
 
-// pointsToUnitsVar convierte múltiples valores de puntos al sistema de unidades especificado
+// PointsToUnitsVar convierte múltiples valores de puntos al sistema de unidades especificado
 // Parámetros:
 //   - unit: Entero representando tipo de unidad o una interfaz unitConfigurator
 //   - u: Punteros a valores a convertir (modificados en el lugar)
-func pointsToUnitsVar(unit any, u ...*float64) {
+func PointsToUnitsVar(unit any, u ...*float64) {
 	PointsToUnitsVarCfg(getUnitConfigurator(unit), u...)
 }
 
-// pointsToUnitsVar is an internal function that converts multiple values from points to units
+// PointsToUnitsVar is an internal function that converts multiple values from points to units
 // using the provided unit configuration.
 //
 // Parameters:

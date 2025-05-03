@@ -1,11 +1,12 @@
 package pdfengine
 
 import (
-	"io"
 	"time"
-
-	"github.com/cdvelop/docpdf/canvas"
 )
+
+type Writer interface {
+	Write(p []byte) (n int, err error)
+}
 
 type anchorOption struct {
 	page int
@@ -30,9 +31,9 @@ type PdfInfo struct {
 
 // iObj inteface for all pdf object
 type iObj interface {
-	init(func() *PdfEngine)
-	getType() string
-	write(w io.Writer, objID int) error
+	Init(func() *PdfEngine)
+	GetType() string
+	Write(w Writer, objID int) error
 }
 
 type placeHolderTextInfo struct {
@@ -44,64 +45,11 @@ type placeHolderTextInfo struct {
 	charSpacing      float64
 }
 
-// currentPdf current state
-type currentPdf struct {
-	setXCount int //many times we go func SetX()
-	X         float64
-	Y         float64
-
-	//font
-	IndexOfFontObj int
-	CountOfFont    int
-	CountOfL       int
-
-	FontSize      float64
-	FontStyle     int // Regular|Bold|Italic|Underline
-	FontFontCount int
-	FontType      int // CURRENT_FONT_TYPE_IFONT or  CURRENT_FONT_TYPE_SUBSET
-
-	CharSpacing float64
-
-	FontISubset *subsetFontObj // FontType == CURRENT_FONT_TYPE_SUBSET
-
-	//page
-	IndexOfPageObj int
-
-	//img
-	CountOfImg int
-	//cache of image in pdf file
-	ImgCaches map[int]imageCache
-
-	//text color mode
-	txtColorMode string //color, gray
-
-	//text color
-	txtColor iCacheColorText
-
-	//text grayscale
-	grayFill float64
-	//draw grayscale
-	grayStroke float64
-
-	lineWidth float64
-
-	//current page size
-	pageSize *canvas.Rect
-
-	//current trim canvas.Box
-	trimBox *canvas.Box
-
-	sMasksMap       sMaskMap
-	extGStatesMap   extGStatesMap
-	transparency    *transparency
-	transparencyMap transparencyMap
+type ICacheContent interface {
+	Write(w Writer, protection *pdfProtection) error
 }
 
-type iCacheContent interface {
-	write(w io.Writer, protection *pdfProtection) error
-}
-
-type iCacheColorText interface {
-	iCacheContent
-	equal(obj iCacheColorText) bool
+type ICacheColorText interface {
+	ICacheContent
+	Equal(obj ICacheColorText) bool
 }

@@ -3,6 +3,8 @@ package docpdf
 import (
 	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/pdfengine"
+	"github.com/cdvelop/docpdf/style"
 	"github.com/cdvelop/tinystring"
 )
 
@@ -24,8 +26,8 @@ type docTable struct {
 	rowHeight                 float64
 	maxLinesTextForRowInACell int // Maximum number of text lines per row in a cell
 	cellPadding               float64
-	headerStyle               CellStyle
-	cellStyle                 CellStyle
+	headerStyle               style.Cell
+	cellStyle                 style.Cell
 	alignment                 alignment.Alignment // alignment.Left, alignment.Center, or alignment.Right alignment
 	currentWidth              float64
 }
@@ -42,9 +44,9 @@ type tableColumn struct {
 
 // tableCell represents a cell in the table
 type tableCell struct {
-	content      string    // Content of the cell
-	useCellStyle bool      // If true, use custom style instead of the table's default
-	cellStyle    CellStyle // Custom style for this cell
+	content      string     // Content of the cell
+	useCellStyle bool       // If true, use custom style instead of the table's default
+	cellStyle    style.Cell // Custom style for this cell
 }
 
 // NewTable creates a new table with the specified headers
@@ -234,14 +236,14 @@ func (t *docTable) AlignRight() *docTable {
 }
 
 // HeaderStyle sets the style for the header row
-func (t *docTable) HeaderStyle(style CellStyle) *docTable {
-	t.headerStyle = style
+func (t *docTable) HeaderStyle(s style.Cell) *docTable {
+	t.headerStyle = s
 	return t
 }
 
-// CellStyle sets the default style for regular cells
-func (t *docTable) CellStyle(style CellStyle) *docTable {
-	t.cellStyle = style
+// style.Cell sets the default style for regular cells
+func (t *docTable) Cell(s style.Cell) *docTable {
+	t.cellStyle = s
 	return t
 }
 
@@ -300,11 +302,11 @@ func (t *docTable) AddStyledRow(cells ...styledCell) *docTable {
 // styledCell represents a cell with custom styling
 type styledCell struct {
 	Content string
-	Style   CellStyle
+	Style   style.Cell
 }
 
 // NewStyledCell creates a new cell with custom styling
-func (doc *Document) NewStyledCell(content string, style CellStyle) styledCell {
+func (doc *Document) NewStyledCell(content string, style style.Cell) styledCell {
 	return styledCell{
 		Content: content,
 		Style:   style,
@@ -319,24 +321,24 @@ func (t *docTable) Draw() error {
 	// Colección para guardar información de los encabezados para dibujar sus bordes al final
 	type headerInfo struct {
 		x, y, width, height float64
-		style               CellStyle
+		style               style.Cell
 	}
 	headers := []headerInfo{}
 
 	// Obtenemos la posición Y inicial, considerando el espacio disponible en la página actual
-	y := t.doc.Curr.Y
+	y := t.doc.CurrentPdf().Y
 
 	// Verificar si al menos la cabecera cabe en la página actual
 	headerHeight := t.rowHeight
-	bottomMargin := t.doc.canvas.Margins.alignment.Bottom
+	bottomMargin := t.doc.Margins().Bottom
 
 	// Calcular espacio disponible en la página actual
-	availableSpace := t.doc.Curr.pageSize.H - y - bottomMargin
+	availableSpace := t.doc.CurrentPdf().PageSize().H - y - bottomMargin
 
 	// Si ni siquiera la cabecera cabe, ir a una nueva página
 	if headerHeight > availableSpace {
 		t.doc.AddPage()
-		y = t.doc.Curr.Y
+		y = t.doc.CurrentPdf().Y
 	}
 
 	// Dibujar encabezado
@@ -366,17 +368,17 @@ func (t *docTable) Draw() error {
 
 	// Dibujar los bordes de los encabezados
 	for _, h := range headers {
-		t.drawCellBorder(h.x, h.y, h.width, h.height, h.style.BorderStyle)
+		t.drawCellBorder(h.x, h.y, h.width, h.height, h.style.Border)
 	}
 	// Dibujar filas de datos
 	for _, row := range t.rows {
 		// Verificar si la fila actual cabe en la página actual
-		availableSpace = t.doc.Curr.pageSize.H - currentY - bottomMargin
+		availableSpace = t.doc.CurrentPdf().PageSize().H - currentY - bottomMargin
 
 		// Si esta fila no cabe en la página actual, crear una nueva página
 		if t.rowHeight > availableSpace {
 			t.doc.AddPage()
-			currentY = t.doc.Curr.Y
+			currentY = t.doc.CurrentPdf().Y
 
 			// Limpiar la lista de encabezados para la nueva página
 			headers = []headerInfo{}
@@ -407,7 +409,7 @@ func (t *docTable) Draw() error {
 
 			// Dibujar los bordes de los encabezados
 			for _, h := range headers {
-				t.drawCellBorder(h.x, h.y, h.width, h.height, h.style.BorderStyle)
+				t.drawCellBorder(h.x, h.y, h.width, h.height, h.style.Border)
 			}
 
 			// Ajustar currentY para empezar debajo del encabezado
@@ -458,19 +460,19 @@ func (t *docTable) drawCellContent(
 	height float64,
 	content string,
 	align alignment.Alignment,
-	style CellStyle,
+	stCell style.Cell,
 ) {
 	// Fill the cell background if a fill color is specified
-	if (style.FillColor != RGBColor{}) {
-		t.doc.SetFillColor(style.FillColor.R, style.FillColor.G, style.FillColor.B)
+	if (stCell.FillColor != style.Color{}) {
+		t.doc.SetFillColor(stCell.FillColor.R, stCell.FillColor.G, stCell.FillColor.B)
 		t.doc.RectFromUpperLeftWithStyle(x, y, width, height, "F")
 	}
 
 	// Set text properties
-	if style.Font != "" {
-		t.doc.SetFont(style.Font, "", style.FontSize)
+	if stCell.Font != "" {
+		t.doc.SetFont(stCell.Font, "", stCell.FontSize)
 	}
-	t.doc.SetTextColor(style.TextColor.R, style.TextColor.G, style.TextColor.B)
+	t.doc.SetTextColor(stCell.TextColor.R, stCell.TextColor.G, stCell.TextColor.B)
 
 	// Calculate available text area considering padding
 	textX := x + t.cellPadding
@@ -488,7 +490,7 @@ func (t *docTable) drawCellContent(
 	}
 
 	// Calcular altura de línea y posicionamiento vertical
-	lineHeight := t.doc.Curr.FontSize * 1.2
+	lineHeight := t.doc.CurrentPdf().FontSize * 1.2
 
 	// Altura estimada del texto (con límite de 2 líneas)
 	estimatedLines := min(numLines, t.maxLinesTextForRowInACell)
@@ -505,12 +507,12 @@ func (t *docTable) drawCellContent(
 	drawY := max(y+verticalPadding-bottomSpacingAdjustment, y)
 
 	// Configurar opciones para dibujar la celda
-	cellOpt := cellOption{
+	cellOpt := pdfengine.CellOption{
 		Align:         cellAlign,
 		Border:        0, // No borders for content drawing
 		TruncateLines: t.maxLinesTextForRowInACell,
-		breakOption: &breakOption{
-			Mode:           breakModeIndicatorSensitive,
+		BreakOption: &pdfengine.BreakOption{
+			Mode:           pdfengine.BreakModeIndicatorSensitive,
 			BreakIndicator: ' ',
 			Separator:      "",
 		},
@@ -537,26 +539,26 @@ func (t *docTable) drawCellBorder(
 	y float64,
 	width float64,
 	height float64,
-	borderStyle BorderStyle,
+	borderStyle style.Border,
 ) {
 	if borderStyle.Width > 0 {
 		t.doc.SetLineWidth(borderStyle.Width)
 		t.doc.SetStrokeColor(
-			borderStyle.RGBColor.R,
-			borderStyle.RGBColor.G,
-			borderStyle.RGBColor.B,
+			borderStyle.Color.R,
+			borderStyle.Color.G,
+			borderStyle.Color.B,
 		)
 
-		if borderStyle.alignment.Top {
+		if borderStyle.Top {
 			t.doc.Line(x, y, x+width, y)
 		}
-		if borderStyle.alignment.Bottom {
+		if borderStyle.Bottom {
 			t.doc.Line(x, y+height, x+width, y+height)
 		}
-		if borderStyle.alignment.Left {
+		if borderStyle.Left {
 			t.doc.Line(x, y, x, y+height)
 		}
-		if borderStyle.alignment.Right {
+		if borderStyle.Right {
 			t.doc.Line(x+width, y, x+width, y+height)
 		}
 	}
@@ -570,31 +572,31 @@ func (t *docTable) drawCell(
 	height float64,
 	content string,
 	align alignment.Alignment,
-	style CellStyle,
+	style style.Cell,
 ) {
 	// Primero dibujamos el contenido y el fondo
 	t.drawCellContent(x, y, width, height, content, align, style)
 
 	// Luego dibujamos los bordes
-	t.drawCellBorder(x, y, width, height, style.BorderStyle)
+	t.drawCellBorder(x, y, width, height, style.Border)
 }
 
 // calculatePosition determina donde colocar la tabla
 func (t *docTable) calculatePosition() float64 {
 	// Posición X inicial (margen izquierdo)
-	x := t.doc.canvas.Margins.alignment.Left
+	x := t.doc.Margins().Left
 
 	// Aplicar alineación
 	switch t.alignment {
 	case alignment.Center:
 		// Centrar la tabla: margen izquierdo + (espacio disponible - ancho tabla) / 2
-		x = t.doc.canvas.Margins.alignment.Left + (t.doc.contentAreaWidth-t.width)/2
+		x = t.doc.Margins().Left + (t.doc.contentAreaWidth-t.width)/2
 	case alignment.Right:
 		// Alinear a la derecha: margen izquierdo + espacio disponible - ancho tabla
-		x = t.doc.canvas.Margins.alignment.Left + t.doc.contentAreaWidth - t.width
+		x = t.doc.Margins().Left + t.doc.contentAreaWidth - t.width
 	case alignment.Left:
 		// Alinear a la izquierda: simplemente el margen izquierdo
-		x = t.doc.canvas.Margins.alignment.Left
+		x = t.doc.Margins().Left
 	}
 
 	return x

@@ -68,12 +68,12 @@ func newImporter(Log func(a ...any)) *importer {
 	importer := &importer{
 		Log: Log,
 	}
-	importer.init()
+	importer.Init()
 
 	return importer
 }
 
-func (this *importer) init() {
+func (this *importer) Init() {
 	this.readers = make(map[string]*pdfReader, 0)
 	this.writers = make(map[string]*pdfWriter, 0)
 	this.tplMap = make(map[int]*tplInfo, 0)

@@ -9,15 +9,15 @@ type importedObj struct { //impl iObj
 	Data string
 }
 
-func (c *importedObj) init(funcGetRoot func() *PdfEngine) {
+func (c *importedObj) Init(funcGetRoot func() *PdfEngine) {
 
 }
 
-func (c *importedObj) getType() string {
+func (c *importedObj) GetType() string {
 	return "Imported"
 }
 
-func (c *importedObj) write(w io.Writer, objID int) error {
+func (c *importedObj) Write(w Writer, objID int) error {
 	if c != nil {
 		io.WriteString(w, c.Data)
 	}

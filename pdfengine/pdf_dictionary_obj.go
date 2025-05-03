@@ -25,7 +25,7 @@ type pdfDictionaryObj struct {
 	pdfProtection *pdfProtection
 }
 
-func (p *pdfDictionaryObj) init(funcGetRoot func() *PdfEngine) {
+func (p *pdfDictionaryObj) Init(funcGetRoot func() *PdfEngine) {
 	//p.getRoot = funcGetRoot
 }
 
@@ -37,7 +37,7 @@ func (p *pdfDictionaryObj) protection() *pdfProtection {
 	return p.pdfProtection
 }
 
-func (p *pdfDictionaryObj) write(w io.Writer, objID int) error {
+func (p *pdfDictionaryObj) Write(w Writer, objID int) error {
 	b, err := p.makeFont()
 	if err != nil {
 		//Log.Panicf("%s", err.Error())
@@ -75,7 +75,7 @@ func (p *pdfDictionaryObj) write(w io.Writer, objID int) error {
 	return nil
 }
 
-func (p *pdfDictionaryObj) getType() string {
+func (p *pdfDictionaryObj) GetType() string {
 	return "PdfDictionary"
 }
 

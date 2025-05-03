@@ -103,7 +103,7 @@ func NewDocument(configs ...any) *Document {
 		doc.Log("Error loading fonts: ", err)
 	}
 
-	doc.contentAreaWidth = doc.Config.PageSize.W - (doc.Margins.alignment.Left + doc.Margins.alignment.Right)
+	doc.contentAreaWidth = doc.Config.PageSize.W - (doc.Margins().Left + doc.Margins().Right)
 
 	// Initialize header and footer
 	doc.initHeaderFooter()
@@ -118,7 +118,7 @@ func NewDocument(configs ...any) *Document {
 // GetLineHeight returns the current line height based on the active font and size
 func (doc *Document) GetLineHeight() float64 {
 	// Get current font size and add some padding
-	fontSize := doc.Curr.FontSize
+	fontSize := doc.CurrentPdf().FontSize
 	if fontSize <= 0 {
 		fontSize = doc.fontConfig.Normal.Size // Default font size as fallback
 	}
@@ -144,7 +144,7 @@ func (doc *Document) AddPage() {
 	// Respetar el SpaceAfter del encabezado para el contenido inicial de la página
 	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.NumOfPagesObj > 1) {
 		// Ajustar la posición Y inicial para incluir el espacio después del encabezado
-		doc.SetY(doc.Margins.alignment.Top + doc.fontConfig.PageHeader.SpaceAfter)
+		doc.SetY(doc.Margins().Top + doc.fontConfig.PageHeader.SpaceAfter)
 	}
 }
 
@@ -164,7 +164,7 @@ func (doc *Document) AddPageWithOption(opt pdfengine.PageOption) {
 	// Respetar el SpaceAfter del encabezado para el contenido inicial de la página
 	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.NumOfPagesObj > 1) {
 		// Ajustar la posición Y inicial para incluir el espacio después del encabezado
-		doc.SetY(doc.Margins.alignment.Top + doc.fontConfig.PageHeader.SpaceAfter)
+		doc.SetY(doc.Margins().Top + doc.fontConfig.PageHeader.SpaceAfter)
 	}
 }
 
@@ -191,12 +191,12 @@ func (doc *Document) RedrawHeaderFooter() {
 }
 
 // calculateElementPosition determina la posición X de un elemento basado en su alineación y ancho
-func (doc *Document) calculateElementPosition(width float64, alignment alignment.Alignment, withPadding bool) float64 {
+func (doc *Document) calculateElementPosition(width float64, align alignment.Alignment, withPadding bool) float64 {
 	// Ancho total disponible en la página (incluyendo márgenes)
 	// totalWidth := doc.contentAreaWidth
 
 	// Ancho disponible para contenido
-	contentWidth := doc.contentAreaWidth - (doc.Margins.Left + doc.Margins.Right)
+	contentWidth := doc.contentAreaWidth - (doc.Margins().Left + doc.Margins().Right)
 
 	// Padding solo si se requiere
 	padding := 0.0
@@ -207,23 +207,23 @@ func (doc *Document) calculateElementPosition(width float64, alignment alignment
 
 	// Calcular posición X basada en la alineación
 	var x float64
-	switch alignment {
+	switch align {
 	case alignment.Center:
 		// Para centrado: margen izquierdo + mitad del espacio disponible - mitad del ancho
-		x = doc.Margins.alignment.Left + (contentWidth / 2) - (width / 2)
+		x = doc.Margins().Left + (contentWidth / 2) - (width / 2)
 	case alignment.Right:
 		// Para alineado a la derecha: posición derecha - ancho
-		x = doc.contentAreaWidth - doc.Margins.alignment.Right - width
+		x = doc.contentAreaWidth - doc.Margins().Right - width
 	default: // alignment.Left
 		// Para alineado a la izquierda: simplemente el margen izquierdo
-		x = doc.Margins.alignment.Left
+		x = doc.Margins().Left
 	}
 
 	// Aplicar padding solo a la posición, no al cálculo del ancho
 	if withPadding {
-		if alignment == alignment.Left {
+		if align == alignment.Left {
 			x += padding
-		} else if alignment == alignment.Right {
+		} else if align == alignment.Right {
 			x -= padding
 		}
 		// Para centrado, no aplicamos padding adicional

@@ -15,7 +15,7 @@ type cacheContentColorRGB struct {
 	r, g, b   uint8
 }
 
-func (c *cacheContentColorRGB) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentColorRGB) Write(w Writer, protection *pdfProtection) error {
 	fmt.Fprintf(w, "%.3f %.3f %.3f %s\n", float64(c.r)/255, float64(c.g)/255, float64(c.b)/255, c.colorType)
 	return nil
 }
@@ -29,7 +29,7 @@ type cacheContentColorCMYK struct {
 	c, m, y, k uint8
 }
 
-func (c *cacheContentColorCMYK) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentColorCMYK) Write(w Writer, protection *pdfProtection) error {
 	fmt.Fprintf(w, "%.2f %.2f %.2f %.2f %s\n", float64(c.c)/100, float64(c.m)/100, float64(c.y)/100, float64(c.k)/100, c.colorType)
 	return nil
 }
@@ -39,7 +39,7 @@ type cacheContentCustomLineType struct {
 	dashPhase float64
 }
 
-func (c *cacheContentCustomLineType) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentCustomLineType) Write(w Writer, protection *pdfProtection) error {
 	fmt.Fprintf(w, "%0.2f %0.2f d\n", c.dashArray, c.dashPhase)
 	return nil
 }
@@ -52,7 +52,7 @@ type cacheContentGray struct {
 	scale    float64
 }
 
-func (c *cacheContentGray) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentGray) Write(w Writer, protection *pdfProtection) error {
 	fmt.Fprintf(w, "%.2f %s\n", c.scale, c.grayType)
 	return nil
 }
@@ -61,7 +61,7 @@ type cacheContentLineType struct {
 	lineType string
 }
 
-func (c *cacheContentLineType) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentLineType) Write(w Writer, protection *pdfProtection) error {
 	switch c.lineType {
 	case "dashed":
 		fmt.Fprint(w, "[5] 2 d\n")
@@ -80,7 +80,7 @@ type cacheContentPolygon struct {
 	opts       polygonOptions
 }
 
-func (c *cacheContentPolygon) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentPolygon) Write(w Writer, protection *pdfProtection) error {
 
 	fmt.Fprintf(w, "q\n")
 	for _, extGStateIndex := range c.opts.extGStateIndexes {
@@ -113,12 +113,12 @@ type cacheContentTextColorRGB struct {
 	r, g, b uint8
 }
 
-func (c cacheContentTextColorRGB) write(w io.Writer, protection *pdfProtection) error {
+func (c cacheContentTextColorRGB) Write(w Writer, protection *pdfProtection) error {
 	fmt.Fprintf(w, "%.3f %.3f %.3f %s\n", float64(c.r)/255, float64(c.g)/255, float64(c.b)/255, colorTypeFillRGB)
 	return nil
 }
 
-func (c cacheContentTextColorRGB) equal(obj iCacheColorText) bool {
+func (c cacheContentTextColorRGB) Equal(obj ICacheColorText) bool {
 	rgb, ok := obj.(cacheContentTextColorRGB)
 	if !ok {
 		return false
@@ -131,12 +131,12 @@ type cacheContentTextColorCMYK struct {
 	c, m, y, k uint8
 }
 
-func (c cacheContentTextColorCMYK) write(w io.Writer, protection *pdfProtection) error {
+func (c cacheContentTextColorCMYK) Write(w Writer, protection *pdfProtection) error {
 	fmt.Fprintf(w, "%.2f %.2f %.2f %.2f %s\n", float64(c.c)/100, float64(c.m)/100, float64(c.y)/100, float64(c.k)/100, colorTypeFillCMYK)
 	return nil
 }
 
-func (c cacheContentTextColorCMYK) equal(obj iCacheColorText) bool {
+func (c cacheContentTextColorCMYK) Equal(obj ICacheColorText) bool {
 	cmyk, ok := obj.(cacheContentTextColorCMYK)
 	if !ok {
 		return false
@@ -151,7 +151,7 @@ type cacheContentRotate struct {
 	angle, x, y float64
 }
 
-func (cc *cacheContentRotate) write(w io.Writer, protection *pdfProtection) error {
+func (cc *cacheContentRotate) Write(w Writer, protection *pdfProtection) error {
 	if cc.isReset == true {
 		if _, err := io.WriteString(w, "Q\n"); err != nil {
 			return err
@@ -189,7 +189,7 @@ type cacheContentLine struct {
 	opts       lineOptions
 }
 
-func (c *cacheContentLine) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentLine) Write(w Writer, protection *pdfProtection) error {
 	fmt.Fprintf(w, "q\n")
 	for _, extGStateIndex := range c.opts.extGStateIndexes {
 		fmt.Fprintf(w, "/GS%d gs\n", extGStateIndex)
@@ -208,7 +208,7 @@ type cacheContentImportedTemplate struct {
 	tY         float64
 }
 
-func (c *cacheContentImportedTemplate) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentImportedTemplate) Write(w Writer, protection *pdfProtection) error {
 	c.tY += c.pageHeight
 	fmt.Fprintf(w, "q 0 J 1 w 0 j 0 G 0 g q %.4F 0 0 %.4F %.4F %.4F cm %s Do Q Q\n", c.scaleX, c.scaleY, c.tX, c.tY, c.tplName)
 	return nil
@@ -218,7 +218,7 @@ type cacheContentLineWidth struct {
 	width float64
 }
 
-func (c *cacheContentLineWidth) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentLineWidth) Write(w Writer, protection *pdfProtection) error {
 	fmt.Fprintf(w, "%.2f w\n", c.width)
 	return nil
 }
@@ -231,7 +231,7 @@ type cacheContentOval struct {
 	y2         float64
 }
 
-func (c *cacheContentOval) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentOval) Write(w Writer, protection *pdfProtection) error {
 
 	h := c.pageHeight
 	x1 := c.x1
@@ -276,7 +276,7 @@ type cacheContentRectangle struct {
 	extGStateIndexes []int
 }
 
-func newCacheContentRectangle(pageHeight float64, rectOpts drawableRectOptions) iCacheContent {
+func newCacheContentRectangle(pageHeight float64, rectOpts drawableRectOptions) ICacheContent {
 	if rectOpts.paintStyle == "" {
 		rectOpts.paintStyle = drawPaintStyle
 	}
@@ -292,7 +292,7 @@ func newCacheContentRectangle(pageHeight float64, rectOpts drawableRectOptions) 
 	}
 }
 
-func (c cacheContentRectangle) write(w io.Writer, protection *pdfProtection) error {
+func (c cacheContentRectangle) Write(w Writer, protection *pdfProtection) error {
 	stream := "q\n"
 
 	for _, extGStateIndex := range c.extGStateIndexes {
@@ -323,7 +323,7 @@ type cacheContentCurve struct {
 	style      string
 }
 
-func (c *cacheContentCurve) write(w io.Writer, protection *pdfProtection) error {
+func (c *cacheContentCurve) Write(w Writer, protection *pdfProtection) error {
 
 	h := c.pageHeight
 	x0 := c.x0

@@ -1,16 +1,14 @@
 package pdfengine
 
 import (
-	"io"
-
 	"github.com/cdvelop/docpdf/alignment"
 )
 
 type listCacheContent struct {
-	caches []iCacheContent
+	caches []ICacheContent
 }
 
-func (l *listCacheContent) last() iCacheContent {
+func (l *listCacheContent) last() ICacheContent {
 	max := len(l.caches)
 	if max > 0 {
 		return l.caches[max-1]
@@ -18,7 +16,7 @@ func (l *listCacheContent) last() iCacheContent {
 	return nil
 }
 
-func (l *listCacheContent) append(cache iCacheContent) {
+func (l *listCacheContent) append(cache ICacheContent) {
 	l.caches = append(l.caches, cache)
 }
 
@@ -48,7 +46,7 @@ func (l *listCacheContent) appendContentText(cache cacheContentText, text string
 	cacheFont.text += text
 
 	//re-create content
-	textWidthPdfUnit, textHeightPdfUnit, err := cacheFont.createContent()
+	textWidthPdfUnit, textHeightPdfUnit, err := cacheFont.CreateContent()
 	if err != nil {
 		return x, y, err
 	}
@@ -63,9 +61,9 @@ func (l *listCacheContent) appendContentText(cache cacheContentText, text string
 	return x, y, nil
 }
 
-func (l *listCacheContent) write(w io.Writer, protection *pdfProtection) error {
+func (l *listCacheContent) Write(w Writer, protection *pdfProtection) error {
 	for _, cache := range l.caches {
-		if err := cache.write(w, protection); err != nil {
+		if err := cache.Write(w, protection); err != nil {
 			return err
 		}
 	}

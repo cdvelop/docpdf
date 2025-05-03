@@ -3,6 +3,8 @@ package docpdf
 import (
 	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/pdfengine"
+	"github.com/cdvelop/docpdf/style"
 )
 
 // FontStyle defines the available font styles
@@ -23,7 +25,7 @@ const (
 // TextStyle defines text appearance properties
 type TextStyle struct {
 	Size        float64
-	Color       RGBColor
+	Color       style.Color
 	LineSpacing float64
 	Alignment   alignment.Alignment // Uses same alignment constants as cellOption (alignment.Left, alignment.Center, alignment.Right, etc)
 	SpaceBefore float64             // Space before paragraph (in points)
@@ -34,7 +36,7 @@ type TextStyle struct {
 type docText struct {
 	doc         *Document
 	text        string
-	opts        cellOption
+	opts        pdfengine.CellOption
 	rect        *canvas.Rect
 	style       TextStyle
 	fontName    string
@@ -57,7 +59,7 @@ func (d *Document) newTextBuilder(text string, style TextStyle, fontName string)
 			W: 0, // se calcula en Draw()
 			H: 0,
 		},
-		opts: cellOption{
+		opts: pdfengine.CellOption{
 			Align: style.Alignment,
 			// Border:         AllBorders,
 			Float:          alignment.Bottom,
@@ -127,7 +129,7 @@ func (dt *docText) Justify() *docText {
 }
 
 func (dt *docText) WithBorder() *docText {
-	dt.opts.Border = AllBorders
+	dt.opts.Border = alignment.AllBorders
 	return dt
 }
 
@@ -159,7 +161,7 @@ func (d *Document) SpaceBefore(spaces ...float64) {
 	}
 
 	// Get the current font size
-	fontSize := d.Curr.FontSize
+	fontSize := d.CurrentPdf().FontSize
 	if fontSize <= 0 {
 		fontSize = d.fontConfig.Normal.Size // Default font size if none is set
 	}
@@ -267,138 +269,137 @@ func (dt *docText) Draw() error {
 	// Configure word wrap to prevent cutting words
 	if dt.wordWrap {
 		// Use breakModeIndicatorSensitive with space as break indicator to avoid mid-word breaks
-		dt.opts.breakOption = &breakOption{
-			Mode:           breakModeIndicatorSensitive,
+		dt.opts.BreakOption = &pdfengine.BreakOption{
+			Mode:           pdfengine.BreakModeIndicatorSensitive,
 			BreakIndicator: ' ',
 			Separator:      "",
 		}
 	} else {
 		// Use default break option (which may allow mid-word breaks)
-		dt.opts.breakOption = &defaultBreakOption
-	}
+		dt.opts.BreakOption = &pdfengine.DefaultBreakOption
 
-	// Handle positioning
-	if dt.positioning == inlinePosition {
-		// For right-aligned inline text, calculate alignment.Alignment differently
-		if isRightAligned {
-			// First, calculate the width needed for the text
-			dt.minimumWidthRequiredForText()
+		// Handle positioning
+		if dt.positioning == inlinePosition {
+			// For right-aligned inline text, calculate alignment.Alignment differently
+			if isRightAligned {
+				// First, calculate the width needed for the text
+				dt.minimumWidthRequiredForText()
 
-			// Save current Y alignment.Alignment
-			currentY := dt.doc.GetY()
+				// Save current Y alignment.Alignment
+				currentY := dt.doc.GetY()
 
-			// Set X to maintain right alignment while considering page canvas.Margins
-			textWidth := dt.rect.W
-			dt.doc.SetX(dt.doc.canvas.Margins.alignment.Left + dt.doc.contentAreaWidth - textWidth)
+				// Set X to maintain right alignment while considering page canvas.Margins
+				textWidth := dt.rect.W
+				dt.doc.SetX(dt.doc.Margins().Left + dt.doc.contentAreaWidth - textWidth)
 
-			// Ensure we're at the same Y alignment.Alignment
-			dt.doc.SetY(currentY)
-		} else {
-			// Keep current X alignment.Alignment for regular inline elements
-			// If we're in inline mode, adjust available width
-			if dt.doc.inlineMode && dt.doc.lastInlineWidth > 0 {
-				// Calculate remaining width on the current line
-				currentX := dt.doc.GetX()
-				availableWidth := dt.doc.contentAreaWidth - (currentX - dt.doc.canvas.Margins.alignment.Left)
+				// Ensure we're at the same Y alignment.Alignment
+				dt.doc.SetY(currentY)
+			} else {
+				// Keep current X alignment.Alignment for regular inline elements
+				// If we're in inline mode, adjust available width
+				if dt.doc.inlineMode && dt.doc.lastInlineWidth > 0 {
+					// Calculate remaining width on the current line
+					currentX := dt.doc.GetX()
+					availableWidth := dt.doc.contentAreaWidth - (currentX - dt.doc.Margins().Left)
 
-				if !dt.fullWidth {
-					// For auto-width text, adjust rectangle width
-					dt.minimumWidthRequiredForText()
-					// Check if there's enough space
-					if dt.rect.W > availableWidth {
-						// Not enough space, force to next line
-						dt.doc.SetX(dt.doc.canvas.Margins.alignment.Left)
-						dt.doc.inlineMode = false
-						dt.doc.lastInlineWidth = 0
+					if !dt.fullWidth {
+						// For auto-width text, adjust rectangle width
+						dt.minimumWidthRequiredForText()
+						// Check if there's enough space
+						if dt.rect.W > availableWidth {
+							// Not enough space, force to next line
+							dt.doc.SetX(dt.doc.Margins().Left)
+							dt.doc.inlineMode = false
+							dt.doc.lastInlineWidth = 0
+						}
+					} else {
+						// For full width text, adjust the width to available space
+						dt.rect.W = availableWidth
 					}
-				} else {
-					// For full width text, adjust the width to available space
-					dt.rect.W = availableWidth
 				}
 			}
-		}
-	} else {
-		// Si no es inline, siempre restauramos la posición X al margen izquierdo
-		// independientemente de si el elemento anterior era inline o no
-		dt.doc.SetX(dt.doc.canvas.Margins.alignment.Left)
-		dt.doc.inlineMode = false
-		dt.doc.lastInlineWidth = 0
-	}
-
-	// If not inline or no previous inline width, and not right-aligned inline
-	if (dt.positioning != inlinePosition || dt.doc.lastInlineWidth == 0) &&
-		!(dt.positioning == inlinePosition && isRightAligned) {
-		dt.minimumWidthRequiredForText()
-	}
-
-	// Detect if this is a single line of text
-	textSplits, err := dt.doc.SplitTextWithOption(dt.text, dt.rect.W, dt.opts.breakOption)
-	if err != nil {
-		return err
-	}
-
-	// Get line height in current font and size
-	_, lineHeight, _, err := createContent(dt.doc.Curr.FontISubset, dt.text,
-		dt.doc.Curr.FontSize, dt.doc.Curr.CharSpacing, nil)
-	if err != nil {
-		return err
-	}
-
-	dt.doc.pointsToUnitsVar(&lineHeight)
-
-	// Optimization for single-line text in inline mode - use Cell instead of MultiCell for better positioning
-	isSingleLine := len(textSplits) == 1
-
-	// Calculate total height needed for all lines
-	totalHeight := float64(len(textSplits)) * lineHeight
-
-	// Set the rectangle height to accommodate all text
-	dt.rect.H = totalHeight
-
-	// Skip page break check if we're in header/footer drawing mode
-	if !dt.doc.inHeaderFooterDraw {
-		// Check if the text fits on current page
-		newY := dt.doc.ensureElementFits(totalHeight, dt.style.SpaceAfter)
-		dt.doc.SetY(newY)
-	}
-
-	// Store current X alignment.Alignment to calculate width after drawing
-	startX := dt.doc.GetX()
-
-	// Choose the appropriate drawing method based on text characteristics
-	if isSingleLine && dt.positioning == inlinePosition {
-		// For single-line text in inline mode, use Cell for better positioning
-		err = dt.doc.CellWithOption(dt.rect, dt.text, dt.opts)
-	} else {
-		// For multi-line text or non-inline text, use MultiCell
-		err = dt.doc.MultiCellWithOption(dt.rect, dt.text, dt.opts)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	// Update the last inline width if in inline mode
-	if dt.positioning == inlinePosition {
-		// If not right-aligned, calculate actual width used
-		if !isRightAligned {
-			dt.doc.lastInlineWidth = dt.doc.GetX() - startX
 		} else {
-			// For right-aligned text, use the text width
-			dt.doc.lastInlineWidth = dt.rect.W
+			// Si no es inline, siempre restauramos la posición X al margen izquierdo
+			// independientemente de si el elemento anterior era inline o no
+			dt.doc.SetX(dt.doc.Margins().Left)
+			dt.doc.inlineMode = false
+			dt.doc.lastInlineWidth = 0
 		}
-	} else {
-		dt.doc.lastInlineWidth = 0
+
+		// If not inline or no previous inline width, and not right-aligned inline
+		if (dt.positioning != inlinePosition || dt.doc.lastInlineWidth == 0) &&
+			!(dt.positioning == inlinePosition && isRightAligned) {
+			dt.minimumWidthRequiredForText()
+		}
+
+		// Detect if this is a single line of text
+		textSplits, err := dt.doc.SplitTextWithOption(dt.text, dt.rect.W, dt.opts.BreakOption)
+		if err != nil {
+			return err
+		}
+
+		// Get line height in current font and size
+		_, lineHeight, _, err := pdfengine.CreateContent(dt.doc.CurrentPdf().FontISubset, dt.text,
+			dt.doc.CurrentPdf().FontSize, dt.doc.CurrentPdf().CharSpacing, nil)
+		if err != nil {
+			return err
+		}
+
+		dt.doc.PointsToUnitsVar(&lineHeight)
+
+		// Optimization for single-line text in inline mode - use Cell instead of MultiCell for better positioning
+		isSingleLine := len(textSplits) == 1
+
+		// Calculate total height needed for all lines
+		totalHeight := float64(len(textSplits)) * lineHeight
+
+		// Set the rectangle height to accommodate all text
+		dt.rect.H = totalHeight
+
+		// Skip page break check if we're in header/footer drawing mode
+		if !dt.doc.inHeaderFooterDraw {
+			// Check if the text fits on current page
+			newY := dt.doc.EnsureElementFits(totalHeight, dt.style.SpaceAfter)
+			dt.doc.SetY(newY)
+		}
+
+		// Store current X alignment.Alignment to calculate width after drawing
+		startX := dt.doc.GetX()
+
+		// Choose the appropriate drawing method based on text characteristics
+		if isSingleLine && dt.positioning == inlinePosition {
+			// For single-line text in inline mode, use Cell for better positioning
+			err = dt.doc.CellWithOption(dt.rect, dt.text, dt.opts)
+		} else {
+			// For multi-line text or non-inline text, use MultiCell
+			err = dt.doc.MultiCellWithOption(dt.rect, dt.text, dt.opts)
+		}
+
+		if err != nil {
+			return err
+		}
+
+		// Update the last inline width if in inline mode
+		if dt.positioning == inlinePosition {
+			// If not right-aligned, calculate actual width used
+			if !isRightAligned {
+				dt.doc.lastInlineWidth = dt.doc.GetX() - startX
+			} else {
+				// For right-aligned text, use the text width
+				dt.doc.lastInlineWidth = dt.rect.W
+			}
+		} else {
+			dt.doc.lastInlineWidth = 0
+		}
+
+		// Update inline mode based on current element's positioning
+		dt.doc.inlineMode = (dt.positioning == inlinePosition)
+
+		// If not inline, ensure we do a proper line break
+		if dt.positioning == newlinePosition {
+			dt.doc.newLineBreakBasedOnDefaultFont(dt.doc.GetY())
+		}
 	}
-
-	// Update inline mode based on current element's positioning
-	dt.doc.inlineMode = (dt.positioning == inlinePosition)
-
-	// If not inline, ensure we do a proper line break
-	if dt.positioning == newlinePosition {
-		dt.doc.newLineBreakBasedOnDefaultFont(dt.doc.GetY())
-	}
-
 	return nil
 }
 
@@ -411,7 +412,7 @@ func (doc *Document) newLineBreakBasedOnDefaultFont(originY float64) {
 	var spaceAfter float64
 
 	// Determine which style was used based on font size
-	fontSize := doc.Curr.FontSize
+	fontSize := doc.CurrentPdf().FontSize
 	if fontSize >= doc.fontConfig.Header1.Size {
 		spaceAfter = doc.fontConfig.Header1.SpaceAfter
 	} else if fontSize >= doc.fontConfig.Header2.Size {

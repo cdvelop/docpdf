@@ -11,7 +11,7 @@ type deviceRGBObj struct {
 	getRoot func() *PdfEngine
 }
 
-func (d *deviceRGBObj) init(funcGetRoot func() *PdfEngine) {
+func (d *deviceRGBObj) Init(funcGetRoot func() *PdfEngine) {
 	d.getRoot = funcGetRoot
 }
 
@@ -19,12 +19,12 @@ func (d *deviceRGBObj) protection() *pdfProtection {
 	return d.getRoot().protection()
 }
 
-func (d *deviceRGBObj) getType() string {
+func (d *deviceRGBObj) GetType() string {
 	return "devicergb"
 }
 
 // สร้าง ข้อมูลใน pdf
-func (d *deviceRGBObj) write(w io.Writer, objID int) error {
+func (d *deviceRGBObj) Write(w Writer, objID int) error {
 
 	io.WriteString(w, "<<\n")
 	fmt.Fprintf(w, "/Length %d\n", len(d.data))

@@ -29,7 +29,7 @@ type imageObj struct {
 	log func(args ...any)
 }
 
-func (i *imageObj) init(funcGetRoot func() *PdfEngine) {
+func (i *imageObj) Init(funcGetRoot func() *PdfEngine) {
 	i.log = funcGetRoot().Log
 }
 
@@ -41,7 +41,7 @@ func (i *imageObj) protection() *pdfProtection {
 	return i.pdfProtection
 }
 
-func (i *imageObj) write(w io.Writer, objID int) error {
+func (i *imageObj) Write(w Writer, objID int) error {
 	data := i.imginfo.data
 
 	if i.IsMask {
@@ -115,7 +115,7 @@ func (i *imageObj) createDeviceRGB() (*deviceRGBObj, error) {
 	return &dRGB, nil
 }
 
-func (i *imageObj) getType() string {
+func (i *imageObj) GetType() string {
 	return "Image"
 }
 

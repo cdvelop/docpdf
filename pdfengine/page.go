@@ -28,7 +28,7 @@ func (gp *PdfEngine) AddFooter(f func()) {
 
 // metodo que obteine la estrucutua  tamaño de la pagina
 func (gp *PdfEngine) GetCurrentPageSize() *canvas.Rect {
-	return gp.Curr.pageSize
+	return gp.curr.pageSize
 }
 
 // AddPageWithOption  : add new page with option
@@ -37,20 +37,20 @@ func (gp *PdfEngine) AddPageWithOption(opt PageOption) {
 	opt.PageSize = opt.PageSize.UnitsToPoints(gp.Config.Unit)
 
 	page := new(pageObj)
-	page.init(func() *PdfEngine {
+	page.Init(func() *PdfEngine {
 		return gp
 	})
 
 	if !opt.isEmpty() { //use page option
 		page.setOption(opt)
-		gp.Curr.pageSize = opt.PageSize
+		gp.curr.pageSize = opt.PageSize
 
 		if opt.isTrimBoxSet() {
-			gp.Curr.trimBox = opt.TrimBox
+			gp.curr.trimBox = opt.TrimBox
 		}
 	} else { //use default
-		gp.Curr.pageSize = &gp.Config.PageSize
-		gp.Curr.trimBox = &gp.Config.TrimBox
+		gp.curr.pageSize = &gp.Config.PageSize
+		gp.curr.trimBox = &gp.Config.TrimBox
 	}
 
 	page.ResourcesRelate = strconv.Itoa(gp.indexOfProcSet+1) + " 0 R"
@@ -58,7 +58,7 @@ func (gp *PdfEngine) AddPageWithOption(opt PageOption) {
 	if gp.indexOfFirstPageObj == -1 {
 		gp.indexOfFirstPageObj = index
 	}
-	gp.Curr.IndexOfPageObj = index
+	gp.curr.IndexOfPageObj = index
 
 	gp.NumOfPagesObj++
 
@@ -106,15 +106,15 @@ func (gp *PdfEngine) GetNumberOfPages() int {
 	return gp.NumOfPagesObj
 }
 
-func (p *pagesObj) init(funcGetRoot func() *PdfEngine) {
+func (p *pagesObj) Init(funcGetRoot func() *PdfEngine) {
 	p.PageCount = 0
 	p.getRoot = funcGetRoot
 }
 
-func (p *pagesObj) write(w io.Writer, objID int) error {
+func (p *pagesObj) Write(w Writer, objID int) error {
 
 	io.WriteString(w, "<<\n")
-	fmt.Fprintf(w, "  /Type /%s\n", p.getType())
+	fmt.Fprintf(w, "  /Type /%s\n", p.GetType())
 
 	rootConfig := p.getRoot().Config
 	fmt.Fprintf(w, "  /MediaBox [ 0 0 %0.2f %0.2f ]\n", rootConfig.PageSize.W, rootConfig.PageSize.H)
@@ -124,12 +124,12 @@ func (p *pagesObj) write(w io.Writer, objID int) error {
 	return nil
 }
 
-func (p *pagesObj) getType() string {
+func (p *pagesObj) GetType() string {
 	return "Pages"
 }
 
 func (p *pagesObj) test() {
-	fmt.Print(p.getType() + "\n")
+	fmt.Print(p.GetType() + "\n")
 }
 
 // PageOption option of page
@@ -162,7 +162,7 @@ type pageObj struct { //impl iObj
 	getRoot         func() *PdfEngine
 }
 
-func (p *pageObj) init(funcGetRoot func() *PdfEngine) {
+func (p *pageObj) Init(funcGetRoot func() *PdfEngine) {
 	p.getRoot = funcGetRoot
 	p.LinkObjIds = make([]int, 0)
 }
@@ -171,9 +171,9 @@ func (p *pageObj) setOption(opt PageOption) {
 	p.PageOption = opt
 }
 
-func (p *pageObj) write(w io.Writer, objID int) error {
+func (p *pageObj) Write(w Writer, objID int) error {
 	io.WriteString(w, "<<\n")
-	fmt.Fprintf(w, "  /Type /%s\n", p.getType())
+	fmt.Fprintf(w, "  /Type /%s\n", p.GetType())
 	io.WriteString(w, "  /Parent 2 0 R\n")
 	fmt.Fprintf(w, "  /Resources %s\n", p.ResourcesRelate)
 
@@ -211,7 +211,7 @@ func (p *pageObj) write(w io.Writer, objID int) error {
 	return nil
 }
 
-func (p *pageObj) writeExternalLink(w io.Writer, l linkOption, objID int) error {
+func (p *pageObj) writeExternalLink(w Writer, l linkOption, objID int) error {
 	protection := p.getRoot().protection()
 	url := l.url
 	if protection != nil {
@@ -231,7 +231,7 @@ func (p *pageObj) writeExternalLink(w io.Writer, l linkOption, objID int) error 
 	return err
 }
 
-func (p *pageObj) writeInternalLink(w io.Writer, l linkOption, anchors map[string]anchorOption) error {
+func (p *pageObj) writeInternalLink(w Writer, l linkOption, anchors map[string]anchorOption) error {
 	a, ok := anchors[l.anchor]
 	if !ok {
 		return nil
@@ -241,6 +241,6 @@ func (p *pageObj) writeInternalLink(w io.Writer, l linkOption, anchors map[strin
 	return err
 }
 
-func (p *pageObj) getType() string {
+func (p *pageObj) GetType() string {
 	return "Page"
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/style"
 )
 
 func TestDocumentAPIUsage(t *testing.T) {
@@ -97,7 +98,7 @@ func TestDocumentAPIUsage(t *testing.T) {
 
 	// Justified text
 	doc.AddText("JUSTIFIED TEXT:").Bold().Draw()
-	doc.AddText(multilineText).alignment.Justify().Draw()
+	doc.AddText(multilineText).Justify().Draw()
 
 	// Space between examples
 	doc.SpaceBefore(2)
@@ -129,33 +130,33 @@ func TestDocumentAPIUsage(t *testing.T) {
 	)
 
 	// Customize header style
-	comprehensiveTable.HeaderStyle(CellStyle{
-		BorderStyle: BorderStyle{
-			alignment.Top:    false,
-			alignment.Left:   false,
-			alignment.Bottom: false,
-			alignment.Right:  false,
-			Width:            1.0,
-			RGBColor:         RGBColor{R: 50, G: 50, B: 150},
+	comprehensiveTable.HeaderStyle(style.Cell{
+		Border: style.Border{
+			Top:    false,
+			Left:   false,
+			Bottom: false,
+			Right:  false,
+			Width:  1.0,
+			Color:  style.Color{R: 50, G: 50, B: 150},
 		},
-		FillColor: RGBColor{R: 220, G: 230, B: 255},
-		TextColor: RGBColor{R: 20, G: 20, B: 100},
+		FillColor: style.Color{R: 220, G: 230, B: 255},
+		TextColor: style.Color{R: 20, G: 20, B: 100},
 		Font:      FontBold,
 		FontSize:  12,
 	})
 
 	// Customize cell style
-	comprehensiveTable.CellStyle(CellStyle{
-		BorderStyle: BorderStyle{
-			alignment.Top:    false,
-			alignment.Left:   true,
-			alignment.Bottom: true,
-			alignment.Right:  true,
-			Width:            0.5,
-			RGBColor:         RGBColor{R: 180, G: 180, B: 220},
+	comprehensiveTable.Cell(style.Cell{
+		Border: style.Border{
+			Top:    false,
+			Left:   true,
+			Bottom: true,
+			Right:  true,
+			Width:  0.5,
+			Color:  style.Color{R: 180, G: 180, B: 220},
 		},
-		FillColor: RGBColor{R: 255, G: 255, B: 255},
-		TextColor: RGBColor{R: 50, G: 50, B: 80},
+		FillColor: style.Color{R: 255, G: 255, B: 255},
+		TextColor: style.Color{R: 50, G: 50, B: 80},
 		Font:      FontRegular,
 		FontSize:  11,
 	})
@@ -273,7 +274,7 @@ func TestPageSizeOptions(t *testing.T) {
 			// Custom page size (A4 landscape in mm)
 			canvas.PageSize{Width: 297, Height: 210, Unit: canvas.UnitMM},
 			// Custom canvas.Margins
-			canvas.Margins{alignment.Left: 20, alignment.Top: 15, alignment.Right: 20, alignment.Bottom: 15},
+			canvas.Margins{Left: 20, Top: 15, Right: 20, Bottom: 15},
 		)
 
 		doc.AddText("This document combines custom canvas.PageSize with custom canvas.Margins").Bold().AlignCenter().Draw()

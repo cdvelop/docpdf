@@ -100,7 +100,7 @@ func (gp *PdfEngine) maskHolder(img imageHolder, opts maskOptions) (int, error) 
 	var cacheImage *imageCache
 	var cacheContentImage *cacheContentImage
 
-	for _, imgcache := range gp.Curr.ImgCaches {
+	for _, imgcache := range gp.curr.ImgCaches {
 		if img.ID() == imgcache.Path {
 			cacheImage = &imgcache
 			break
@@ -109,7 +109,7 @@ func (gp *PdfEngine) maskHolder(img imageHolder, opts maskOptions) (int, error) 
 
 	if cacheImage == nil {
 		maskImgobj := &imageObj{IsMask: true}
-		maskImgobj.init(func() *PdfEngine {
+		maskImgobj.Init(func() *PdfEngine {
 			return gp
 		})
 		maskImgobj.setProtection(gp.protection())
@@ -140,12 +140,12 @@ func (gp *PdfEngine) maskHolder(img imageHolder, opts maskOptions) (int, error) 
 				Path:  img.ID(),
 				Rect:  opts.Rect,
 			}
-			gp.Curr.ImgCaches[index] = imgcache
-			gp.Curr.CountOfImg++
+			gp.curr.ImgCaches[index] = imgcache
+			gp.curr.CountOfImg++
 		}
 	} else {
 		if opts.Rect == nil {
-			opts.Rect = gp.Curr.ImgCaches[cacheImage.Index].Rect
+			opts.Rect = gp.curr.ImgCaches[cacheImage.Index].Rect
 		}
 
 		cacheContentImage = gp.getContent().GetCacheContentImage(cacheImage.Index, opts.ImageOptions)
@@ -167,14 +167,14 @@ func (gp *PdfEngine) createTransparencyXObjectGroup(image *cacheContentImage, op
 	bbox := opts.BBox
 	if bbox == nil {
 		bbox = &[4]float64{
-			// correct BBox values is [opts.X, gp.Curr.pageSize.H - opts.Y - opts.canvas.Rect.H, opts.X + opts.canvas.Rect.W, gp.Curr.pageSize.H - opts.Y]
+			// correct BBox values is [opts.X, gp.curr.pageSize.H - opts.Y - opts.canvas.Rect.H, opts.X + opts.canvas.Rect.W, gp.curr.pageSize.H - opts.Y]
 			// but if compress pdf through ghostscript result file can't open correctly in mac viewer, because mac viewer can't parse BBox value correctly
 			// all other viewers parse BBox correctly (like Adobe Acrobat Reader, Chrome, even Internet Explorer)
-			// that's why we need to set [0, 0, gp.Curr.pageSize.W, gp.Curr.pageSize.H]
-			-gp.Curr.pageSize.W * 2,
-			-gp.Curr.pageSize.H * 2,
-			gp.Curr.pageSize.W * 2,
-			gp.Curr.pageSize.H * 2,
+			// that's why we need to set [0, 0, gp.curr.pageSize.W, gp.curr.pageSize.H]
+			-gp.curr.pageSize.W * 2,
+			-gp.curr.pageSize.H * 2,
+			gp.curr.pageSize.W * 2,
+			gp.curr.pageSize.H * 2,
 			// Also, Chrome pdf viewer incorrectly recognize BBox value, that's why we need to set twice as much value
 			// for every mask element will be displayed
 		}
@@ -209,7 +209,7 @@ func (gp *PdfEngine) createTransparencyXObjectGroup(image *cacheContentImage, op
 func (gp *PdfEngine) imageByHolder(img imageHolder, opts ImageOptions) error {
 	cacheImageIndex := -1
 
-	for _, imgcache := range gp.Curr.ImgCaches {
+	for _, imgcache := range gp.curr.ImgCaches {
 		if img.ID() == imgcache.Path {
 			cacheImageIndex = imgcache.Index
 			break
@@ -224,7 +224,7 @@ func (gp *PdfEngine) imageByHolder(img imageHolder, opts ImageOptions) error {
 			imgobj.SplittedMask = true
 		}
 
-		imgobj.init(func() *PdfEngine {
+		imgobj.Init(func() *PdfEngine {
 			return gp
 		})
 		imgobj.setProtection(gp.protection())
@@ -255,8 +255,8 @@ func (gp *PdfEngine) imageByHolder(img imageHolder, opts ImageOptions) error {
 			imgcache.Index = index
 			imgcache.Path = img.ID()
 			imgcache.Rect = opts.Rect
-			gp.Curr.ImgCaches[index] = imgcache
-			gp.Curr.CountOfImg++
+			gp.curr.ImgCaches[index] = imgcache
+			gp.curr.CountOfImg++
 		}
 
 		if imgobj.haveSMask() {
@@ -280,7 +280,7 @@ func (gp *PdfEngine) imageByHolder(img imageHolder, opts ImageOptions) error {
 
 	} else { //same img
 		if opts.Rect == nil {
-			opts.Rect = gp.Curr.ImgCaches[cacheImageIndex].Rect
+			opts.Rect = gp.curr.ImgCaches[cacheImageIndex].Rect
 		}
 
 		gp.getContent().AppendStreamImage(cacheImageIndex, opts)
@@ -288,8 +288,8 @@ func (gp *PdfEngine) imageByHolder(img imageHolder, opts ImageOptions) error {
 	return nil
 }
 
-// drawImageInPdf : draw image in pdf by image content
-func (gp *PdfEngine) drawImageInPdf(imageContent []byte, x float64, y float64, rect *canvas.Rect) error {
+// DrawImageInPdf : draw image in pdf by image content
+func (gp *PdfEngine) DrawImageInPdf(imageContent []byte, x float64, y float64, rect *canvas.Rect) error {
 	gp.UnitsToPointsVar(&x, &y)
 	rect = rect.UnitsToPoints(gp.Config.Unit)
 	imgh, err := ImageHolderByBytes(imageContent)

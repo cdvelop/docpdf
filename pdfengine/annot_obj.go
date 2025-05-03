@@ -2,7 +2,6 @@ package pdfengine
 
 import (
 	"fmt"
-	"io"
 	"strings"
 )
 
@@ -11,14 +10,14 @@ type annotObj struct {
 	GetRoot func() *PdfEngine
 }
 
-func (o annotObj) init(f func() *PdfEngine) {
+func (o annotObj) Init(f func() *PdfEngine) {
 }
 
-func (o annotObj) getType() string {
+func (o annotObj) GetType() string {
 	return "Annot"
 }
 
-func (o annotObj) write(w io.Writer, objID int) error {
+func (o annotObj) Write(w Writer, objID int) error {
 	if o.url != "" {
 		return o.writeExternalLink(w, o.linkOption, objID)
 	} else {
@@ -26,7 +25,7 @@ func (o annotObj) write(w io.Writer, objID int) error {
 	}
 }
 
-func (o annotObj) writeExternalLink(w io.Writer, l linkOption, objID int) error {
+func (o annotObj) writeExternalLink(w Writer, l linkOption, objID int) error {
 	protection := o.GetRoot().protection()
 	url := l.url
 	if protection != nil {
@@ -46,7 +45,7 @@ func (o annotObj) writeExternalLink(w io.Writer, l linkOption, objID int) error 
 	return err
 }
 
-func (o annotObj) writeInternalLink(w io.Writer, l linkOption) error {
+func (o annotObj) writeInternalLink(w Writer, l linkOption) error {
 	a, ok := o.GetRoot().anchors[l.anchor]
 	if !ok {
 		return nil
