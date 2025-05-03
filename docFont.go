@@ -116,7 +116,7 @@ func defaultFontConfig() FontConfig {
 
 		Normal: TextStyle{
 			Size:        11,
-			Color:       style.Color{0, 0, 0, 0},
+			Color:       style.Color{0, 0, 0, 255}, // Color negro opaco (A=255)
 			LineSpacing: 1.15,
 			Alignment:   alignment.Left | alignment.Top,
 			SpaceBefore: 0,
@@ -124,7 +124,7 @@ func defaultFontConfig() FontConfig {
 		},
 		Header1: TextStyle{
 			Size:        16,
-			Color:       style.Color{0, 0, 0, 0},
+			Color:       style.Color{0, 0, 0, 255}, // Color negro opaco (A=255)
 			LineSpacing: 1.5,
 			Alignment:   alignment.Left | alignment.Top,
 			SpaceBefore: 12,
@@ -132,7 +132,7 @@ func defaultFontConfig() FontConfig {
 		},
 		Header2: TextStyle{
 			Size:        14,
-			Color:       style.Color{0, 0, 0, 0},
+			Color:       style.Color{0, 0, 0, 255}, // Color negro opaco (A=255)
 			LineSpacing: 1.3,
 			Alignment:   alignment.Left | alignment.Top,
 			SpaceBefore: 10,
@@ -140,7 +140,7 @@ func defaultFontConfig() FontConfig {
 		},
 		Header3: TextStyle{
 			Size:        12,
-			Color:       style.Color{0, 0, 0, 0},
+			Color:       style.Color{0, 0, 0, 255}, // Color negro opaco (A=255)
 			LineSpacing: 1.2,
 			Alignment:   alignment.Left | alignment.Top,
 			SpaceBefore: 8,
@@ -148,7 +148,7 @@ func defaultFontConfig() FontConfig {
 		},
 		Footnote: TextStyle{
 			Size:        8,
-			Color:       style.Color{128, 128, 128, 0},
+			Color:       style.Color{128, 128, 128, 255}, // Color gris opaco (A=255)
 			LineSpacing: 1.0,
 			Alignment:   alignment.Left | alignment.Top,
 			SpaceBefore: 2,
@@ -156,7 +156,7 @@ func defaultFontConfig() FontConfig {
 		},
 		PageHeader: TextStyle{
 			Size:        9,
-			Color:       style.Color{128, 128, 128, 0},
+			Color:       style.Color{128, 128, 128, 255}, // Color gris opaco (A=255)
 			LineSpacing: 1.0,
 			Alignment:   alignment.Center | alignment.Top,
 			SpaceBefore: 0,
@@ -164,24 +164,25 @@ func defaultFontConfig() FontConfig {
 		},
 		PageFooter: TextStyle{
 			Size:        9,
-			Color:       style.Color{128, 128, 128, 0},
+			Color:       style.Color{128, 128, 128, 255}, // Color gris opaco (A=255)
 			LineSpacing: 1.0,
 			Alignment:   alignment.Right | alignment.Top,
 			SpaceBefore: 2,
 			SpaceAfter:  0,
-		}, ChartLabel: TextStyle{ // Added default chart style
-			Size:        9,                          // Slightly smaller than Normal (11)
-			Color:       style.Color{50, 50, 50, 0}, // Dark Gray, less harsh than black
+		},
+		ChartLabel: TextStyle{ // Added default chart style
+			Size:        9,                            // Slightly smaller than Normal (11)
+			Color:       style.Color{50, 50, 50, 255}, // Dark Gray opaco (A=255)
 			LineSpacing: 1.0,
 			Alignment:   alignment.Left | alignment.Top, // Default alignment, chart might override
 			SpaceBefore: 0,
 			SpaceAfter:  0,
 		},
 		ChartAxisLabel: TextStyle{ // Style for X/Y axis labels
-			Size:        8,                          // Smaller than ChartLabel
-			Color:       style.Color{70, 70, 70, 0}, // Slightly lighter than ChartLabel
+			Size:        8,                            // Smaller than ChartLabel
+			Color:       style.Color{80, 80, 80, 255}, // Medium Gray opaco (A=255)
 			LineSpacing: 1.0,
-			Alignment:   alignment.Center | alignment.Top, // alignment.Center alignment for axes
+			Alignment:   alignment.Left | alignment.Top,
 			SpaceBefore: 0,
 			SpaceAfter:  0,
 		},

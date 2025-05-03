@@ -258,6 +258,7 @@ func (hf *headerFooter) drawContent(content headerFooterContent, x, y, width flo
 
 // SetPageHeader sets the document header
 func (d *Document) SetPageHeader() *headerFooter {
+
 	d.initHeaderFooter()
 	d.header.initialized = true
 	return d.header

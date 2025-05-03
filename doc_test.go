@@ -11,11 +11,19 @@ import (
 )
 
 func TestDocumentAPIUsage(t *testing.T) {
+
+	var erros []error
+	// create func logger for test almacene message ein var errors
+	logger := func(msg any) {
+		if err, ok := msg.(error); ok {
+			erros = append(erros, err)
+		} else {
+			t.Log(msg)
+		}
+	}
+
 	// Create a simple document with FileWriter function
-	doc := NewDocument(func(filename string, data []byte) error {
-		// For testing, we'll write to the specified file
-		return os.WriteFile(filename, data, 0644)
-	})
+	doc := NewDocument(logger)
 
 	// Setup header and footer with the new API
 	doc.SetPageHeader().
@@ -194,24 +202,16 @@ func TestDocumentAPIUsage(t *testing.T) {
 	// add page for checking page header and footer
 	doc.AddPage()
 
-	// Create output directory if it doesn't exist
-	outDir := "test/out"
-	err := os.MkdirAll(outDir, 0755)
-	if err != nil {
-		t.Fatalf("Error creating output directory: %v", err)
-	}
-
-	// Set the output file path
-	outFilePath := filepath.Join(outDir, "doc_test.pdf")
-
 	// Save the document to the specified location
-	err = doc.WritePdf(outFilePath)
-	if err != nil {
+	if err := doc.WritePdf("doc_test.pdf"); err != nil {
 		t.Fatalf("Error writing PDF: %v", err)
 	}
 
-	absPath, _ := filepath.Abs(outFilePath)
-	t.Logf("PDF created successfully at: %s", absPath)
+	// Check for any errors logged during the document creation
+	if len(erros) > 0 {
+		t.Fatalf("Errors occurred during document creation: %v", erros)
+	}
+
 }
 
 func TestPageSizeOptions(t *testing.T) {
