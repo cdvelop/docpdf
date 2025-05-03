@@ -130,7 +130,7 @@ func TestNewDocument(t *testing.T) {
 
 		oneCustomFont := Font{
 			Regular: "LiberationSerif-Regular.ttf", // Use a different name for clarity
-			Path:    "test/res/",
+			Path:    "pdfengine/test/res/",
 		}
 		// Create a document with custom logger
 		doc := NewDocument(func(a ...any) {

@@ -197,15 +197,14 @@ func (p *pageObj) Write(w Writer, objID int) error {
 		me.buffer.WriteString(fmt.Sprintf("      /F%d %d 0 R\n",realte.CountOfFont + 1, realte.IndexOfObj + 1))
 		i++
 	}
-	me.buffer.WriteString("    >>\n")*/
-	//me.buffer.WriteString("  >>\n")
+	me.buffer.WriteString("    >>\n")*/            //me.buffer.WriteString("  >>\n")
 	fmt.Fprintf(w, "  /Contents %s\n", p.Contents) //sample  Contents 8 0 R
 	if !p.PageOption.isEmpty() {
 		fmt.Fprintf(w, " /MediaBox [ 0 0 %0.2f %0.2f ]\n", p.PageOption.PageSize.W, p.PageOption.PageSize.H)
 	}
 	if p.PageOption.isTrimBoxSet() {
 		trimBox := p.PageOption.TrimBox
-		fmt.Fprintf(w, " /TrimBox [ %0.2f %0.2f %0.2f %0.2f ]\n", trimBox.Left, trimBox.Top, trimBox.Right, trimBox.Bottom)
+		fmt.Fprintf(w, " /TrimBox [ %d %d %d %d ]\n", trimBox.Left, trimBox.Top, trimBox.Right, trimBox.Bottom)
 	}
 	io.WriteString(w, ">>\n")
 	return nil

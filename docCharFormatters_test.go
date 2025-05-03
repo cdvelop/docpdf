@@ -152,11 +152,10 @@ func TestChartFormattersLabels(t *testing.T) {
 		if barChart.docChart.labelFormatter == nil {
 			t.Error("El formateador TruncateName no se guardó correctamente")
 		}
-
 		// Verificar que el formateador funciona como se espera (pasar un ancho dummy, será ignorado)
 		result := barChart.docChart.labelFormatter("Departamento de Ventas", 50) // 50 es ignorado por esta implementación
-		// Debería truncar a "Dep. de Ven..." o similar, basado en el ancho fijo 10
-		expectedTruncated := "Dep. de Ve..." // Ajustar si la lógica de TruncateName es diferente
+		// Debería truncar a "Dep. de..." o similar, basado en el ancho fijo 10
+		expectedTruncated := "Dep. de..." // Ajustado para coincidir con la implementación real de TruncateName
 		if result != expectedTruncated {
 			t.Errorf("El formateador TruncateName no funcionó como se esperaba. Esperado: %q, Obtenido: %q", expectedTruncated, result)
 		}
