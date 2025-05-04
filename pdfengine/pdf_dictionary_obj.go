@@ -3,10 +3,9 @@ package pdfengine
 import (
 	"compress/zlib"
 	"fmt"
+	"github.com/cdvelop/docpdf/fontengine"
 	"io"
 	"sort"
-
-	"github.com/cdvelop/docpdf/fontmaker/core"
 )
 
 // entrySelectors entry selectors
@@ -20,7 +19,7 @@ var entrySelectors = []int{
 
 // pdfDictionaryObj pdf dictionary object
 type pdfDictionaryObj struct {
-	PtrToSubsetFontObj *subsetFontObj
+	PtrToSubsetFontObj *ttfSubsetObj
 	//getRoot            func() *PdfEngine
 	pdfProtection *pdfProtection
 }
@@ -79,8 +78,8 @@ func (p *pdfDictionaryObj) GetType() string {
 	return "PdfDictionary"
 }
 
-// SetPtrToSubsetFontObj set subsetFontObj pointer
-func (p *pdfDictionaryObj) SetPtrToSubsetFontObj(ptr *subsetFontObj) {
+// SetPtrToSubsetFontObj set ttfSubsetObj pointer
+func (p *pdfDictionaryObj) SetPtrToSubsetFontObj(ptr *ttfSubsetObj) {
 	p.PtrToSubsetFontObj = ptr
 }
 
@@ -100,7 +99,7 @@ func (p *pdfDictionaryObj) distinctInts(nn []int) []int {
 
 func (p *pdfDictionaryObj) makeGlyfAndLocaTable() ([]byte, []int, error) {
 	ttfp := p.PtrToSubsetFontObj.GetTTFParser()
-	var glyf core.TableDirectoryEntry
+	var glyf core.tableDirectoryEntry
 
 	numGlyphs := int(ttfp.NumGlyphs())
 
@@ -180,7 +179,7 @@ func (p *pdfDictionaryObj) getGlyphData(glyph int) []byte {
 func (p *pdfDictionaryObj) makeFont() ([]byte, error) {
 	var buff buff
 	ttfp := p.PtrToSubsetFontObj.GetTTFParser()
-	tables := make(map[string]core.TableDirectoryEntry)
+	tables := make(map[string]core.tableDirectoryEntry)
 	tables["cvt "] = ttfp.GetTables()["cvt "] //มีช่องว่างด้วยนะ
 	tables["fpgm"] = ttfp.GetTables()["fpgm"]
 	tables["glyf"] = ttfp.GetTables()["glyf"]

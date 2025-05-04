@@ -22,7 +22,7 @@ import (
 // PdfEngine : core library for generating PDF
 type PdfEngine struct {
 	// FileWriter function for custom file writing logic
-	FileWriter FileWriter
+	FileWriter env.FileWriter
 
 	// Page canvas.Margins
 	margins canvas.Margins
@@ -52,7 +52,7 @@ type PdfEngine struct {
 	// Index of procset which should be unique
 	indexOfProcSet int
 
-	// Buffer for io.Reader compliance
+	// Buffer for Reader compliance
 	buf bytes.Buffer
 
 	// PDF protection
@@ -640,7 +640,7 @@ func (gp *PdfEngine) AddTTFFontData(family string, fontData []byte) error {
 
 // AddTTFFontDataWithOption adds font data with option.
 func (gp *PdfEngine) AddTTFFontDataWithOption(family string, fontData []byte, option TtfOption) error {
-	subsetFont := new(subsetFontObj)
+	subsetFont := new(ttfSubsetObj)
 	subsetFont.Init(func() *PdfEngine {
 		return gp
 	})
@@ -654,96 +654,6 @@ func (gp *PdfEngine) AddTTFFontDataWithOption(family string, fontData []byte, op
 	return gp.setSubsetFontObject(subsetFont, family, option)
 }
 
-// AddTTFFontByReader adds font file by reader.
-func (gp *PdfEngine) AddTTFFontByReader(family string, rd io.Reader) error {
-	return gp.AddTTFFontByReaderWithOption(family, rd, defaultTtfFontOption())
-}
-
-// AddTTFFontByReaderWithOption adds font file by reader with option.
-func (gp *PdfEngine) AddTTFFontByReaderWithOption(family string, rd io.Reader, option TtfOption) error {
-	subsetFont := new(subsetFontObj)
-	subsetFont.Init(func() *PdfEngine {
-		return gp
-	})
-	subsetFont.SetTtfFontOption(option)
-	subsetFont.SetFamily(family)
-	err := subsetFont.SetTTFByReader(rd)
-	if err != nil {
-		return err
-	}
-
-	return gp.setSubsetFontObject(subsetFont, family, option)
-}
-
-// setSubsetFontObject sets subsetFontObj.
-// The given subsetFontObj is expected to be configured in advance.
-func (gp *PdfEngine) setSubsetFontObject(subsetFont *subsetFontObj, family string, option TtfOption) error {
-	unicodemap := new(unicodeMap)
-	unicodemap.Init(func() *PdfEngine {
-		return gp
-	})
-	unicodemap.setProtection(gp.protection())
-	unicodemap.SetPtrToSubsetFontObj(subsetFont)
-	unicodeindex := gp.addObj(unicodemap)
-
-	pdfdic := new(pdfDictionaryObj)
-	pdfdic.Init(func() *PdfEngine {
-		return gp
-	})
-	pdfdic.setProtection(gp.protection())
-	pdfdic.SetPtrToSubsetFontObj(subsetFont)
-	pdfdicindex := gp.addObj(pdfdic)
-
-	subfontdesc := new(subfontDescriptorObj)
-	subfontdesc.Init(func() *PdfEngine {
-		return gp
-	})
-	subfontdesc.SetPtrToSubsetFontObj(subsetFont)
-	subfontdesc.SetIndexObjPdfDictionary(pdfdicindex)
-	subfontdescindex := gp.addObj(subfontdesc)
-
-	cidfont := new(cidFontObj)
-	cidfont.Init(func() *PdfEngine {
-		return gp
-	})
-	cidfont.SetPtrToSubsetFontObj(subsetFont)
-	cidfont.SetIndexObjSubfontDescriptor(subfontdescindex)
-	cidindex := gp.addObj(cidfont)
-
-	subsetFont.SetIndexObjCIDFont(cidindex)
-	subsetFont.SetIndexObjUnicodeMap(unicodeindex)
-	index := gp.addObj(subsetFont) //add หลังสุด
-
-	if gp.indexOfProcSet != -1 {
-		procset := gp.pdfObjs[gp.indexOfProcSet].(*procSetObj)
-		if !procset.Relates.IsContainsFamilyAndStyle(family, option.Style&^Underline) {
-			procset.Relates = append(procset.Relates, relateFont{Family: family, IndexOfObj: index, CountOfFont: gp.curr.CountOfFont, Style: option.Style &^ Underline})
-			subsetFont.CountOfFont = gp.curr.CountOfFont
-			gp.curr.CountOfFont++
-		}
-	}
-	return nil
-}
-
-// AddTTFFontWithOption : add font file
-func (gp *PdfEngine) AddTTFFontWithOption(family string, ttfpath string, option TtfOption) error {
-
-	if _, err := os.Stat(ttfpath); os.IsNotExist(err) {
-		return err
-	}
-	data, err := os.ReadFile(ttfpath)
-	if err != nil {
-		return err
-	}
-	rd := bytes.NewReader(data)
-	return gp.AddTTFFontByReaderWithOption(family, rd, option)
-}
-
-// AddTTFFont : add font file
-func (gp *PdfEngine) AddTTFFont(family string, ttfpath string) error {
-	return gp.AddTTFFontWithOption(family, ttfpath, defaultTtfFontOption())
-}
-
 // KernOverride override kern value
 func (gp *PdfEngine) KernOverride(family string, fn funcKernOverride) error {
 	i := 0
@@ -751,7 +661,7 @@ func (gp *PdfEngine) KernOverride(family string, fn funcKernOverride) error {
 	for i < max {
 		if gp.pdfObjs[i].GetType() == subsetFont {
 			obj := gp.pdfObjs[i]
-			sub, ok := obj.(*subsetFontObj)
+			sub, ok := obj.(*ttfSubsetObj)
 			if ok {
 				if sub.GetFamily() == family {
 					sub.funcKernOverride = fn

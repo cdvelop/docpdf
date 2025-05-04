@@ -66,39 +66,6 @@ func (pr *procSetObj) GetType() string {
 	return "ProcSet"
 }
 
-// relateFonts is a slice of relateFont.
-type relateFonts []relateFont
-
-// IsContainsFamily checks if font family exists.
-func (re *relateFonts) IsContainsFamily(family string) bool {
-	for _, rf := range *re {
-		if rf.Family == family {
-			return true
-		}
-	}
-	return false
-}
-
-// IsContainsFamilyAndStyle checks if font with same name and style already exists .
-func (re *relateFonts) IsContainsFamilyAndStyle(family string, style int) bool {
-	for _, rf := range *re {
-		if rf.Family == family && rf.Style == style {
-			return true
-		}
-	}
-	return false
-}
-
-// relateFont is a metadata index for fonts?
-type relateFont struct {
-	Family string
-	//etc /F1
-	CountOfFont int
-	//etc  5 0 R
-	IndexOfObj int
-	Style      int // Regular|Bold|Italic
-}
-
 // relateXobjects is a slice of relateXobject.
 type relateXobjects []relateXobject
 

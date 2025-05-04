@@ -520,7 +520,7 @@ func (this *pdfReader) resolveCompressedObject(objSpec *pdfValue) (*pdfValue, er
 		compressedObj.Stream.Bytes = out.Bytes()
 	}
 
-	// Get io.Reader for bytes
+	// Get Reader for bytes
 	r := bufio.NewReader(bytes.NewBuffer(compressedObj.Stream.Bytes))
 
 	subObjId := 0
@@ -571,7 +571,7 @@ func (this *pdfReader) resolveCompressedObject(objSpec *pdfValue) (*pdfValue, er
 	// Fast forward to the object
 	rs.Seek(seekTo, 0)
 
-	// Create a new io.Reader
+	// Create a new Reader
 	r = bufio.NewReader(rs)
 
 	// Read token

@@ -35,7 +35,7 @@ type cacheContentText struct {
 	charSpacing    float64
 	setXCount      int //จำนวนครั้งที่ใช้ setX
 	x, y           float64
-	fontSubset     *subsetFontObj
+	fontSubset     *ttfSubsetObj
 	pageheight     float64
 	contentType    int
 	cellOpt        CellOption
@@ -310,7 +310,7 @@ func (c *cacheContentText) CreateContent() (float64, float64, error) {
 	return cellWidthPdfUnit, cellHeightPdfUnit, nil
 }
 
-func CreateContent(f *subsetFontObj, text string, fontSize float64, charSpacing float64, rectangle *canvas.Rect) (float64, float64, float64, error) {
+func CreateContent(f *ttfSubsetObj, text string, fontSize float64, charSpacing float64, rectangle *canvas.Rect) (float64, float64, float64, error) {
 
 	unitsPerEm := int(f.ttfp.UnitsPerEm())
 	var leftRune rune
@@ -361,7 +361,7 @@ func CreateContent(f *subsetFontObj, text string, fontSize float64, charSpacing 
 	return cellWidthPdfUnit, cellHeightPdfUnit, textWidthPdfUnit, nil
 }
 
-func kern(f *subsetFontObj, leftRune rune, rightRune rune, leftIndex uint, rightIndex uint) int16 {
+func kern(f *ttfSubsetObj, leftRune rune, rightRune rune, leftIndex uint, rightIndex uint) int16 {
 
 	pairVal := int16(0)
 	if haveKerning, kval := f.KernValueByLeft(leftIndex); haveKerning {
@@ -397,7 +397,7 @@ func (c *cacheContent) Setup(rectangle *canvas.Rect,
 	charSpacing float64,
 	setXCount int, //จำนวนครั้งที่ใช้ setX
 	x, y float64,
-	fontSubset *subsetFontObj,
+	fontSubset *ttfSubsetObj,
 	pageheight float64,
 	contentType int,
 	cellOpt CellOption,

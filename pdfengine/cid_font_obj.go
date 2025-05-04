@@ -8,7 +8,7 @@ import (
 // cidFontObj is a CID-keyed font.
 // cf. https://www.adobe.com/content/dam/acom/en/devnet/font/pdfs/5014.CIDFont_Spec.pdf
 type cidFontObj struct {
-	PtrToSubsetFontObj        *subsetFontObj
+	PtrToSubsetFontObj        *ttfSubsetObj
 	indexObjSubfontDescriptor int
 }
 
@@ -48,6 +48,6 @@ func (ci *cidFontObj) Write(w Writer, objID int) error {
 }
 
 // SetPtrToSubsetFontObj set PtrToSubsetFontObj
-func (ci *cidFontObj) SetPtrToSubsetFontObj(ptr *subsetFontObj) {
+func (ci *cidFontObj) SetPtrToSubsetFontObj(ptr *ttfSubsetObj) {
 	ci.PtrToSubsetFontObj = ptr
 }

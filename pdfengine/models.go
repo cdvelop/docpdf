@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+type Reader interface {
+	Read(p []byte) (n int, err error)
+}
+
 type Writer interface {
 	Write(p []byte) (n int, err error)
 }
@@ -39,7 +43,7 @@ type iObj interface {
 type placeHolderTextInfo struct {
 	indexOfContent   int
 	indexInContent   int
-	fontISubset      *subsetFontObj
+	fontISubset      *ttfSubsetObj
 	placeHolderWidth float64
 	fontSize         float64
 	charSpacing      float64

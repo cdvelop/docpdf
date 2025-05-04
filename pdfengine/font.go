@@ -162,7 +162,7 @@ func (gp *PdfEngine) SetFontWithStyle(family string, style int, size any) error 
 	for i < max {
 		if gp.pdfObjs[i].GetType() == subsetFont {
 			obj := gp.pdfObjs[i]
-			sub, ok := obj.(*subsetFontObj)
+			sub, ok := obj.(*ttfSubsetObj)
 			if ok {
 				if sub.GetFamily() == family && sub.GetTtfFontOption().Style == style&^Underline {
 					gp.curr.FontSize = fontSize

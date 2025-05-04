@@ -5,6 +5,7 @@ import (
 	"io"
 	"strconv"
 
+	"github.com/cdvelop/docpdf/env"
 	"github.com/cdvelop/docpdf/errs"
 )
 
@@ -15,11 +16,8 @@ type (
 	}
 )
 
-// FileWriter is a function type for writing PDF data to a file
-type FileWriter func(filename string, data []byte) error
-
 // SetFileWriter sets a custom function for writing PDF files
-func (gp *PdfEngine) SetFileWriter(writer FileWriter) {
+func (gp *PdfEngine) SetFileWriter(writer env.FileWriter) {
 	gp.FileWriter = writer
 }
 

@@ -136,7 +136,7 @@ func (i *imageObj) SetImagePath(path string) error {
 }
 
 // SetImage set image
-func (i *imageObj) SetImage(r io.Reader) error {
+func (i *imageObj) SetImage(r Reader) error {
 
 	data, err := io.ReadAll(r)
 	if err != nil {

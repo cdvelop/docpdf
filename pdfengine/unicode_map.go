@@ -7,7 +7,7 @@ import (
 
 // unicodeMap unicode map
 type unicodeMap struct {
-	PtrToSubsetFontObj *subsetFontObj
+	PtrToSubsetFontObj *ttfSubsetObj
 	//getRoot            func() *PdfEngine
 	pdfProtection *pdfProtection
 }
@@ -24,8 +24,8 @@ func (u *unicodeMap) protection() *pdfProtection {
 	return u.pdfProtection
 }
 
-// SetPtrToSubsetFontObj set pointer to subsetFontObj
-func (u *unicodeMap) SetPtrToSubsetFontObj(ptr *subsetFontObj) {
+// SetPtrToSubsetFontObj set pointer to ttfSubsetObj
+func (u *unicodeMap) SetPtrToSubsetFontObj(ptr *ttfSubsetObj) {
 	u.PtrToSubsetFontObj = ptr
 }
 

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/cdvelop/docpdf/fontmaker/core"
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
 // subfontDescriptorObj pdf subfont descriptorObj object
 type subfontDescriptorObj struct {
-	PtrToSubsetFontObj    *subsetFontObj
+	PtrToSubsetFontObj    *ttfSubsetObj
 	indexObjPdfDictionary int
 }
 
@@ -49,11 +49,11 @@ func (s *subfontDescriptorObj) SetIndexObjPdfDictionary(index int) {
 }
 
 // SetPtrToSubsetFontObj set SubsetFont pointer
-func (s *subfontDescriptorObj) SetPtrToSubsetFontObj(ptr *subsetFontObj) {
+func (s *subfontDescriptorObj) SetPtrToSubsetFontObj(ptr *ttfSubsetObj) {
 	s.PtrToSubsetFontObj = ptr
 }
 
 // designUnitsToPdf convert unit
 func designUnitsToPdf(val int, unitsPerEm uint) int {
-	return core.Round(float64(float64(val) * 1000.00 / float64(unitsPerEm)))
+	return mathutils.Round(float64(float64(val) * 1000.00 / float64(unitsPerEm)))
 }

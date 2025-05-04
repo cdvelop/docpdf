@@ -20,7 +20,7 @@ type currentPdf struct {
 
 	CharSpacing float64
 
-	FontISubset *subsetFontObj // FontType == CURRENT_FONT_TYPE_SUBSET
+	FontISubset *ttfSubsetObj // FontType == CURRENT_FONT_TYPE_SUBSET
 
 	//page
 	IndexOfPageObj int

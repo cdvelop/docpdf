@@ -17,7 +17,7 @@ import (
 // imageHolder hold image data
 type imageHolder interface {
 	ID() string
-	io.Reader
+	Reader
 }
 
 // imageCache is metadata for caching images.
@@ -360,8 +360,8 @@ func ImageHolderByBytes(b []byte) (imageHolder, error) {
 	return newImageBuff(b)
 }
 
-// imageHolderByReader create imageHolder by io.Reader
-func imageHolderByReader(r io.Reader) (imageHolder, error) {
+// imageHolderByReader create imageHolder by Reader
+func imageHolderByReader(r Reader) (imageHolder, error) {
 	return newImageBuffByReader(r)
 }
 
