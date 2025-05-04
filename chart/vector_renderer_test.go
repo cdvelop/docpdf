@@ -68,9 +68,9 @@ func TestCanvasStyleSVG(t *testing.T) {
 		Padding:     DefaultBackgroundPadding,
 	}
 
-	canvas := &canvas{dpi: DefaultDPI}
+	vCanvas := &vectorCanvas{dpi: DefaultDPI}
 
-	svgString := canvas.styleAsSVG(set)
+	svgString := vCanvas.styleAsSVG(set)
 	testutil.AssertNotEmpty(t, svgString)
 	testutil.AssertTrue(t, strings.HasPrefix(svgString, "style=\""))
 	testutil.AssertTrue(t, strings.Contains(svgString, "stroke:rgba(255,255,255,1.0)"))
@@ -84,34 +84,34 @@ func TestCanvasClassSVG(t *testing.T) {
 		ClassName: "test-class",
 	}
 
-	canvas := &canvas{dpi: DefaultDPI}
+	vCanvas := &vectorCanvas{dpi: DefaultDPI}
 
-	testutil.AssertEqual(t, "class=\"test-class\"", canvas.styleAsSVG(set))
+	testutil.AssertEqual(t, "class=\"test-class\"", vCanvas.styleAsSVG(set))
 }
 
 func TestCanvasCustomInlineStylesheet(t *testing.T) {
 	b := strings.Builder{}
 
-	canvas := &canvas{
+	vCanvas := &vectorCanvas{
 		w:   &b,
 		css: ".background { fill: red }",
 	}
 
-	canvas.Start(200, 200)
+	vCanvas.Start(200, 200)
 
-	testutil.AssertContains(t, b.String(), fmt.Sprintf(`<style type="text/css"><![CDATA[%s]]></style>`, canvas.css))
+	testutil.AssertContains(t, b.String(), fmt.Sprintf(`<style type="text/css"><![CDATA[%s]]></style>`, vCanvas.css))
 }
 
 func TestCanvasCustomInlineStylesheetWithNonce(t *testing.T) {
 	b := strings.Builder{}
 
-	canvas := &canvas{
+	vCanvas := &vectorCanvas{
 		w:     &b,
 		css:   ".background { fill: red }",
 		nonce: "RAND0MSTRING",
 	}
 
-	canvas.Start(200, 200)
+	vCanvas.Start(200, 200)
 
-	testutil.AssertContains(t, b.String(), fmt.Sprintf(`<style type="text/css" nonce="%s"><![CDATA[%s]]></style>`, canvas.nonce, canvas.css))
+	testutil.AssertContains(t, b.String(), fmt.Sprintf(`<style type="text/css" nonce="%s"><![CDATA[%s]]></style>`, vCanvas.nonce, vCanvas.css))
 }

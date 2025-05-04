@@ -3,6 +3,8 @@ package chart
 import (
 	"fmt"
 	"math"
+
+	"github.com/cdvelop/docpdf/canvas"
 )
 
 // MinSeries draws a horizontal line at the minimum value of the inner series.
@@ -44,7 +46,7 @@ func (ms *MinSeries) GetValues(index int) (x, y float64) {
 }
 
 // Render renders the series.
-func (ms *MinSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (ms *MinSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	style := ms.Style.InheritFrom(defaults)
 	Draw.LineSeries(r, canvasBox, xrange, yrange, style, ms)
 }
@@ -110,7 +112,7 @@ func (ms *MaxSeries) GetValues(index int) (x, y float64) {
 }
 
 // Render renders the series.
-func (ms *MaxSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (ms *MaxSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	style := ms.Style.InheritFrom(defaults)
 	Draw.LineSeries(r, canvasBox, xrange, yrange, style, ms)
 }

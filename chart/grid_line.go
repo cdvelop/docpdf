@@ -1,5 +1,7 @@
 package chart
 
+import "github.com/cdvelop/docpdf/canvas"
+
 // GridLineProvider is a type that provides grid lines.
 type GridLineProvider interface {
 	GetGridLines(ticks []Tick, isVertical bool, majorStyle, minorStyle Style) []GridLine
@@ -23,7 +25,7 @@ func (gl GridLine) Minor() bool {
 }
 
 // Render renders the gridline
-func (gl GridLine) Render(r Renderer, canvasBox Box, ra Range, isVertical bool, defaults Style) {
+func (gl GridLine) Render(r Renderer, canvasBox canvas.Box, ra Range, isVertical bool, defaults Style) {
 	r.SetStrokeColor(gl.Style.GetStrokeColor(defaults.GetStrokeColor()))
 	r.SetStrokeWidth(gl.Style.GetStrokeWidth(defaults.GetStrokeWidth()))
 	r.SetStrokeDashArray(gl.Style.GetStrokeDashArray(defaults.GetStrokeDashArray()))

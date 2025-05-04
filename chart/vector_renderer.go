@@ -9,6 +9,7 @@ import (
 
 	"golang.org/x/image/font"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
@@ -18,7 +19,7 @@ import (
 // SVG returns a new png/raster renderer.
 func SVG(width, height int) (Renderer, error) {
 	buffer := bytes.NewBuffer([]byte{})
-	canvas := newCanvas(buffer)
+	canvas := newVectorCanvas(buffer)
 	canvas.Start(width, height)
 	return &vectorRenderer{
 		b:   buffer,
@@ -34,7 +35,7 @@ func SVG(width, height int) (Renderer, error) {
 func SVGWithCSS(css string, nonce string) func(width, height int) (Renderer, error) {
 	return func(width, height int) (Renderer, error) {
 		buffer := bytes.NewBuffer([]byte{})
-		canvas := newCanvas(buffer)
+		canvas := newVectorCanvas(buffer)
 		canvas.css = css
 		canvas.nonce = nonce
 		canvas.Start(width, height)
@@ -52,7 +53,7 @@ func SVGWithCSS(css string, nonce string) func(width, height int) (Renderer, err
 type vectorRenderer struct {
 	dpi float64
 	b   *bytes.Buffer
-	c   *canvas
+	c   *vectorCanvas
 	s   *Style
 	p   []string
 	fc  *font.Drawer
@@ -192,7 +193,7 @@ func (vr *vectorRenderer) Text(body string, x, y int) {
 }
 
 // MeasureText uses the truetype font drawer to measure the width of text.
-func (vr *vectorRenderer) MeasureText(body string) (box Box) {
+func (vr *vectorRenderer) MeasureText(body string) (box canvas.Box) {
 	if vr.s.GetFont() != nil {
 		vr.fc = &font.Drawer{
 			Face: truetype.NewFace(vr.s.GetFont(), &truetype.Options{
@@ -229,14 +230,14 @@ func (vr *vectorRenderer) Save(w io.Writer) error {
 	return err
 }
 
-func newCanvas(w io.Writer) *canvas {
-	return &canvas{
+func newVectorCanvas(w io.Writer) *vectorCanvas {
+	return &vectorCanvas{
 		w:   w,
 		dpi: DefaultDPI,
 	}
 }
 
-type canvas struct {
+type vectorCanvas struct {
 	w         io.Writer
 	dpi       float64
 	textTheta *float64
@@ -246,7 +247,7 @@ type canvas struct {
 	nonce     string
 }
 
-func (c *canvas) Start(width, height int) {
+func (c *vectorCanvas) Start(width, height int) {
 	c.width = width
 	c.height = height
 	c.w.Write([]byte(fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 %d %d">`, c.width, c.height)))
@@ -261,7 +262,7 @@ func (c *canvas) Start(width, height int) {
 	}
 }
 
-func (c *canvas) Path(d string, style Style) {
+func (c *vectorCanvas) Path(d string, style Style) {
 	var strokeDashArrayProperty string
 	if len(style.StrokeDashArray) > 0 {
 		strokeDashArrayProperty = c.getStrokeDashArray(style)
@@ -269,7 +270,7 @@ func (c *canvas) Path(d string, style Style) {
 	c.w.Write([]byte(fmt.Sprintf(`<path %s d="%s" %s/>`, strokeDashArrayProperty, d, c.styleAsSVG(style))))
 }
 
-func (c *canvas) Text(x, y int, body string, style Style) {
+func (c *vectorCanvas) Text(x, y int, body string, style Style) {
 	if c.textTheta == nil {
 		c.w.Write([]byte(fmt.Sprintf(`<text x="%d" y="%d" %s>%s</text>`, x, y, c.styleAsSVG(style), body)))
 	} else {
@@ -278,16 +279,16 @@ func (c *canvas) Text(x, y int, body string, style Style) {
 	}
 }
 
-func (c *canvas) Circle(x, y, r int, style Style) {
+func (c *vectorCanvas) Circle(x, y, r int, style Style) {
 	c.w.Write([]byte(fmt.Sprintf(`<circle cx="%d" cy="%d" r="%d" %s/>`, x, y, r, c.styleAsSVG(style))))
 }
 
-func (c *canvas) End() {
+func (c *vectorCanvas) End() {
 	c.w.Write([]byte("</svg>"))
 }
 
 // getStrokeDashArray returns the stroke-dasharray property of a style.
-func (c *canvas) getStrokeDashArray(s Style) string {
+func (c *vectorCanvas) getStrokeDashArray(s Style) string {
 	if len(s.StrokeDashArray) > 0 {
 		var values []string
 		for _, v := range s.StrokeDashArray {
@@ -299,7 +300,7 @@ func (c *canvas) getStrokeDashArray(s Style) string {
 }
 
 // GetFontFace returns the font face for the style.
-func (c *canvas) getFontFace(s Style) string {
+func (c *vectorCanvas) getFontFace(s Style) string {
 	family := "sans-serif"
 	if s.GetFont() != nil {
 		name := s.GetFont().Name(truetype.NameIDFontFamily)
@@ -311,7 +312,7 @@ func (c *canvas) getFontFace(s Style) string {
 }
 
 // styleAsSVG returns the style as a svg style or class string.
-func (c *canvas) styleAsSVG(s Style) string {
+func (c *vectorCanvas) styleAsSVG(s Style) string {
 	sw := s.StrokeWidth
 	sc := s.StrokeColor
 	fc := s.FillColor

@@ -1,6 +1,10 @@
 package chart
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/cdvelop/docpdf/canvas"
+)
 
 // HistogramSeries is a special type of series that draws as a histogram.
 // Some peculiarities; it will always be lower bounded at 0 (at the very least).
@@ -53,7 +57,7 @@ func (hs HistogramSeries) GetBoundedValues(index int) (x, y1, y2 float64) {
 }
 
 // Render implements Series.Render.
-func (hs HistogramSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (hs HistogramSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	style := hs.Style.InheritFrom(defaults)
 	Draw.HistogramSeries(r, canvasBox, xrange, yrange, style, hs)
 }

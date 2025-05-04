@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart"
 )
 
@@ -94,7 +95,7 @@ func drawChart(log chart.Logger) http.HandlerFunc {
 			Width:  1280,
 			Height: 720,
 			Background: chart.Style{
-				Padding: chart.Box{
+				Padding: canvas.Box{
 					Top: 50,
 				},
 			},

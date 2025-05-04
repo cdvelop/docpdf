@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart/testutil"
 	"github.com/cdvelop/docpdf/style"
 )
@@ -227,7 +228,7 @@ func TestChartGetDefaultCanvasBox(t *testing.T) {
 
 	custom := Chart{
 		Background: Style{
-			Padding: Box{
+			Padding: canvas.Box{
 				Top:    DefaultBackgroundPadding.Top + 1,
 				Left:   DefaultBackgroundPadding.Left + 1,
 				Right:  DefaultBackgroundPadding.Right + 1,
@@ -490,10 +491,10 @@ func TestChartE2ELine(t *testing.T) {
 		YAxis:          HideYAxis(),
 		YAxisSecondary: HideYAxis(),
 		Canvas: Style{
-			Padding: BoxZero,
+			Padding: canvas.BoxZero,
 		},
 		Background: Style{
-			Padding: BoxZero,
+			Padding: canvas.BoxZero,
 		},
 		Series: []Series{
 			ContinuousSeries{
@@ -532,10 +533,10 @@ func TestChartE2ELineWithFill(t *testing.T) {
 		Height: 50,
 		Width:  50,
 		Canvas: Style{
-			Padding: BoxZero,
+			Padding: canvas.BoxZero,
 		},
 		Background: Style{
-			Padding: BoxZero,
+			Padding: canvas.BoxZero,
 		},
 		TitleStyle:     Hidden(),
 		XAxis:          HideXAxis(),

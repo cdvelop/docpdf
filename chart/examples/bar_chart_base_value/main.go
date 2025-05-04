@@ -5,6 +5,7 @@ package main
 import (
 	"os"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/style"
 )
@@ -25,7 +26,7 @@ func main() {
 	sbc := chart.BarChart{
 		Title: "Bar Chart Using BaseValue",
 		Background: chart.Style{
-			Padding: chart.Box{
+			Padding: canvas.Box{
 				Top: 40,
 			},
 		},

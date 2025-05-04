@@ -3,6 +3,7 @@ package chart
 import (
 	"math"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/mathutils"
 )
 
@@ -90,7 +91,7 @@ func (ya YAxis) GetGridLines(ticks []Tick) []GridLine {
 }
 
 // Measure returns the bounds of the axis.
-func (ya YAxis) Measure(r Renderer, canvasBox Box, ra Range, defaults Style, ticks []Tick) Box {
+func (ya YAxis) Measure(r Renderer, canvasBox canvas.Box, ra Range, defaults Style, ticks []Tick) canvas.Box {
 	var tx int
 	if ya.AxisType == YAxisPrimary {
 		tx = canvasBox.Right + DefaultYAxisMargin
@@ -130,7 +131,7 @@ func (ya YAxis) Measure(r Renderer, canvasBox Box, ra Range, defaults Style, tic
 		maxx += (DefaultYAxisMargin + maxTextHeight)
 	}
 
-	return Box{
+	return canvas.Box{
 		Top:    miny,
 		Left:   minx,
 		Right:  maxx,
@@ -139,7 +140,7 @@ func (ya YAxis) Measure(r Renderer, canvasBox Box, ra Range, defaults Style, tic
 }
 
 // Render renders the axis.
-func (ya YAxis) Render(r Renderer, canvasBox Box, ra Range, defaults Style, ticks []Tick) {
+func (ya YAxis) Render(r Renderer, canvasBox canvas.Box, ra Range, defaults Style, ticks []Tick) {
 	tickStyle := ya.TickStyle.InheritFrom(ya.Style.InheritFrom(defaults))
 	tickStyle.WriteToRenderer(r)
 

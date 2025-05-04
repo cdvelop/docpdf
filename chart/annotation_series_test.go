@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"testing"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart/testutil"
 	"github.com/cdvelop/docpdf/style"
 )
@@ -37,7 +38,7 @@ func TestAnnotationSeriesMeasure(t *testing.T) {
 		Domain: 100,
 	}
 
-	cb := Box{
+	cb := canvas.Box{
 		Top:    5,
 		Left:   5,
 		Right:  105,
@@ -89,7 +90,7 @@ func TestAnnotationSeriesRender(t *testing.T) {
 		Domain: 100,
 	}
 
-	cb := Box{
+	cb := canvas.Box{
 		Top:    5,
 		Left:   5,
 		Right:  105,

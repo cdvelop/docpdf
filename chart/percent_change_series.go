@@ -1,6 +1,9 @@
 package chart
 
-import "github.com/cdvelop/docpdf/mathutils"
+import (
+	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/mathutils"
+)
 
 // Interface Assertions.
 var (
@@ -80,7 +83,7 @@ func (pcs PercentChangeSeries) GetLastValues() (x, y float64) {
 }
 
 // Render renders the series.
-func (pcs PercentChangeSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (pcs PercentChangeSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	style := pcs.Style.InheritFrom(defaults)
 	Draw.LineSeries(r, canvasBox, xrange, yrange, style, pcs)
 }

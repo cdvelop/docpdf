@@ -3,6 +3,7 @@ package chart
 import (
 	"math"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/mathutils"
 )
 
@@ -85,7 +86,7 @@ func (xa XAxis) GetGridLines(ticks []Tick) []GridLine {
 }
 
 // Measure returns the bounds of the axis.
-func (xa XAxis) Measure(r Renderer, canvasBox Box, ra Range, defaults Style, ticks []Tick) Box {
+func (xa XAxis) Measure(r Renderer, canvasBox canvas.Box, ra Range, defaults Style, ticks []Tick) canvas.Box {
 	tickStyle := xa.TickStyle.InheritFrom(xa.Style.InheritFrom(defaults))
 
 	tp := xa.GetTickPosition()
@@ -122,7 +123,7 @@ func (xa XAxis) Measure(r Renderer, canvasBox Box, ra Range, defaults Style, tic
 		bottom += DefaultXAxisMargin + tb.Height()
 	}
 
-	return Box{
+	return canvas.Box{
 		Top:    canvasBox.Bottom,
 		Left:   left,
 		Right:  right,
@@ -131,7 +132,7 @@ func (xa XAxis) Measure(r Renderer, canvasBox Box, ra Range, defaults Style, tic
 }
 
 // Render renders the axis
-func (xa XAxis) Render(r Renderer, canvasBox Box, ra Range, defaults Style, ticks []Tick) {
+func (xa XAxis) Render(r Renderer, canvasBox canvas.Box, ra Range, defaults Style, ticks []Tick) {
 	tickStyle := xa.TickStyle.InheritFrom(xa.Style.InheritFrom(defaults))
 
 	tickStyle.GetStrokeOptions().WriteToRenderer(r)
@@ -174,7 +175,7 @@ func (xa XAxis) Render(r Renderer, canvasBox Box, ra Range, defaults Style, tick
 				ltx := canvasBox.Left + llx
 				finalTickStyle := tickWithAxisStyle.InheritFrom(Style{TextHorizontalAlign: TextHorizontalAlignCenter})
 
-				Draw.TextWithin(r, t.Label, Box{
+				Draw.TextWithin(r, t.Label, canvas.Box{
 					Left:   ltx,
 					Right:  tx,
 					Top:    canvasBox.Bottom + DefaultXAxisMargin,

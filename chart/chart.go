@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
 )
@@ -28,8 +29,7 @@ type Chart struct {
 	YAxis          YAxis
 	YAxisSecondary YAxis
 
-	Font        *truetype.Font
-	defaultFont *truetype.Font
+	Font *truetype.Font
 
 	Series   []Series
 	Elements []Renderable
@@ -50,9 +50,6 @@ func (c Chart) GetDPI(defaults ...float64) float64 {
 
 // GetFont returns the text font.
 func (c Chart) GetFont() *truetype.Font {
-	if c.Font == nil {
-		return c.defaultFont
-	}
 	return c.Font
 }
 
@@ -93,7 +90,7 @@ func (c Chart) Render(rp RendererProvider, w io.Writer) error {
 		if err != nil {
 			return err
 		}
-		c.defaultFont = defaultFont
+		c.Font = defaultFont
 	}
 	r.SetDPI(c.GetDPI(DefaultDPI))
 
@@ -339,7 +336,7 @@ func (c Chart) checkRanges(xr, yr, yra Range) error {
 	return nil
 }
 
-func (c Chart) getDefaultCanvasBox() Box {
+func (c Chart) getDefaultCanvasBox() canvas.Box {
 	return c.Box()
 }
 
@@ -385,7 +382,7 @@ func (c Chart) getAxesTicks(r Renderer, xr, yr, yar Range, xf, yf, yfa ValueForm
 	return
 }
 
-func (c Chart) getAxesAdjustedCanvasBox(r Renderer, canvasBox Box, xr, yr, yra Range, xticks, yticks, yticksAlt []Tick) Box {
+func (c Chart) getAxesAdjustedCanvasBox(r Renderer, canvasBox canvas.Box, xr, yr, yra Range, xticks, yticks, yticksAlt []Tick) canvas.Box {
 	axesOuterBox := canvasBox.Clone()
 	if !c.XAxis.Style.Hidden {
 		axesBounds := c.XAxis.Measure(r, canvasBox, xr, c.styleDefaultsAxes(), xticks)
@@ -406,7 +403,7 @@ func (c Chart) getAxesAdjustedCanvasBox(r Renderer, canvasBox Box, xr, yr, yra R
 	return canvasBox.OuterConstrain(c.Box(), axesOuterBox)
 }
 
-func (c Chart) setRangeDomains(canvasBox Box, xr, yr, yra Range) (Range, Range, Range) {
+func (c Chart) setRangeDomains(canvasBox canvas.Box, xr, yr, yra Range) (Range, Range, Range) {
 	xr.SetDomain(canvasBox.Width())
 	yr.SetDomain(canvasBox.Height())
 	yra.SetDomain(canvasBox.Height())
@@ -433,13 +430,13 @@ func (c Chart) hasSecondarySeries() bool {
 	return false
 }
 
-func (c Chart) getAnnotationAdjustedCanvasBox(r Renderer, canvasBox Box, xr, yr, yra Range, xf, yf, yfa ValueFormatter) Box {
+func (c Chart) getAnnotationAdjustedCanvasBox(r Renderer, canvasBox canvas.Box, xr, yr, yra Range, xf, yf, yfa ValueFormatter) canvas.Box {
 	annotationSeriesBox := canvasBox.Clone()
 	for seriesIndex, s := range c.Series {
 		if as, isAnnotationSeries := s.(AnnotationSeries); isAnnotationSeries {
 			if !as.GetStyle().Hidden {
 				style := c.styleDefaultsSeries(seriesIndex)
-				var annotationBounds Box
+				var annotationBounds canvas.Box
 				if as.YAxis == YAxisPrimary {
 					annotationBounds = as.Measure(r, canvasBox, xr, yr, style)
 				} else if as.YAxis == YAxisSecondary {
@@ -459,7 +456,7 @@ func (c Chart) getBackgroundStyle() Style {
 }
 
 func (c Chart) drawBackground(r Renderer) {
-	Draw.Box(r, Box{
+	Draw.Box(r, canvas.Box{
 		Right:  c.GetWidth(),
 		Bottom: c.GetHeight(),
 	}, c.getBackgroundStyle())
@@ -469,11 +466,11 @@ func (c Chart) getCanvasStyle() Style {
 	return c.Canvas.InheritFrom(c.styleDefaultsCanvas())
 }
 
-func (c Chart) drawCanvas(r Renderer, canvasBox Box) {
+func (c Chart) drawCanvas(r Renderer, canvasBox canvas.Box) {
 	Draw.Box(r, canvasBox, c.getCanvasStyle())
 }
 
-func (c Chart) drawAxes(r Renderer, canvasBox Box, xrange, yrange, yrangeAlt Range, xticks, yticks, yticksAlt []Tick) {
+func (c Chart) drawAxes(r Renderer, canvasBox canvas.Box, xrange, yrange, yrangeAlt Range, xticks, yticks, yticksAlt []Tick) {
 	if !c.XAxis.Style.Hidden {
 		c.XAxis.Render(r, canvasBox, xrange, c.styleDefaultsAxes(), xticks)
 	}
@@ -485,7 +482,7 @@ func (c Chart) drawAxes(r Renderer, canvasBox Box, xrange, yrange, yrangeAlt Ran
 	}
 }
 
-func (c Chart) drawSeries(r Renderer, canvasBox Box, xrange, yrange, yrangeAlt Range, s Series, seriesIndex int) {
+func (c Chart) drawSeries(r Renderer, canvasBox canvas.Box, xrange, yrange, yrangeAlt Range, s Series, seriesIndex int) {
 	if !s.GetStyle().Hidden {
 		if s.GetYAxis() == YAxisPrimary {
 			s.Render(r, canvasBox, xrange, yrange, c.styleDefaultsSeries(seriesIndex))
@@ -564,12 +561,12 @@ func (c Chart) GetColorPalette() ColorPalette {
 	return DefaultColorPalette
 }
 
-// Box returns the chart bounds as a box.
-func (c Chart) Box() Box {
+// canvas.Box returns the chart bounds as a box.
+func (c Chart) Box() canvas.Box {
 	dpr := c.Background.Padding.GetRight(DefaultBackgroundPadding.Right)
 	dpb := c.Background.Padding.GetBottom(DefaultBackgroundPadding.Bottom)
 
-	return Box{
+	return canvas.Box{
 		Top:    c.Background.Padding.GetTop(DefaultBackgroundPadding.Top),
 		Left:   c.Background.Padding.GetLeft(DefaultBackgroundPadding.Left),
 		Right:  c.GetWidth() - dpr,

@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart"
 )
 
@@ -115,7 +116,7 @@ func main() {
 
 	graph := chart.Chart{
 		Background: chart.Style{
-			Padding: chart.Box{
+			Padding: canvas.Box{
 				Top: 50,
 			},
 		},

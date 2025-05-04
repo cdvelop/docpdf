@@ -1,13 +1,14 @@
 package chart
 
 import (
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/mathutils"
 	"github.com/cdvelop/docpdf/style"
 )
 
 // Legend returns a legend renderable function.
 func Legend(c *Chart, userDefaults ...Style) Renderable {
-	return func(r Renderer, cb Box, chartDefaults Style) {
+	return func(r Renderer, cb canvas.Box, chartDefaults Style) {
 		legendDefaults := Style{
 			FillColor:   style.ColorWhite,
 			FontColor:   DefaultTextColor,
@@ -24,7 +25,7 @@ func Legend(c *Chart, userDefaults ...Style) Renderable {
 		}
 
 		// DEFAULTS
-		legendPadding := Box{
+		legendPadding := canvas.Box{
 			Top:    5,
 			Left:   5,
 			Right:  5,
@@ -44,13 +45,13 @@ func Legend(c *Chart, userDefaults ...Style) Renderable {
 			}
 		}
 
-		legend := Box{
+		legend := canvas.Box{
 			Top:  cb.Top,
 			Left: cb.Left,
 			// bottom and right will be sized by the legend content + relevant padding.
 		}
 
-		legendContent := Box{
+		legendContent := canvas.Box{
 			Top:    legend.Top + legendPadding.Top,
 			Left:   legend.Left + legendPadding.Left,
 			Right:  legend.Left + legendPadding.Left,
@@ -121,14 +122,14 @@ func Legend(c *Chart, userDefaults ...Style) Renderable {
 
 // LegendThin is a legend that doesn't obscure the chart area.
 func LegendThin(c *Chart, userDefaults ...Style) Renderable {
-	return func(r Renderer, cb Box, chartDefaults Style) {
+	return func(r Renderer, cb canvas.Box, chartDefaults Style) {
 		legendDefaults := Style{
 			FillColor:   style.ColorWhite,
 			FontColor:   DefaultTextColor,
 			FontSize:    8.0,
 			StrokeColor: DefaultAxisColor,
 			StrokeWidth: DefaultAxisLineWidth,
-			Padding: Box{
+			Padding: canvas.Box{
 				Top:    2,
 				Left:   7,
 				Right:  7,
@@ -160,7 +161,7 @@ func LegendThin(c *Chart, userDefaults ...Style) Renderable {
 
 		var textHeight int
 		var textWidth int
-		var textBox Box
+		var textBox canvas.Box
 		for x := 0; x < len(labels); x++ {
 			if len(labels[x]) > 0 {
 				textBox = r.MeasureText(labels[x])
@@ -173,7 +174,7 @@ func LegendThin(c *Chart, userDefaults ...Style) Renderable {
 		chartPadding := cb.Top
 		legendYMargin := (chartPadding - legendBoxHeight) >> 1
 
-		legendBox := Box{
+		legendBox := canvas.Box{
 			Left:   cb.Left,
 			Right:  cb.Right,
 			Top:    legendYMargin,
@@ -219,7 +220,7 @@ func LegendThin(c *Chart, userDefaults ...Style) Renderable {
 
 // LegendLeft is a legend that is designed for longer series lists.
 func LegendLeft(c *Chart, userDefaults ...Style) Renderable {
-	return func(r Renderer, cb Box, chartDefaults Style) {
+	return func(r Renderer, cb canvas.Box, chartDefaults Style) {
 		legendDefaults := Style{
 			FillColor:   style.ColorWhite,
 			FontColor:   DefaultTextColor,
@@ -236,7 +237,7 @@ func LegendLeft(c *Chart, userDefaults ...Style) Renderable {
 		}
 
 		// DEFAULTS
-		legendPadding := Box{
+		legendPadding := canvas.Box{
 			Top:    5,
 			Left:   5,
 			Right:  5,
@@ -256,13 +257,13 @@ func LegendLeft(c *Chart, userDefaults ...Style) Renderable {
 			}
 		}
 
-		legend := Box{
+		legend := canvas.Box{
 			Top:  5,
 			Left: 5,
 			// bottom and right will be sized by the legend content + relevant padding.
 		}
 
-		legendContent := Box{
+		legendContent := canvas.Box{
 			Top:    legend.Top + legendPadding.Top,
 			Left:   legend.Left + legendPadding.Left,
 			Right:  legend.Left + legendPadding.Left,

@@ -3,6 +3,7 @@ package chart
 import (
 	"testing"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart/testutil"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/style"
@@ -117,7 +118,7 @@ func TestStyleGetPadding(t *testing.T) {
 	set := Style{Padding: DefaultBackgroundPadding}
 	testutil.AssertFalse(t, set.GetPadding().IsZero())
 	testutil.AssertEqual(t, DefaultBackgroundPadding, set.GetPadding())
-	testutil.AssertEqual(t, DefaultBackgroundPadding, set.GetPadding(Box{
+	testutil.AssertEqual(t, DefaultBackgroundPadding, set.GetPadding(canvas.Box{
 		Top:    DefaultBackgroundPadding.Top + 1,
 		Left:   DefaultBackgroundPadding.Left + 1,
 		Right:  DefaultBackgroundPadding.Right + 1,

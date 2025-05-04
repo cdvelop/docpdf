@@ -3,6 +3,7 @@ package chart
 import (
 	"io"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/style"
 )
@@ -76,7 +77,7 @@ type Renderer interface {
 	Text(body string, x, y int)
 
 	// MeasureText measures text.
-	MeasureText(body string) Box
+	MeasureText(body string) canvas.Box
 
 	// SetTextRotatation sets a rotation for drawing elements.
 	SetTextRotation(radians float64)

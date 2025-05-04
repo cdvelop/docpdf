@@ -3,6 +3,7 @@ package chart
 import (
 	"math"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/mathutils"
 )
 
@@ -14,7 +15,7 @@ var (
 type draw struct{}
 
 // LineSeries draws a line series with a renderer.
-func (d draw) LineSeries(r Renderer, canvasBox Box, xrange, yrange Range, style Style, vs ValuesProvider) {
+func (d draw) LineSeries(r Renderer, canvasBox canvas.Box, xrange, yrange Range, style Style, vs ValuesProvider) {
 	if vs.Len() == 0 {
 		return
 	}
@@ -87,7 +88,7 @@ func (d draw) LineSeries(r Renderer, canvasBox Box, xrange, yrange Range, style 
 }
 
 // BoundedSeries draws a series that implements BoundedValuesProvider.
-func (d draw) BoundedSeries(r Renderer, canvasBox Box, xrange, yrange Range, style Style, bbs BoundedValuesProvider, drawOffsetIndexes ...int) {
+func (d draw) BoundedSeries(r Renderer, canvasBox canvas.Box, xrange, yrange Range, style Style, bbs BoundedValuesProvider, drawOffsetIndexes ...int) {
 	drawOffsetIndex := 0
 	if len(drawOffsetIndexes) > 0 {
 		drawOffsetIndex = drawOffsetIndexes[0]
@@ -137,7 +138,7 @@ func (d draw) BoundedSeries(r Renderer, canvasBox Box, xrange, yrange Range, sty
 }
 
 // HistogramSeries draws a value provider as boxes from 0.
-func (d draw) HistogramSeries(r Renderer, canvasBox Box, xrange, yrange Range, style Style, vs ValuesProvider, barWidths ...int) {
+func (d draw) HistogramSeries(r Renderer, canvasBox canvas.Box, xrange, yrange Range, style Style, vs ValuesProvider, barWidths ...int) {
 	if vs.Len() == 0 {
 		return
 	}
@@ -159,7 +160,7 @@ func (d draw) HistogramSeries(r Renderer, canvasBox Box, xrange, yrange Range, s
 		x := cl + xrange.Translate(vx)
 		y := yrange.Translate(vy)
 
-		d.Box(r, Box{
+		d.Box(r, canvas.Box{
 			Top:    cb - y0,
 			Left:   x - (barWidth >> 1),
 			Right:  x + (barWidth >> 1),
@@ -169,7 +170,7 @@ func (d draw) HistogramSeries(r Renderer, canvasBox Box, xrange, yrange Range, s
 }
 
 // MeasureAnnotation measures how big an annotation would be.
-func (d draw) MeasureAnnotation(r Renderer, canvasBox Box, style Style, lx, ly int, label string) Box {
+func (d draw) MeasureAnnotation(r Renderer, canvasBox canvas.Box, style Style, lx, ly int, label string) canvas.Box {
 	style.WriteToRenderer(r)
 	defer r.ResetStyle()
 
@@ -189,7 +190,7 @@ func (d draw) MeasureAnnotation(r Renderer, canvasBox Box, style Style, lx, ly i
 	right := lx + pl + pr + textWidth + DefaultAnnotationDeltaWidth + int(strokeWidth)
 	bottom := ly + (pb + halfTextHeight)
 
-	return Box{
+	return canvas.Box{
 		Top:    top,
 		Left:   lx,
 		Right:  right,
@@ -198,7 +199,7 @@ func (d draw) MeasureAnnotation(r Renderer, canvasBox Box, style Style, lx, ly i
 }
 
 // Annotation draws an anotation with a renderer.
-func (d draw) Annotation(r Renderer, canvasBox Box, style Style, lx, ly int, label string) {
+func (d draw) Annotation(r Renderer, canvasBox canvas.Box, style Style, lx, ly int, label string) {
 	style.GetTextOptions().WriteToRenderer(r)
 	defer r.ResetStyle()
 
@@ -241,8 +242,8 @@ func (d draw) Annotation(r Renderer, canvasBox Box, style Style, lx, ly int, lab
 	r.Text(label, textX, textY)
 }
 
-// Box draws a box with a given style.
-func (d draw) Box(r Renderer, b Box, s Style) {
+// canvas.Box draws a box with a given style.
+func (d draw) Box(r Renderer, b canvas.Box, s Style) {
 	s.GetFillAndStrokeOptions().WriteToRenderer(r)
 	defer r.ResetStyle()
 
@@ -254,11 +255,11 @@ func (d draw) Box(r Renderer, b Box, s Style) {
 	r.FillStroke()
 }
 
-func (d draw) BoxRotated(r Renderer, b Box, thetaDegrees float64, s Style) {
+func (d draw) BoxRotated(r Renderer, b canvas.Box, thetaDegrees float64, s Style) {
 	d.BoxCorners(r, b.Corners().Rotate(thetaDegrees), s)
 }
 
-func (d draw) BoxCorners(r Renderer, bc BoxCorners, s Style) {
+func (d draw) BoxCorners(r Renderer, bc canvas.BoxCorners, s Style) {
 	s.GetFillAndStrokeOptions().WriteToRenderer(r)
 	defer r.ResetStyle()
 
@@ -278,7 +279,7 @@ func (d draw) Text(r Renderer, text string, x, y int, style Style) {
 	r.Text(text, x, y)
 }
 
-func (d draw) MeasureText(r Renderer, text string, style Style) Box {
+func (d draw) MeasureText(r Renderer, text string, style Style) canvas.Box {
 	style.GetTextOptions().WriteToRenderer(r)
 	defer r.ResetStyle()
 
@@ -286,7 +287,7 @@ func (d draw) MeasureText(r Renderer, text string, style Style) Box {
 }
 
 // TextWithin draws the text within a given box.
-func (d draw) TextWithin(r Renderer, text string, box Box, style Style) {
+func (d draw) TextWithin(r Renderer, text string, box canvas.Box, style Style) {
 	style.GetTextOptions().WriteToRenderer(r)
 	defer r.ResetStyle()
 

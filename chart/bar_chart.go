@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
 )
@@ -34,8 +35,7 @@ type BarChart struct {
 	UseBaseValue bool
 	BaseValue    float64
 
-	Font        *truetype.Font
-	defaultFont *truetype.Font
+	Font *truetype.Font
 
 	Bars     []Value
 	Elements []Renderable
@@ -52,9 +52,6 @@ func (bc BarChart) GetDPI() float64 {
 
 // GetFont returns the text font.
 func (bc BarChart) GetFont() *truetype.Font {
-	if bc.Font == nil {
-		return bc.defaultFont
-	}
 	return bc.Font
 }
 
@@ -106,13 +103,13 @@ func (bc BarChart) Render(rp RendererProvider, w io.Writer) error {
 		if err != nil {
 			return err
 		}
-		bc.defaultFont = defaultFont
+		bc.Font = defaultFont
 	}
 	r.SetDPI(bc.GetDPI())
 
 	bc.drawBackground(r)
 
-	var canvasBox Box
+	var canvasBox canvas.Box
 	var yt []Tick
 	var yr Range
 	var yf ValueFormatter
@@ -143,7 +140,7 @@ func (bc BarChart) Render(rp RendererProvider, w io.Writer) error {
 	return r.Save(w)
 }
 
-func (bc BarChart) drawCanvas(r Renderer, canvasBox Box) {
+func (bc BarChart) drawCanvas(r Renderer, canvasBox canvas.Box) {
 	Draw.Box(r, canvasBox, bc.getCanvasStyle())
 }
 
@@ -183,19 +180,19 @@ func (bc BarChart) getRanges() Range {
 }
 
 func (bc BarChart) drawBackground(r Renderer) {
-	Draw.Box(r, Box{
+	Draw.Box(r, canvas.Box{
 		Right:  bc.GetWidth(),
 		Bottom: bc.GetHeight(),
 	}, bc.getBackgroundStyle())
 }
 
-func (bc BarChart) drawBars(r Renderer, canvasBox Box, yr Range) {
+func (bc BarChart) drawBars(r Renderer, canvasBox canvas.Box, yr Range) {
 	xoffset := canvasBox.Left
 
 	width, spacing, _ := bc.calculateScaledTotalWidth(canvasBox)
 	bs2 := spacing >> 1
 
-	var barBox Box
+	var barBox canvas.Box
 	var bxl, bxr, by int
 	for index, bar := range bc.Bars {
 		bxl = xoffset + bs2
@@ -204,14 +201,14 @@ func (bc BarChart) drawBars(r Renderer, canvasBox Box, yr Range) {
 		by = canvasBox.Bottom - yr.Translate(bar.Value)
 
 		if bc.UseBaseValue {
-			barBox = Box{
+			barBox = canvas.Box{
 				Top:    by,
 				Left:   bxl,
 				Right:  bxr,
 				Bottom: canvasBox.Bottom - yr.Translate(bc.BaseValue),
 			}
 		} else {
-			barBox = Box{
+			barBox = canvas.Box{
 				Top:    by,
 				Left:   bxl,
 				Right:  bxr,
@@ -225,7 +222,7 @@ func (bc BarChart) drawBars(r Renderer, canvasBox Box, yr Range) {
 	}
 }
 
-func (bc BarChart) drawXAxis(r Renderer, canvasBox Box) {
+func (bc BarChart) drawXAxis(r Renderer, canvasBox canvas.Box) {
 	if !bc.XAxis.Hidden {
 		axisStyle := bc.XAxis.InheritFrom(bc.styleDefaultsAxes())
 		axisStyle.WriteToRenderer(r)
@@ -242,7 +239,7 @@ func (bc BarChart) drawXAxis(r Renderer, canvasBox Box) {
 
 		cursor := canvasBox.Left
 		for index, bar := range bc.Bars {
-			barLabelBox := Box{
+			barLabelBox := canvas.Box{
 				Top:    canvasBox.Bottom + DefaultXAxisMargin,
 				Left:   cursor,
 				Right:  cursor + width + spacing,
@@ -264,7 +261,7 @@ func (bc BarChart) drawXAxis(r Renderer, canvasBox Box) {
 	}
 }
 
-func (bc BarChart) drawYAxis(r Renderer, canvasBox Box, yr Range, ticks []Tick) {
+func (bc BarChart) drawYAxis(r Renderer, canvasBox canvas.Box, yr Range, ticks []Tick) {
 	if !bc.YAxis.Style.Hidden {
 		bc.YAxis.Render(r, canvasBox, yr, bc.styleDefaultsAxes(), ticks)
 	}
@@ -305,12 +302,12 @@ func (bc BarChart) hasAxes() bool {
 	return !bc.YAxis.Style.Hidden
 }
 
-func (bc BarChart) setRangeDomains(canvasBox Box, yr Range) Range {
+func (bc BarChart) setRangeDomains(canvasBox canvas.Box, yr Range) Range {
 	yr.SetDomain(canvasBox.Height())
 	return yr
 }
 
-func (bc BarChart) getDefaultCanvasBox() Box {
+func (bc BarChart) getDefaultCanvasBox() canvas.Box {
 	return bc.box()
 }
 
@@ -328,7 +325,7 @@ func (bc BarChart) getAxesTicks(r Renderer, yr Range, yf ValueFormatter) (yticks
 	return
 }
 
-func (bc BarChart) calculateEffectiveBarSpacing(canvasBox Box) int {
+func (bc BarChart) calculateEffectiveBarSpacing(canvasBox canvas.Box) int {
 	totalWithBaseSpacing := bc.calculateTotalBarWidth(bc.GetBarWidth(), bc.GetBarSpacing())
 	if totalWithBaseSpacing > canvasBox.Width() {
 		lessBarWidths := canvasBox.Width() - (len(bc.Bars) * bc.GetBarWidth())
@@ -340,7 +337,7 @@ func (bc BarChart) calculateEffectiveBarSpacing(canvasBox Box) int {
 	return bc.GetBarSpacing()
 }
 
-func (bc BarChart) calculateEffectiveBarWidth(canvasBox Box, spacing int) int {
+func (bc BarChart) calculateEffectiveBarWidth(canvasBox canvas.Box, spacing int) int {
 	totalWithBaseWidth := bc.calculateTotalBarWidth(bc.GetBarWidth(), spacing)
 	if totalWithBaseWidth > canvasBox.Width() {
 		totalLessBarSpacings := canvasBox.Width() - (len(bc.Bars) * spacing)
@@ -356,14 +353,14 @@ func (bc BarChart) calculateTotalBarWidth(barWidth, spacing int) int {
 	return len(bc.Bars) * (barWidth + spacing)
 }
 
-func (bc BarChart) calculateScaledTotalWidth(canvasBox Box) (width, spacing, total int) {
+func (bc BarChart) calculateScaledTotalWidth(canvasBox canvas.Box) (width, spacing, total int) {
 	spacing = bc.calculateEffectiveBarSpacing(canvasBox)
 	width = bc.calculateEffectiveBarWidth(canvasBox, spacing)
 	total = bc.calculateTotalBarWidth(width, spacing)
 	return
 }
 
-func (bc BarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box, yrange Range, yticks []Tick) Box {
+func (bc BarChart) getAdjustedCanvasBox(r Renderer, canvasBox canvas.Box, yrange Range, yticks []Tick) canvas.Box {
 	// This section is just for calculating xaxisHeight for later use
 	var xaxisHeight int
 	if !bc.XAxis.Hidden {
@@ -375,7 +372,7 @@ func (bc BarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box, yrange Range,
 		cursor := canvasBox.Left
 		for _, bar := range bc.Bars {
 			if len(bar.Label) > 0 {
-				barLabelBox := Box{
+				barLabelBox := canvas.Box{
 					Top:    canvasBox.Bottom + DefaultXAxisMargin,
 					Left:   cursor,
 					Right:  cursor + bc.GetBarWidth() + bc.GetBarSpacing(),
@@ -457,7 +454,7 @@ func (bc BarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box, yrange Range,
 				}
 
 				// Use a temporary box for measurement, respecting potential canvas adjustments
-				tempLabelBox := Box{
+				tempLabelBox := canvas.Box{
 					Left:  0, // Use 0 for width measurement context
 					Right: labelBoxWidth,
 				}
@@ -511,8 +508,8 @@ func (bc BarChart) measureTitleHeight(r Renderer) int {
 }
 
 // box returns the chart bounds as a box, considering background padding.
-func (bc BarChart) box() Box {
-	return Box{
+func (bc BarChart) box() canvas.Box {
+	return canvas.Box{
 		Top:    bc.Background.Padding.GetTop(DefaultBackgroundPadding.Top),
 		Left:   bc.Background.Padding.GetLeft(DefaultBackgroundPadding.Left),
 		Right:  bc.GetWidth() - bc.Background.Padding.GetRight(DefaultBackgroundPadding.Right),

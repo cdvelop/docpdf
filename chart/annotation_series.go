@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/mathutils"
 )
 
@@ -48,8 +49,8 @@ func (as AnnotationSeries) annotationStyleDefaults(defaults Style) Style {
 }
 
 // Measure returns a bounds box of the series.
-func (as AnnotationSeries) Measure(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) Box {
-	box := Box{
+func (as AnnotationSeries) Measure(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) canvas.Box {
+	box := canvas.Box{
 		Top:    math.MaxInt32,
 		Left:   math.MaxInt32,
 		Right:  0,
@@ -72,7 +73,7 @@ func (as AnnotationSeries) Measure(r Renderer, canvasBox Box, xrange, yrange Ran
 }
 
 // Render draws the series.
-func (as AnnotationSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (as AnnotationSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	if !as.Style.Hidden {
 		seriesStyle := as.Style.InheritFrom(as.annotationStyleDefaults(defaults))
 		for _, a := range as.Annotations {

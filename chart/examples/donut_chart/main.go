@@ -6,23 +6,30 @@ import (
 	"os"
 
 	"github.com/cdvelop/docpdf/chart"
+	"github.com/cdvelop/docpdf/chart/roboto"
 )
 
 func main() {
-	pie := chart.DonutChart{
-		Width:  512,
-		Height: 512,
-		Values: []chart.Value{
-			{Value: 5, Label: "Blue"},
-			{Value: 5, Label: "Green"},
-			{Value: 4, Label: "Gray"},
-			{Value: 4, Label: "Orange"},
-			{Value: 3, Label: "Deep Blue"},
-			{Value: 3, Label: "test"},
-		},
+	// Creamos un nuevo motor de gráficos con la fuente Roboto
+	engine, err := chart.NewEngine(roboto.Roboto)
+	if err != nil {
+		panic(err)
 	}
 
+	// Creamos un gráfico de dona utilizando el motor
+	values := []chart.Value{
+		{Value: 5, Label: "Blue"},
+		{Value: 5, Label: "Green"},
+		{Value: 4, Label: "Gray"},
+		{Value: 4, Label: "Orange"},
+		{Value: 3, Label: "Deep Blue"},
+		{Value: 3, Label: "test"},
+	}
+
+	// Creamos el gráfico con el motor (sintaxis encadenada)
+	donutChart := engine.DonutChart(values)
+	// Renderizamos a un archivo PNG
 	f, _ := os.Create("output.png")
 	defer f.Close()
-	pie.Render(chart.PNG, f)
+	donutChart.Render(chart.PNG, f)
 }

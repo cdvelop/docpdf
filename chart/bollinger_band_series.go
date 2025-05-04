@@ -2,6 +2,8 @@ package chart
 
 import (
 	"fmt"
+
+	"github.com/cdvelop/docpdf/canvas"
 )
 
 // Interface Assertions.
@@ -116,7 +118,7 @@ func (bbs *BollingerBandsSeries) GetBoundedLastValues() (x, y1, y2 float64) {
 }
 
 // Render renders the series.
-func (bbs *BollingerBandsSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (bbs *BollingerBandsSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	s := bbs.Style.InheritFrom(defaults.InheritFrom(Style{
 		StrokeWidth: 1.0,
 		StrokeColor: DefaultAxisColor.WithAlpha(64),

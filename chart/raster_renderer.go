@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
@@ -159,13 +160,13 @@ func (rr *rasterRenderer) Text(body string, x, y int) {
 }
 
 // MeasureText returns the height and width in pixels of a string.
-func (rr *rasterRenderer) MeasureText(body string) Box {
+func (rr *rasterRenderer) MeasureText(body string) canvas.Box {
 	rr.gc.SetFont(rr.s.Font)
 	rr.gc.SetFontSize(rr.s.FontSize)
 	rr.gc.SetFillColor(rr.s.FontColor)
 	l, t, r, b, err := rr.gc.GetStringBounds(body)
 	if err != nil {
-		return Box{}
+		return canvas.Box{}
 	}
 	if l < 0 {
 		r = r - l // equivalent to r+(-1*l)
@@ -186,7 +187,7 @@ func (rr *rasterRenderer) MeasureText(body string) Box {
 		t = 0
 	}
 
-	textBox := Box{
+	textBox := canvas.Box{
 		Top:    int(math.Ceil(t)),
 		Left:   int(math.Ceil(l)),
 		Right:  int(math.Ceil(r)),

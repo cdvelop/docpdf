@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart"
 )
 
@@ -10,7 +11,7 @@ func main() {
 	sbc := chart.StackedBarChart{
 		Title: "Test Stacked Bar Chart",
 		Background: chart.Style{
-			Padding: chart.Box{
+			Padding: canvas.Box{
 				Top: 40,
 			},
 		},

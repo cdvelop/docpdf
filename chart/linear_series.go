@@ -2,6 +2,8 @@ package chart
 
 import (
 	"fmt"
+
+	"github.com/cdvelop/docpdf/canvas"
 )
 
 // Interface Assertions.
@@ -89,7 +91,7 @@ func (ls *LinearSeries) GetLastValues() (x, y float64) {
 }
 
 // Render renders the series.
-func (ls *LinearSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (ls *LinearSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	Draw.LineSeries(r, canvasBox, xrange, yrange, ls.Style.InheritFrom(defaults), ls)
 }
 

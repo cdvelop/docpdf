@@ -1,5 +1,7 @@
 package chart
 
+import "github.com/cdvelop/docpdf/canvas"
+
 // TickPosition is an enumeration of possible tick drawing positions.
 type TickPosition int
 
@@ -38,8 +40,8 @@ type Axis interface {
 
 	// Measure should return an absolute box for the axis.
 	// This is used when auto-fitting the canvas to the background.
-	Measure(r Renderer, canvasBox Box, ra Range, style Style, ticks []Tick) Box
+	Measure(r Renderer, canvasBox canvas.Box, ra Range, style Style, ticks []Tick) canvas.Box
 
 	// Render renders the axis.
-	Render(r Renderer, canvasBox Box, ra Range, style Style, ticks []Tick)
+	Render(r Renderer, canvasBox canvas.Box, ra Range, style Style, ticks []Tick)
 }

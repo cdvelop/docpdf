@@ -6,6 +6,7 @@ import (
 
 	_ "net/http/pprof"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/style"
 )
@@ -42,10 +43,10 @@ func unit(res http.ResponseWriter, req *http.Request) {
 		Height: 50,
 		Width:  50,
 		Canvas: chart.Style{
-			Padding: chart.BoxZero,
+			Padding: canvas.BoxZero,
 		},
 		Background: chart.Style{
-			Padding: chart.BoxZero,
+			Padding: canvas.BoxZero,
 		},
 		Series: []chart.Series{
 			chart.ContinuousSeries{

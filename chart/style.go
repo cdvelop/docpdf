@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
 	"github.com/cdvelop/docpdf/style"
@@ -45,7 +46,7 @@ func StyleTextDefaults() Style {
 // Style is a simple style set.
 type Style struct {
 	Hidden  bool
-	Padding Box
+	Padding canvas.Box
 
 	ClassName string
 
@@ -284,12 +285,12 @@ func (s Style) GetFont(defaults ...*truetype.Font) *truetype.Font {
 }
 
 // GetPadding returns the padding.
-func (s Style) GetPadding(defaults ...Box) Box {
+func (s Style) GetPadding(defaults ...canvas.Box) canvas.Box {
 	if s.Padding.IsZero() {
 		if len(defaults) > 0 {
 			return defaults[0]
 		}
-		return Box{}
+		return canvas.Box{}
 	}
 	return s.Padding
 }

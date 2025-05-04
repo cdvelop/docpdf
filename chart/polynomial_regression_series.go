@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart/matrix"
 	"github.com/cdvelop/docpdf/mathutils"
 )
@@ -172,7 +173,7 @@ func (prs *PolynomialRegressionSeries) values() (xvalues, yvalues []float64) {
 }
 
 // Render renders the series.
-func (prs *PolynomialRegressionSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (prs *PolynomialRegressionSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	style := prs.Style.InheritFrom(defaults)
 	Draw.LineSeries(r, canvasBox, xrange, yrange, style, prs)
 }

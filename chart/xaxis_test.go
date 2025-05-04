@@ -3,6 +3,7 @@ package chart
 import (
 	"testing"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart/testutil"
 )
 
@@ -61,7 +62,7 @@ func TestXAxisMeasure(t *testing.T) {
 	testutil.AssertNil(t, err)
 	ticks := []Tick{{Value: 1.0, Label: "1.0"}, {Value: 2.0, Label: "2.0"}, {Value: 3.0, Label: "3.0"}}
 	xa := XAxis{}
-	xab := xa.Measure(r, NewBox(0, 0, 100, 100), &ContinuousRange{Min: 1.0, Max: 3.0, Domain: 100}, style, ticks)
+	xab := xa.Measure(r, canvas.NewBox(0, 0, 100, 100), &ContinuousRange{Min: 1.0, Max: 3.0, Domain: 100}, style, ticks)
 	testutil.AssertEqual(t, 122, xab.Width())
 	testutil.AssertEqual(t, 21, xab.Height())
 }

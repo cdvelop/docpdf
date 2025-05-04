@@ -67,26 +67,32 @@ Las siguientes etapas se irán completando secuencialmente:
 ### Fase 1: Análisis y Preparación
 
 1. **Analizar la estructura de chart**:
-   - Identificar todas las referencias a [`freetype`](freetype )
-   - Localizar el código de renderizado SVG existente
-   - Entender cómo se manejan las fuentes actualmente
+   - ✅ Identificar todas las referencias a [`freetype`](freetype )
+   - ✅ Localizar el código de renderizado SVG existente
+   - ✅ Entender cómo se manejan las fuentes actualmente
 
 2. **Documentar la API de docpdf para manejo de fuentes**:
-   - Mapear cómo se cargan y configuran las fuentes
-   - Identificar cómo se aplican los estilos
+   - ✅ Mapear cómo se cargan y configuran las fuentes
+   - ✅ Identificar cómo se aplican los estilos
+
+3. **Implementar ChartEngine centralizado**:
+   - ✅ Crear estructura `ChartEngine` para centralizar la inicialización de fuentes
+   - ✅ Implementar inicialización directa sin usar patrones singleton
+   - ✅ Implementar métodos para encadenar la creación de gráficos (ej: `engine.DonutChart().PieChart()`)
+   - ✅ Centralizar configuración común (tamaños, DPI, estilos, paleta de colores)
 
 ### Fase 2: Modificación de chart
 
-3. **Eliminar dependencia de freetype**:
+4. **Eliminar dependencia de freetype**:
    - Eliminar importaciones de [`freetype`](freetype )
    - Mantener solo el renderizador SVG
    - Modificar cualquier función que dependa de freetype
 
-4. **Mejorar el renderizador SVG**:
+5. **Mejorar el renderizador SVG**:
    - Asegurar que puede especificar fuentes por nombre/ruta
    - Implementar todas las características necesarias (tamaños, colores, etc.)
 
-5. **Crear sistema de referencia de fuentes**:
+6. **Crear sistema de referencia de fuentes**:
    ```go
    type FontReference struct {
        Name      string
@@ -98,7 +104,7 @@ Las siguientes etapas se irán completando secuencialmente:
 
 ### Fase 3: Integración con docpdf
 
-6. **Crear paquete config y mover la configuración de fuentes**:
+7. **Crear paquete config y mover la configuración de fuentes**:
    ```go
    // Mover desde docFont.go al nuevo paquete config
    package config
@@ -112,7 +118,7 @@ Las siguientes etapas se irán completando secuencialmente:
    }
    ```
 
-7. **Extender el nuevo TextStyles para soportar SVG**:
+8. **Extender el nuevo TextStyles para soportar SVG**:
    ```go
    // En el paquete config
    type TextStyles struct {
@@ -123,13 +129,13 @@ Las siguientes etapas se irán completando secuencialmente:
    }
    ```
 
-8. **Crear funciones de inserción SVG en docpdf**:
+9. **Crear funciones de inserción SVG en docpdf**:
    ```go
    // Añadir al Document
    func (d *Document) InsertSVG(svg string, x, y float64, width, height float64) error
    ```
 
-9. **Implementar conversión entre estilos de texto**:
+10. **Implementar conversión entre estilos de texto**:
    ```go
    // Convertir de TextStyle de docpdf a formato SVG
    func (ts TextStyle) ToSVGStyle() string
@@ -137,7 +143,7 @@ Las siguientes etapas se irán completando secuencialmente:
 
 ### Fase 4: Sistema Unificado
 
-10. **Implementar manejador centralizado de fuentes**:
+11. **Implementar manejador centralizado de fuentes**:
     ```go
     // Sistema unificado
     type FontManager struct {
@@ -150,24 +156,24 @@ Las siguientes etapas se irán completando secuencialmente:
     }
     ```
 
-11. **Actualizar chart para usar el nuevo sistema**:
+12. **Actualizar chart para usar el nuevo sistema**:
     - Modificar chart para generar solo SVG
     - Referenciar fuentes usando el sistema unificado
     - Eliminar cualquier renderizado bitmap
 
-12. **Actualizar docpdf para integrar SVG**:
+13. **Actualizar docpdf para integrar SVG**:
     - Implementar inserción y escalado de SVG
     - Asegurar que las referencias a fuentes funcionen correctamente
 
 ### Fase 5: Pruebas y Refinamiento
 
-13. **Probar con diferentes tipos de gráficos**:
+14. **Probar con diferentes tipos de gráficos**:
     - Gráficos de barras
     - Gráficos circulares
     - Gráficos de líneas
     - Verificar que las fuentes se rendericen correctamente
 
-14. **Optimizar rendimiento**:
+15. **Optimizar rendimiento**:
     - Asegurar que los SVG generados no sean excesivamente grandes
     - Implementar cacheo si es necesario
 

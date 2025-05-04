@@ -1,6 +1,10 @@
 package chart
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/cdvelop/docpdf/canvas"
+)
 
 // Interface Assertions.
 var (
@@ -74,7 +78,7 @@ func (cs ContinuousSeries) GetYAxis() YAxisType {
 }
 
 // Render renders the series.
-func (cs ContinuousSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (cs ContinuousSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	style := cs.Style.InheritFrom(defaults)
 	Draw.LineSeries(r, canvasBox, xrange, yrange, style, cs)
 }

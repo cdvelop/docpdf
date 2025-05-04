@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
 )
@@ -24,8 +25,7 @@ type PieChart struct {
 	Canvas     Style
 	SliceStyle Style
 
-	Font        *truetype.Font
-	defaultFont *truetype.Font
+	Font *truetype.Font
 
 	Values   []Value
 	Elements []Renderable
@@ -44,9 +44,6 @@ func (pc PieChart) GetDPI(defaults ...float64) float64 {
 
 // GetFont returns the text font.
 func (pc PieChart) GetFont() *truetype.Font {
-	if pc.Font == nil {
-		return pc.defaultFont
-	}
 	return pc.Font
 }
 
@@ -82,7 +79,7 @@ func (pc PieChart) Render(rp RendererProvider, w io.Writer) error {
 		if err != nil {
 			return err
 		}
-		pc.defaultFont = defaultFont
+		pc.Font = defaultFont
 	}
 	r.SetDPI(pc.GetDPI(DefaultDPI))
 
@@ -106,13 +103,13 @@ func (pc PieChart) Render(rp RendererProvider, w io.Writer) error {
 }
 
 func (pc PieChart) drawBackground(r Renderer) {
-	Draw.Box(r, Box{
+	Draw.Box(r, canvas.Box{
 		Right:  pc.GetWidth(),
 		Bottom: pc.GetHeight(),
 	}, pc.getBackgroundStyle())
 }
 
-func (pc PieChart) drawCanvas(r Renderer, canvasBox Box) {
+func (pc PieChart) drawCanvas(r Renderer, canvasBox canvas.Box) {
 	Draw.Box(r, canvasBox, pc.getCanvasStyle())
 }
 
@@ -122,7 +119,7 @@ func (pc PieChart) drawTitle(r Renderer) {
 	}
 }
 
-func (pc PieChart) drawSlices(r Renderer, canvasBox Box, values []Value) {
+func (pc PieChart) drawSlices(r Renderer, canvasBox canvas.Box, values []Value) {
 	cx, cy := canvasBox.Center()
 	diameter := mathutils.MinInt(canvasBox.Width(), canvasBox.Height())
 	radius := float64(diameter >> 1)
@@ -187,14 +184,14 @@ func (pc PieChart) finalizeValues(values []Value) ([]Value, error) {
 	return finalValues, nil
 }
 
-func (pc PieChart) getDefaultCanvasBox() Box {
+func (pc PieChart) getDefaultCanvasBox() canvas.Box {
 	return pc.Box()
 }
 
-func (pc PieChart) getCircleAdjustedCanvasBox(canvasBox Box) Box {
+func (pc PieChart) getCircleAdjustedCanvasBox(canvasBox canvas.Box) canvas.Box {
 	circleDiameter := mathutils.MinInt(canvasBox.Width(), canvasBox.Height())
 
-	square := Box{
+	square := canvas.Box{
 		Right:  circleDiameter,
 		Bottom: circleDiameter,
 	}
@@ -298,12 +295,12 @@ func (pc PieChart) GetColorPalette() ColorPalette {
 	return AlternateColorPalette
 }
 
-// Box returns the chart bounds as a box.
-func (pc PieChart) Box() Box {
+// canvas.Box returns the chart bounds as a box.
+func (pc PieChart) Box() canvas.Box {
 	dpr := pc.Background.Padding.GetRight(DefaultBackgroundPadding.Right)
 	dpb := pc.Background.Padding.GetBottom(DefaultBackgroundPadding.Bottom)
 
-	return Box{
+	return canvas.Box{
 		Top:    pc.Background.Padding.GetTop(DefaultBackgroundPadding.Top),
 		Left:   pc.Background.Padding.GetLeft(DefaultBackgroundPadding.Left),
 		Right:  pc.GetWidth() - dpr,

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
 )
@@ -24,8 +25,7 @@ type DonutChart struct {
 	Canvas     Style
 	SliceStyle Style
 
-	Font        *truetype.Font
-	defaultFont *truetype.Font
+	Font *truetype.Font
 
 	Values   []Value
 	Elements []Renderable
@@ -44,9 +44,6 @@ func (pc DonutChart) GetDPI(defaults ...float64) float64 {
 
 // GetFont returns the text font.
 func (pc DonutChart) GetFont() *truetype.Font {
-	if pc.Font == nil {
-		return pc.defaultFont
-	}
 	return pc.Font
 }
 
@@ -82,7 +79,7 @@ func (pc DonutChart) Render(rp RendererProvider, w io.Writer) error {
 		if err != nil {
 			return err
 		}
-		pc.defaultFont = defaultFont
+		pc.Font = defaultFont
 	}
 	r.SetDPI(pc.GetDPI(DefaultDPI))
 
@@ -106,13 +103,13 @@ func (pc DonutChart) Render(rp RendererProvider, w io.Writer) error {
 }
 
 func (pc DonutChart) drawBackground(r Renderer) {
-	Draw.Box(r, Box{
+	Draw.Box(r, canvas.Box{
 		Right:  pc.GetWidth(),
 		Bottom: pc.GetHeight(),
 	}, pc.getBackgroundStyle())
 }
 
-func (pc DonutChart) drawCanvas(r Renderer, canvasBox Box) {
+func (pc DonutChart) drawCanvas(r Renderer, canvasBox canvas.Box) {
 	Draw.Box(r, canvasBox, pc.getCanvasStyle())
 }
 
@@ -122,7 +119,7 @@ func (pc DonutChart) drawTitle(r Renderer) {
 	}
 }
 
-func (pc DonutChart) drawSlices(r Renderer, canvasBox Box, values []Value) {
+func (pc DonutChart) drawSlices(r Renderer, canvasBox canvas.Box, values []Value) {
 	cx, cy := canvasBox.Center()
 	diameter := mathutils.MinInt(canvasBox.Width(), canvasBox.Height())
 	radius := float64(diameter>>1) / 1.1
@@ -191,14 +188,14 @@ func (pc DonutChart) finalizeValues(values []Value) ([]Value, error) {
 	return finalValues, nil
 }
 
-func (pc DonutChart) getDefaultCanvasBox() Box {
+func (pc DonutChart) getDefaultCanvasBox() canvas.Box {
 	return pc.Box()
 }
 
-func (pc DonutChart) getCircleAdjustedCanvasBox(canvasBox Box) Box {
+func (pc DonutChart) getCircleAdjustedCanvasBox(canvasBox canvas.Box) canvas.Box {
 	circleDiameter := mathutils.MinInt(canvasBox.Width(), canvasBox.Height())
 
-	square := Box{
+	square := canvas.Box{
 		Right:  circleDiameter,
 		Bottom: circleDiameter,
 	}
@@ -302,12 +299,12 @@ func (pc DonutChart) GetColorPalette() ColorPalette {
 	return AlternateColorPalette
 }
 
-// Box returns the chart bounds as a box.
-func (pc DonutChart) Box() Box {
+// canvas.Box returns the chart bounds as a box.
+func (pc DonutChart) Box() canvas.Box {
 	dpr := pc.Background.Padding.GetRight(DefaultBackgroundPadding.Right)
 	dpb := pc.Background.Padding.GetBottom(DefaultBackgroundPadding.Bottom)
 
-	return Box{
+	return canvas.Box{
 		Top:    pc.Background.Padding.GetTop(DefaultBackgroundPadding.Top),
 		Left:   pc.Background.Padding.GetLeft(DefaultBackgroundPadding.Left),
 		Right:  pc.GetWidth() - dpr,

@@ -1,6 +1,10 @@
 package chart
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/cdvelop/docpdf/canvas"
+)
 
 const (
 	// DefaultEMAPeriod is the default EMA period used in the sigma calculation.
@@ -117,7 +121,7 @@ func (ema *EMASeries) ensureCachedValues() {
 }
 
 // Render renders the series.
-func (ema *EMASeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (ema *EMASeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	style := ema.Style.InheritFrom(defaults)
 	Draw.LineSeries(r, canvasBox, xrange, yrange, style, ema)
 }

@@ -3,6 +3,7 @@ package chart
 import (
 	"fmt"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/mathutils"
 )
 
@@ -130,7 +131,7 @@ func (lrs *LinearRegressionSeries) GetLastValues() (x, y float64) {
 }
 
 // Render renders the series.
-func (lrs *LinearRegressionSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (lrs *LinearRegressionSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	style := lrs.Style.InheritFrom(defaults)
 	Draw.LineSeries(r, canvasBox, xrange, yrange, style, lrs)
 }

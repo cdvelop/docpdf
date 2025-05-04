@@ -1,5 +1,7 @@
 package chart
 
+import "github.com/cdvelop/docpdf/canvas"
+
 const (
 	// DefaultChartHeight is the default chart height.
 	DefaultChartHeight = 400
@@ -88,10 +90,10 @@ var (
 
 var (
 	// DefaultAnnotationPadding is the padding around an annotation.
-	DefaultAnnotationPadding = Box{Top: 5, Left: 5, Right: 5, Bottom: 5}
+	DefaultAnnotationPadding = canvas.Box{Top: 5, Left: 5, Right: 5, Bottom: 5}
 
 	// DefaultBackgroundPadding is the default canvas padding config.
-	DefaultBackgroundPadding = Box{Top: 5, Left: 5, Right: 5, Bottom: 5}
+	DefaultBackgroundPadding = canvas.Box{Top: 5, Left: 5, Right: 5, Bottom: 5}
 )
 
 const (

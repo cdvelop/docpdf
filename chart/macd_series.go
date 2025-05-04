@@ -1,6 +1,10 @@
 package chart
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/cdvelop/docpdf/canvas"
+)
 
 const (
 	// DefaultMACDPeriodPrimary is the long window.
@@ -219,7 +223,7 @@ func (macds *MACDSignalSeries) ensureSignal() {
 }
 
 // Render renders the series.
-func (macds *MACDSignalSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (macds *MACDSignalSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	style := macds.Style.InheritFrom(defaults)
 	Draw.LineSeries(r, canvasBox, xrange, yrange, style, macds)
 }
@@ -332,7 +336,7 @@ func (macdl *MACDLineSeries) ensureEMASeries() {
 }
 
 // Render renders the series.
-func (macdl *MACDLineSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (macdl *MACDLineSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	style := macdl.Style.InheritFrom(defaults)
 	Draw.LineSeries(r, canvasBox, xrange, yrange, style, macdl)
 }

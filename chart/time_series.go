@@ -3,6 +3,8 @@ package chart
 import (
 	"fmt"
 	"time"
+
+	"github.com/cdvelop/docpdf/canvas"
 )
 
 // Interface Assertions.
@@ -73,7 +75,7 @@ func (ts TimeSeries) GetYAxis() YAxisType {
 }
 
 // Render renders the series.
-func (ts TimeSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
+func (ts TimeSeries) Render(r Renderer, canvasBox canvas.Box, xrange, yrange Range, defaults Style) {
 	style := ts.Style.InheritFrom(defaults)
 	Draw.LineSeries(r, canvasBox, xrange, yrange, style, ts)
 }

@@ -5,6 +5,7 @@ import (
 	"bytes"
 
 	"github.com/cdvelop/docpdf/alignment"
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/chartutils"
 	"github.com/cdvelop/docpdf/fontbridge"
@@ -70,7 +71,7 @@ func (c *docChart) WithAxis(showX, showY bool) *docChart {
 	} else {
 		c.xAxisStyle = chart.Shown()
 		// Aplicar configuración específica para eje X
-		c.xAxisStyle.Padding = chart.Box{
+		c.xAxisStyle.Padding = canvas.Box{
 			Bottom: 20, // Espacio predeterminado para etiquetas del eje X
 			Top:    5,
 		}
@@ -81,7 +82,7 @@ func (c *docChart) WithAxis(showX, showY bool) *docChart {
 	} else {
 		c.yAxisStyle = chart.Shown()
 		// Aplicar configuración específica para eje Y
-		c.yAxisStyle.Padding = chart.Box{
+		c.yAxisStyle.Padding = canvas.Box{
 			Left:  10,
 			Right: 5,
 		}
@@ -202,14 +203,14 @@ func (c *docChart) Draw() error {
 	// Inicializar el estilo del título (común para todos los tipos de gráfico)
 	titleStyle := chart.Style{}
 	fontbridge.ApplyToChartStyle(&titleStyle, "title")
-	titleStyle.Padding = chart.Box{
+	titleStyle.Padding = canvas.Box{
 		Top:    int(10 * scaleFactor),
 		Bottom: int(5 * scaleFactor),
 	}
 
 	// Preparar el estilo de fondo común
 	backgroundStyle := chart.Style{
-		Padding: chart.Box{
+		Padding: canvas.Box{
 			Top:    int(10 * scaleFactor),
 			Left:   int(10 * scaleFactor),
 			Right:  int(10 * scaleFactor),
@@ -318,7 +319,7 @@ func (c *docChart) drawBarChart(buf *bytes.Buffer, widthInPixels, heightInPixels
 	}
 
 	barChart.Canvas = chart.Style{
-		Padding: chart.Box{
+		Padding: canvas.Box{
 			Bottom: bottomCanvasPadding, // Espacio adicional para etiquetas
 		},
 	}
@@ -326,7 +327,7 @@ func (c *docChart) drawBarChart(buf *bytes.Buffer, widthInPixels, heightInPixels
 	// Aplicar estilos personalizados al canvas si están configurados
 	if c.canvas.FillColor.A > 0 {
 		// Mantener el padding adicional
-		c.canvas.Padding = chart.Box{
+		c.canvas.Padding = canvas.Box{
 			Bottom: bottomCanvasPadding,
 		}
 		barChart.Canvas = c.canvas
@@ -346,7 +347,7 @@ func (c *docChart) drawBarChart(buf *bytes.Buffer, widthInPixels, heightInPixels
 			bottomPadding = c.xAxisStyle.Padding.Bottom
 		}
 
-		xStyle.Padding = chart.Box{
+		xStyle.Padding = canvas.Box{
 			Top:    int(5 * scaleFactor),
 			Bottom: bottomPadding, // Usar el padding configurado o el predeterminado
 		}
@@ -358,7 +359,7 @@ func (c *docChart) drawBarChart(buf *bytes.Buffer, widthInPixels, heightInPixels
 		fontbridge.ApplyToChartStyle(&yStyle, "axis")
 		yStyle.Hidden = false
 		yStyle.StrokeWidth = c.strokeWidth
-		yStyle.Padding = chart.Box{
+		yStyle.Padding = canvas.Box{
 			Left:  int(5 * scaleFactor),
 			Right: int(5 * scaleFactor),
 		}

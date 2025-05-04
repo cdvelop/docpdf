@@ -3,6 +3,7 @@ package chart
 import (
 	"strings"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/mathutils"
 )
 
@@ -85,7 +86,7 @@ func (t text) WrapFitWord(r Renderer, value string, width int, style Style) []st
 	var line string
 	var word string
 
-	var textBox Box
+	var textBox canvas.Box
 
 	for _, c := range value {
 		if c == rune('\n') { // commit the line to output
@@ -120,7 +121,7 @@ func (t text) WrapFitRune(r Renderer, value string, width int, style Style) []st
 
 	var output []string
 	var line string
-	var textBox Box
+	var textBox canvas.Box
 	for _, c := range value {
 		if c == rune('\n') {
 			output = append(output, line)
@@ -144,9 +145,9 @@ func (t text) Trim(value string) string {
 	return strings.Trim(value, " \t\n\r")
 }
 
-func (t text) MeasureLines(r Renderer, lines []string, style Style) Box {
+func (t text) MeasureLines(r Renderer, lines []string, style Style) canvas.Box {
 	style.WriteTextOptionsToRenderer(r)
-	var output Box
+	var output canvas.Box
 	for index, line := range lines {
 		lineBox := r.MeasureText(line)
 		output.Right = mathutils.MaxInt(lineBox.Right, output.Right)

@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 
+	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
 )
@@ -44,8 +45,7 @@ type StackedBarChart struct {
 
 	BarSpacing int
 
-	Font        *truetype.Font
-	defaultFont *truetype.Font
+	Font *truetype.Font
 
 	IsHorizontal bool
 
@@ -66,9 +66,6 @@ func (sbc StackedBarChart) GetDPI(defaults ...float64) float64 {
 
 // GetFont returns the text font.
 func (sbc StackedBarChart) GetFont() *truetype.Font {
-	if sbc.Font == nil {
-		return sbc.defaultFont
-	}
 	return sbc.Font
 }
 
@@ -112,11 +109,11 @@ func (sbc StackedBarChart) Render(rp RendererProvider, w io.Writer) error {
 		if err != nil {
 			return err
 		}
-		sbc.defaultFont = defaultFont
+		sbc.Font = defaultFont
 	}
 	r.SetDPI(sbc.GetDPI(DefaultDPI))
 
-	var canvasBox Box
+	var canvasBox canvas.Box
 	if sbc.IsHorizontal {
 		canvasBox = sbc.getHorizontalAdjustedCanvasBox(r, sbc.getDefaultCanvasBox())
 		if err := canvasBox.Validate(); err != nil {
@@ -145,11 +142,11 @@ func (sbc StackedBarChart) Render(rp RendererProvider, w io.Writer) error {
 	return r.Save(w)
 }
 
-func (sbc StackedBarChart) drawCanvas(r Renderer, canvasBox Box) {
+func (sbc StackedBarChart) drawCanvas(r Renderer, canvasBox canvas.Box) {
 	Draw.Box(r, canvasBox, sbc.getCanvasStyle())
 }
 
-func (sbc StackedBarChart) drawBars(r Renderer, canvasBox Box) {
+func (sbc StackedBarChart) drawBars(r Renderer, canvasBox canvas.Box) {
 	xoffset := canvasBox.Left
 	for _, bar := range sbc.Bars {
 		sbc.drawBar(r, canvasBox, xoffset, bar)
@@ -157,7 +154,7 @@ func (sbc StackedBarChart) drawBars(r Renderer, canvasBox Box) {
 	}
 }
 
-func (sbc StackedBarChart) drawHorizontalBars(r Renderer, canvasBox Box) {
+func (sbc StackedBarChart) drawHorizontalBars(r Renderer, canvasBox canvas.Box) {
 	yOffset := canvasBox.Top
 	for _, bar := range sbc.Bars {
 		sbc.drawHorizontalBar(r, canvasBox, yOffset, bar)
@@ -165,7 +162,7 @@ func (sbc StackedBarChart) drawHorizontalBars(r Renderer, canvasBox Box) {
 	}
 }
 
-func (sbc StackedBarChart) drawBar(r Renderer, canvasBox Box, xoffset int, bar StackedBar) int {
+func (sbc StackedBarChart) drawBar(r Renderer, canvasBox canvas.Box, xoffset int, bar StackedBar) int {
 	barSpacing2 := sbc.GetBarSpacing() >> 1
 	bxl := xoffset + barSpacing2
 	bxr := bxl + bar.GetWidth()
@@ -174,7 +171,7 @@ func (sbc StackedBarChart) drawBar(r Renderer, canvasBox Box, xoffset int, bar S
 	yoffset := canvasBox.Top
 	for index, bv := range normalizedBarComponents {
 		barHeight := int(math.Ceil(bv.Value * float64(canvasBox.Height())))
-		barBox := Box{
+		barBox := canvas.Box{
 			Top:    yoffset,
 			Left:   bxl,
 			Right:  bxr,
@@ -214,7 +211,7 @@ func (sbc StackedBarChart) drawBar(r Renderer, canvasBox Box, xoffset int, bar S
 	return bxr
 }
 
-func (sbc StackedBarChart) drawHorizontalBar(r Renderer, canvasBox Box, yoffset int, bar StackedBar) {
+func (sbc StackedBarChart) drawHorizontalBar(r Renderer, canvasBox canvas.Box, yoffset int, bar StackedBar) {
 	halfBarSpacing := sbc.GetBarSpacing() >> 1
 
 	boxTop := yoffset + halfBarSpacing
@@ -225,7 +222,7 @@ func (sbc StackedBarChart) drawHorizontalBar(r Renderer, canvasBox Box, yoffset 
 	xOffset := canvasBox.Right
 	for index, bv := range normalizedBarComponents {
 		barHeight := int(math.Ceil(bv.Value * float64(canvasBox.Width())))
-		barBox := Box{
+		barBox := canvas.Box{
 			Top:    boxTop,
 			Left:   mathutils.MinInt(xOffset-barHeight, canvasBox.Left+DefaultStrokeWidth),
 			Right:  xOffset,
@@ -263,7 +260,7 @@ func (sbc StackedBarChart) drawHorizontalBar(r Renderer, canvasBox Box, yoffset 
 	}
 }
 
-func (sbc StackedBarChart) drawXAxis(r Renderer, canvasBox Box) {
+func (sbc StackedBarChart) drawXAxis(r Renderer, canvasBox canvas.Box) {
 	if !sbc.XAxis.Hidden {
 		axisStyle := sbc.XAxis.InheritFrom(sbc.styleDefaultsAxes())
 		axisStyle.WriteToRenderer(r)
@@ -279,7 +276,7 @@ func (sbc StackedBarChart) drawXAxis(r Renderer, canvasBox Box) {
 		cursor := canvasBox.Left
 		for _, bar := range sbc.Bars {
 
-			barLabelBox := Box{
+			barLabelBox := canvas.Box{
 				Top:    canvasBox.Bottom + DefaultXAxisMargin,
 				Left:   cursor,
 				Right:  cursor + bar.GetWidth() + sbc.GetBarSpacing(),
@@ -297,7 +294,7 @@ func (sbc StackedBarChart) drawXAxis(r Renderer, canvasBox Box) {
 	}
 }
 
-func (sbc StackedBarChart) drawHorizontalXAxis(r Renderer, canvasBox Box) {
+func (sbc StackedBarChart) drawHorizontalXAxis(r Renderer, canvasBox canvas.Box) {
 	if !sbc.XAxis.Hidden {
 		axisStyle := sbc.XAxis.InheritFrom(sbc.styleDefaultsAxes())
 		axisStyle.WriteToRenderer(r)
@@ -333,7 +330,7 @@ func (sbc StackedBarChart) drawHorizontalXAxis(r Renderer, canvasBox Box) {
 	}
 }
 
-func (sbc StackedBarChart) drawYAxis(r Renderer, canvasBox Box) {
+func (sbc StackedBarChart) drawYAxis(r Renderer, canvasBox canvas.Box) {
 	if !sbc.YAxis.Hidden {
 		axisStyle := sbc.YAxis.InheritFrom(sbc.styleDefaultsAxes())
 		axisStyle.WriteToRenderer(r)
@@ -362,7 +359,7 @@ func (sbc StackedBarChart) drawYAxis(r Renderer, canvasBox Box) {
 	}
 }
 
-func (sbc StackedBarChart) drawHorizontalYAxis(r Renderer, canvasBox Box) {
+func (sbc StackedBarChart) drawHorizontalYAxis(r Renderer, canvasBox canvas.Box) {
 	if !sbc.YAxis.Hidden {
 		axisStyle := sbc.YAxis.InheritFrom(sbc.styleDefaultsHorizontalAxes())
 		axisStyle.WriteToRenderer(r)
@@ -377,7 +374,7 @@ func (sbc StackedBarChart) drawHorizontalYAxis(r Renderer, canvasBox Box) {
 
 		cursor := canvasBox.Top
 		for _, bar := range sbc.Bars {
-			barLabelBox := Box{
+			barLabelBox := canvas.Box{
 				Top:    cursor,
 				Left:   0,
 				Right:  canvasBox.Left - DefaultYAxisMargin,
@@ -434,11 +431,11 @@ func (sbc StackedBarChart) GetColorPalette() ColorPalette {
 	return AlternateColorPalette
 }
 
-func (sbc StackedBarChart) getDefaultCanvasBox() Box {
+func (sbc StackedBarChart) getDefaultCanvasBox() canvas.Box {
 	return sbc.Box()
 }
 
-func (sbc StackedBarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box) Box {
+func (sbc StackedBarChart) getAdjustedCanvasBox(r Renderer, canvasBox canvas.Box) canvas.Box {
 	var totalWidth int
 	for _, bar := range sbc.Bars {
 		totalWidth += bar.GetWidth() + sbc.GetBarSpacing()
@@ -453,7 +450,7 @@ func (sbc StackedBarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box) Box {
 		cursor := canvasBox.Left
 		for _, bar := range sbc.Bars {
 			if len(bar.Name) > 0 {
-				barLabelBox := Box{
+				barLabelBox := canvas.Box{
 					Top:    canvasBox.Bottom + DefaultXAxisMargin,
 					Left:   cursor,
 					Right:  cursor + bar.GetWidth() + sbc.GetBarSpacing(),
@@ -465,14 +462,14 @@ func (sbc StackedBarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box) Box {
 				xaxisHeight = mathutils.MaxInt(linesBox.Height()+(2*DefaultXAxisMargin), xaxisHeight)
 			}
 		}
-		return Box{
+		return canvas.Box{
 			Top:    canvasBox.Top,
 			Left:   canvasBox.Left,
 			Right:  canvasBox.Left + totalWidth,
 			Bottom: sbc.GetHeight() - xaxisHeight,
 		}
 	}
-	return Box{
+	return canvas.Box{
 		Top:    canvasBox.Top,
 		Left:   canvasBox.Left,
 		Right:  canvasBox.Left + totalWidth,
@@ -481,7 +478,7 @@ func (sbc StackedBarChart) getAdjustedCanvasBox(r Renderer, canvasBox Box) Box {
 
 }
 
-func (sbc StackedBarChart) getHorizontalAdjustedCanvasBox(r Renderer, canvasBox Box) Box {
+func (sbc StackedBarChart) getHorizontalAdjustedCanvasBox(r Renderer, canvasBox canvas.Box) canvas.Box {
 	var totalHeight int
 	for _, bar := range sbc.Bars {
 		totalHeight += bar.GetWidth() + sbc.GetBarSpacing()
@@ -496,7 +493,7 @@ func (sbc StackedBarChart) getHorizontalAdjustedCanvasBox(r Renderer, canvasBox 
 		cursor := canvasBox.Top
 		for _, bar := range sbc.Bars {
 			if len(bar.Name) > 0 {
-				barLabelBox := Box{
+				barLabelBox := canvas.Box{
 					Top:    cursor,
 					Left:   0,
 					Right:  canvasBox.Left + DefaultYAxisMargin,
@@ -508,14 +505,14 @@ func (sbc StackedBarChart) getHorizontalAdjustedCanvasBox(r Renderer, canvasBox 
 				yAxisWidth = mathutils.MaxInt(linesBox.Height()+(2*DefaultXAxisMargin), yAxisWidth)
 			}
 		}
-		return Box{
+		return canvas.Box{
 			Top:    canvasBox.Top,
 			Left:   canvasBox.Left + yAxisWidth,
 			Right:  canvasBox.Right,
 			Bottom: canvasBox.Top + totalHeight,
 		}
 	}
-	return Box{
+	return canvas.Box{
 		Top:    canvasBox.Top,
 		Left:   canvasBox.Left,
 		Right:  canvasBox.Right,
@@ -523,12 +520,12 @@ func (sbc StackedBarChart) getHorizontalAdjustedCanvasBox(r Renderer, canvasBox 
 	}
 }
 
-// Box returns the chart bounds as a box.
-func (sbc StackedBarChart) Box() Box {
+// canvas.Box returns the chart bounds as a box.
+func (sbc StackedBarChart) Box() canvas.Box {
 	dpr := sbc.Background.Padding.GetRight(10)
 	dpb := sbc.Background.Padding.GetBottom(50)
 
-	return Box{
+	return canvas.Box{
 		Top:    sbc.Background.Padding.GetTop(20),
 		Left:   sbc.Background.Padding.GetLeft(20),
 		Right:  sbc.GetWidth() - dpr,
