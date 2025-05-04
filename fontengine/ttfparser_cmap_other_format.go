@@ -1,8 +1,9 @@
-package core
+package fontengine
 
 import (
 	"bytes"
-	"errors"
+
+	"github.com/cdvelop/docpdf/errs"
 )
 
 // ParseCmapFormat12 parse cmap table format 12 https://www.microsoft.com/typography/otspec/cmap.htm
@@ -21,7 +22,7 @@ func (t *TTFParser) ParseCmapFormat12(fd *bytes.Reader) (bool, error) {
 		return false, err
 	}
 	var cEncodingSubtables []cmapFormat12EncodingSubtable
-	for i := 0; i < int(numTables); i++ {
+	for range int(numTables) {
 		platformID, err := t.ReadUShort(fd)
 		if err != nil {
 			return false, err
@@ -67,7 +68,7 @@ func (t *TTFParser) ParseCmapFormat12(fd *bytes.Reader) (bool, error) {
 	}
 
 	if format != 12 {
-		return false, errors.New("format != 12")
+		return false, errs.New("format != 12")
 	}
 
 	reserved, err := t.ReadUShort(fd)
@@ -76,7 +77,7 @@ func (t *TTFParser) ParseCmapFormat12(fd *bytes.Reader) (bool, error) {
 	}
 
 	if reserved != 0 {
-		return false, errors.New("reserved != 0")
+		return false, errs.New("reserved != 0")
 	}
 
 	err = t.Skip(fd, 4) //skip length
@@ -111,7 +112,7 @@ func (t *TTFParser) ParseCmapFormat12(fd *bytes.Reader) (bool, error) {
 			return false, err
 		}
 
-		var gTb CmapFormat12GroupingTable
+		var gTb cmapFormat12GroupingTable
 		gTb.StartCharCode = startCharCode
 		gTb.EndCharCode = endCharCode
 		gTb.GlyphID = glyphID
@@ -128,6 +129,6 @@ type cmapFormat12EncodingSubtable struct {
 	offset     uint
 }
 
-type CmapFormat12GroupingTable struct {
+type cmapFormat12GroupingTable struct {
 	StartCharCode, EndCharCode, GlyphID uint
 }

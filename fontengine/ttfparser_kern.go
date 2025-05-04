@@ -1,9 +1,31 @@
-package core
+package fontengine
 
 import (
 	"bytes"
-	"fmt"
+
+	"github.com/cdvelop/docpdf/errs"
 )
+
+// kernTable https://www.microsoft.com/typography/otspec/kern.htm
+type kernTable struct {
+	Version uint //for debug
+	NTables uint //for debug
+	Kerning kernMap
+}
+
+// kernMap kerning map   map[left]KernValue
+type kernMap map[uint]KernValue
+
+// KernValue kerning values  map[right]value
+type KernValue map[uint]int16
+
+// ValueByRight  get value by right
+func (k KernValue) ValueByRight(right uint) (bool, int16) {
+	if val, ok := k[uint(right)]; ok {
+		return true, val
+	}
+	return false, 0
+}
 
 // Parsekern parse kerning table  https://www.microsoft.com/typography/otspec/kern.htm
 func (t *TTFParser) Parsekern(fd *bytes.Reader) error {
@@ -16,7 +38,7 @@ func (t *TTFParser) Parsekern(fd *bytes.Reader) error {
 		return err
 	}
 
-	t.kern = new(KernTable) //init
+	t.kern = new(kernTable) //init
 
 	version, err := t.ReadUShort(fd)
 	if err != nil {
@@ -54,12 +76,12 @@ func (t *TTFParser) parsekernSubTable(fd *bytes.Reader) error {
 	}
 
 	format := coverage & 0xf0
-	t.kern.Kerning = make(KernMap) //init
+	t.kern.Kerning = make(kernMap) //init
 	if format == 0 {
 		return t.parsekernSubTableFormat0(fd)
 	} else {
 		//not support other format yet
-		return fmt.Errorf("not support kerning format %d", format)
+		return errs.New("not support kerning format ", format)
 	}
 }
 

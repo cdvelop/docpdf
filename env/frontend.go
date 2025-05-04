@@ -120,3 +120,35 @@ func FileExists(pathOrContent any) ([]byte, error) {
 		return nil, js.Error{Value: js.ValueOf(errMsg)}
 	}
 }
+
+// GetSize returns the size of content from a URL or a byte slice.
+// For frontend: fetches URL content for size, uses len() for byte slices.
+// Does not support local file paths.
+func GetSize(pathOrContent any) (int64, error) {
+	console := js.Global().Get("console")
+
+	switch v := pathOrContent.(type) {
+	case string:
+		// Check if it's a URL
+		if isURL(v) {
+			// Fetch the content to get its size
+			content, err := FetchURL(v)
+			if err != nil {
+				return -1, err
+			}
+			return int64(len(content)), nil
+		} else {
+			// Local file paths are not supported
+			errMsg := "GetSize: Local file system access not supported in browser"
+			console.Call("Log", errMsg, v)
+			return -1, js.Error{Value: js.ValueOf(errMsg)}
+		}
+	case []byte:
+		// It's already content
+		return int64(len(v)), nil
+	default:
+		errMsg := fmt.Sprintf("unsupported type for GetSize: %T", pathOrContent)
+		console.Call("Log", "GetSize error:", errMsg)
+		return -1, js.Error{Value: js.ValueOf(errMsg)}
+	}
+}

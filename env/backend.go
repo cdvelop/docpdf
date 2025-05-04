@@ -65,3 +65,22 @@ func FileExists(pathOrContent any) ([]byte, error) {
 		return nil, fmt.Errorf("unsupported type: %T, expected string or []byte", pathOrContent)
 	}
 }
+
+// GetSize returns the size of a file or byte slice.
+// For backend: uses os.Stat for files, len() for byte slices.
+func GetSize(pathOrContent any) (int64, error) {
+	switch v := pathOrContent.(type) {
+	case string:
+		// Assume it's a file path
+		stat, err := os.Stat(v)
+		if err != nil {
+			return -1, err
+		}
+		return stat.Size(), nil
+	case []byte:
+		// It's already content
+		return int64(len(v)), nil
+	default:
+		return -1, fmt.Errorf("unsupported type for GetSize: %T", pathOrContent)
+	}
+}

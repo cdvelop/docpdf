@@ -1,48 +1,55 @@
-package core
+package fontengine
 
 import (
 	"bufio"
 	"bytes"
 	"compress/zlib"
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/cdvelop/docpdf/env"
+	"github.com/cdvelop/docpdf/errs"
+	"github.com/cdvelop/docpdf/mathutils"
 )
 
-// ErrFontLicenseDoesNotAllowEmbedding Font license does not allow embedding
-var ErrFontLicenseDoesNotAllowEmbedding = errors.New("Font license does not allow embedding")
+// errFontLicenseDoesNotAllowEmbedding Font license does not allow embedding
+var errFontLicenseDoesNotAllowEmbedding = errs.New("Font license does not allow embedding")
 
-// FontMaker font maker
-type FontMaker struct {
+// FontEngine font maker
+type FontEngine struct {
 	results []string
+
+	fileWrite env.FileWriter
 }
 
 // GetResults get result
-func (f *FontMaker) GetResults() []string {
+func (f *FontEngine) GetResults() []string {
 	return f.results
 }
 
-// NewFontMaker new FontMaker
-func NewFontMaker() *FontMaker {
-	return new(FontMaker)
+// NewFontEngine new FontEngine
+func NewFontEngine(w env.FileWriter) *FontEngine {
+	return &FontEngine{
+		fileWrite: w,
+	}
 }
 
-func (f *FontMaker) MakeFont(fontpath string, mappath string, encode string, outfolderpath string) error {
+func (f *FontEngine) MakeFont(fontpath string, mappath string, encode string, outfolderpath string) error {
 
 	encodingpath := mappath + "/" + encode + ".map"
 
 	//read font file
-	if _, err := os.Stat(fontpath); os.IsNotExist(err) {
+	fontbytes, err := env.FileExists(fontpath)
+	if err != nil {
 		return err
 	}
 
 	fileext := filepath.Ext(fontpath)
 	if strings.ToLower(fileext) != ".ttf" {
 		//now support only ttf :-P
-		return errors.New("support only ttf ")
+		return errs.New("support only ttf ")
 	}
 
 	fontmaps, err := f.LoadMap(encodingpath)
@@ -64,17 +71,12 @@ func (f *FontMaker) MakeFont(fontpath string, mappath string, encode string, out
 	var buff bytes.Buffer
 	gzipwriter := zlib.NewWriter(&buff)
 
-	fontbytes, err := os.ReadFile(fontpath)
-	if err != nil {
-		return err
-	}
-
 	_, err = gzipwriter.Write(fontbytes)
 	if err != nil {
 		return err
 	}
 	gzipwriter.Close()
-	err = os.WriteFile(outfolderpath+"/"+gzfilename, buff.Bytes(), 0644)
+	err = f.fileWrite(outfolderpath+"/"+gzfilename, buff.Bytes())
 	if err != nil {
 		return err
 	}
@@ -90,12 +92,12 @@ func (f *FontMaker) MakeFont(fontpath string, mappath string, encode string, out
 	return nil
 }
 
-func (f *FontMaker) GoStructName(name string) string {
+func (f *FontEngine) GoStructName(name string) string {
 	goname := strings.ToUpper(name[0:1]) + name[1:]
 	return goname
 }
 
-func (f *FontMaker) MakeDefinitionFile(gofontname string, mappath string, exportfile string, encode string, fontmaps []FontMap, info TtfInfo) (string, error) {
+func (f *FontEngine) MakeDefinitionFile(gofontname string, mappath string, exportfile string, encode string, fontmaps []fontMap, info ttfInfo) (string, error) {
 
 	fonttype := "TrueType"
 	str := ""
@@ -201,7 +203,7 @@ func (f *FontMaker) MakeDefinitionFile(gofontname string, mappath string, export
 	str += "\treturn me.family\n"
 	str += "}\n"
 
-	err = os.WriteFile(exportfile, []byte(str), 0666)
+	err = f.fileWrite(exportfile, []byte(str))
 	if err != nil {
 		return "", err
 	}
@@ -209,7 +211,7 @@ func (f *FontMaker) MakeDefinitionFile(gofontname string, mappath string, export
 	return str, nil
 }
 
-func (f *FontMaker) MakeFontDescriptor(info TtfInfo) (string, error) {
+func (f *FontEngine) MakeFontDescriptor(info ttfInfo) (string, error) {
 
 	fd := ""
 	fd = "\tme.desc = make([]docpdf.fontDescItem,8)\n"
@@ -232,7 +234,7 @@ func (f *FontMaker) MakeFontDescriptor(info TtfInfo) (string, error) {
 	capHeight, err := info.GetInt64("CapHeight")
 	if err == nil {
 		fd += fmt.Sprintf("\tme.desc[2] =  docpdf.fontDescItem{ Key:\"CapHeight\", Val :  \"%d\" }\n", capHeight)
-	} else if err == ERROR_NO_KEY_FOUND {
+	} else if err == eRROR_NO_KEY_FOUND {
 		fd += fmt.Sprintf("\tme.desc[2] =  docpdf.fontDescItem{ Key:\"CapHeight\", Val :  \"%d\" }\n", ascender)
 	} else {
 		return "", err
@@ -273,7 +275,7 @@ func (f *FontMaker) MakeFontDescriptor(info TtfInfo) (string, error) {
 	issetStdVW := false
 	if err == nil {
 		issetStdVW = true
-	} else if err == ERROR_NO_KEY_FOUND {
+	} else if err == eRROR_NO_KEY_FOUND {
 		issetStdVW = false
 	} else {
 		return "", err
@@ -303,7 +305,7 @@ func (f *FontMaker) MakeFontDescriptor(info TtfInfo) (string, error) {
 	return fd, nil
 }
 
-func (f *FontMaker) MakeFontEncoding(mappath string, fontmaps []FontMap) (string, error) {
+func (f *FontEngine) MakeFontEncoding(mappath string, fontmaps []fontMap) (string, error) {
 
 	refpath := mappath + "/cp1252.map"
 	ref, err := f.LoadMap(refpath)
@@ -324,7 +326,7 @@ func (f *FontMaker) MakeFontEncoding(mappath string, fontmaps []FontMap) (string
 	return strings.TrimSpace(s), nil
 }
 
-func (f *FontMaker) MakeWidthArray(widths map[int]int) (string, error) {
+func (f *FontEngine) MakeWidthArray(widths map[int]int) (string, error) {
 
 	str := "\tme.cw = make(docpdf.fontCw)\n"
 	for c := 0; c <= 255; c++ {
@@ -344,23 +346,7 @@ func (f *FontMaker) MakeWidthArray(widths map[int]int) (string, error) {
 	return str, nil
 }
 
-func (f *FontMaker) FileSize(path string) (int64, error) {
-
-	file, err := os.Open(path)
-	if err != nil {
-		return -1, err
-	}
-	defer file.Close()
-
-	// get the file size
-	stat, err := file.Stat()
-	if err != nil {
-		return -1, err
-	}
-	return stat.Size(), nil
-}
-
-func (f *FontMaker) GetInfoFromTrueType(fontpath string, fontmaps []FontMap) (TtfInfo, error) {
+func (f *FontEngine) GetInfoFromTrueType(fontpath string, fontmaps []fontMap) (ttfInfo, error) {
 
 	var parser TTFParser
 	err := parser.Parse(fontpath)
@@ -369,18 +355,18 @@ func (f *FontMaker) GetInfoFromTrueType(fontpath string, fontmaps []FontMap) (Tt
 	}
 
 	if !parser.Embeddable {
-		return nil, ErrFontLicenseDoesNotAllowEmbedding
+		return nil, errFontLicenseDoesNotAllowEmbedding
 	}
 
 	info := NewTtfInfo()
 
-	fileContent, err := os.ReadFile(fontpath)
+	fileContent, err := env.FileExists(fontpath)
 	if err != nil {
 		return nil, err
 	}
 	info.PushBytes("Data", fileContent)
 
-	size, err := f.FileSize(fontpath)
+	size, err := env.GetSize(fontpath)
 	if err != nil {
 		return nil, err
 	}
@@ -432,58 +418,78 @@ func (f *FontMaker) GetInfoFromTrueType(fontpath string, fontmaps []FontMap) (Tt
 	return info, nil
 }
 
-func (f *FontMaker) MultiplyAndRoundWithUInt64(k float64, v uint) int {
+func (f *FontEngine) MultiplyAndRoundWithUInt64(k float64, v uint) int {
 	r := k * float64(v)
 	return f.Round(r)
 }
 
-func (f *FontMaker) MultiplyAndRound(k float64, v int) int {
+func (f *FontEngine) MultiplyAndRound(k float64, v int) int {
 	r := k * float64(v)
 	return f.Round(r)
 }
 
-func (f *FontMaker) Round(value float64) int {
-	return Round(value)
+func (f *FontEngine) Round(value float64) int {
+	return mathutils.Round(value)
 }
 
-func (f *FontMaker) LoadMap(encodingpath string) ([]FontMap, error) {
+func (f *FontEngine) LoadMap(encodingpath string) ([]fontMap, error) {
 
-	if _, err := os.Stat(encodingpath); os.IsNotExist(err) {
+	// Use env.FileExists to check existence and get content
+	fileContent, err := env.FileExists(encodingpath)
+	if err != nil {
+		// env.FileExists returns an error if the file doesn't exist or cannot be read
 		return nil, err
 	}
 
-	var fontmaps []FontMap
+	var fontmaps []fontMap
 	i := 0
 	max := 256
 	for i < max {
-		fontmaps = append(fontmaps, FontMap{Uv: -1, Name: ".notdef"})
+		fontmaps = append(fontmaps, fontMap{Uv: -1, Name: ".notdef"})
 		i++
 	}
 
-	file, err := os.Open(encodingpath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
+	// Create a reader from the byte slice
+	reader := bytes.NewReader(fileContent)
+	scanner := bufio.NewScanner(reader) // Use the reader
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") { // Skip empty lines or comments
+			continue
+		}
 		e := strings.Split(line, " ")
+		if len(e) < 3 {
+			// Handle potential malformed lines if necessary
+			continue // Or return an error
+		}
 		strC := (e[0])[1:]
 		strUv := (e[1])[2:]
 		c, err := strconv.ParseInt(strC, 16, 0)
 		if err != nil {
-			return nil, err
+			// Replace fmt.Errorf with errs.New
+			return nil, errs.New("error parsing character code", strC, "in map file", encodingpath, err)
 		}
+		if c < 0 || c >= int64(max) {
+			// Handle out-of-range character codes if necessary
+			// Consider creating a specific error if needed, e.g., errs.New("character code out of range", c, "in map file", encodingpath)
+			continue // Or return an error
+		}
+
 		uv, err := strconv.ParseInt(strUv, 16, 0)
 		if err != nil {
-			return nil, err
+			// Replace fmt.Errorf with errs.New
+			return nil, errs.New("error parsing unicode value", strUv, "in map file", encodingpath, err)
 		}
 		name := e[2]
 		fontmaps[c].Name = name
 		fontmaps[c].Uv = int(uv)
+	}
+
+	// Check for scanner errors
+	if err := scanner.Err(); err != nil {
+		// Replace fmt.Errorf with errs.New
+		return nil, errs.New("error scanning map file", encodingpath, err)
 	}
 
 	return fontmaps, nil

@@ -70,6 +70,17 @@ func RotateCoordinate(cx, cy, x, y int, thetaRadians float64) (rx, ry int) {
 	return
 }
 
+// Round rounds a float64 to the nearest int.
+// eg: 1.5 -> 2, 1.4 -> 1, -1.5 -> -2, -1.4 -> -1
+func Round(value float64) int {
+	if value < 0.0 {
+		value -= 0.5
+	} else {
+		value += 0.5
+	}
+	return int(value)
+}
+
 // RoundUp rounds up to a given roundTo value.
 func RoundUp(value, roundTo float64) float64 {
 	if roundTo < 0.000000000000001 {

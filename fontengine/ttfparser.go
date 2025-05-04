@@ -1,26 +1,31 @@
-package core
+package fontengine
 
 import (
 	//"encoding/binary"
 	//"encoding/hex"
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"io"
-	"os"
 	"regexp"
-	"strconv"
-	"strings"
+
+	"github.com/cdvelop/docpdf/env"
+	"github.com/cdvelop/docpdf/errs"
+	"github.com/cdvelop/tinystring"
 )
 
-var ERROR_NO_UNICODE_ENCODING_FOUND = errors.New("No Unicode encoding found")
-var ERROR_UNEXPECTED_SUBTABLE_FORMAT = errors.New("Unexpected subtable format")
-var ERROR_INCORRECT_MAGIC_NUMBER = errors.New("Incorrect magic number")
-var ERROR_POSTSCRIPT_NAME_NOT_FOUND = errors.New("PostScript name not found")
+type fontMap struct {
+	Uv   int
+	Name string
+}
+
+var eRROR_NO_UNICODE_ENCODING_FOUND = errs.New("No Unicode encoding found")
+var eRROR_UNEXPECTED_SUBTABLE_FORMAT = errs.New("Unexpected subtable format")
+var eRROR_INCORRECT_MAGIC_NUMBER = errs.New("Incorrect magic number")
+var eRROR_POSTSCRIPT_NAME_NOT_FOUND = errs.New("PostScript name not found")
 
 // TTFParser true type font parser
 type TTFParser struct {
-	tables map[string]TableDirectoryEntry
+	tables map[string]tableDirectoryEntry
 	//head
 	unitsPerEm       uint
 	xMin             int
@@ -69,21 +74,32 @@ type TTFParser struct {
 	symbol        bool
 
 	//cmap format 12
-	groupingTables []CmapFormat12GroupingTable
+	groupingTables []cmapFormat12GroupingTable
 
 	//data of font
 	cachedFontData []byte
 
 	//kerning
 	useKerning bool //user config for use or not use kerning
-	kern       *KernTable
+	kern       *kernTable
+}
+
+type tableDirectoryEntry struct {
+	CheckSum uint
+	Offset   uint
+	Length   uint
+}
+
+func (t tableDirectoryEntry) PaddedLength() int {
+	l := int(t.Length)
+	return (l + 3) & ^3
 }
 
 var Symbolic = 1 << 2
 var Nonsymbolic = (1 << 5)
 
-// Kern get KernTable
-func (t *TTFParser) Kern() *KernTable {
+// Kern get kernTable
+func (t *TTFParser) Kern() *kernTable {
 	return t.kern
 }
 
@@ -93,7 +109,7 @@ func (t *TTFParser) UnderlinePosition() int {
 }
 
 // GroupingTables get cmap format12 grouping table
-func (t *TTFParser) GroupingTables() []CmapFormat12GroupingTable {
+func (t *TTFParser) GroupingTables() []cmapFormat12GroupingTable {
 	return t.groupingTables
 }
 
@@ -192,7 +208,7 @@ func (t *TTFParser) Chars() map[int]uint {
 	return t.chars
 }
 
-func (t *TTFParser) GetTables() map[string]TableDirectoryEntry {
+func (t *TTFParser) GetTables() map[string]tableDirectoryEntry {
 	return t.tables
 }
 
@@ -203,7 +219,7 @@ func (t *TTFParser) SetUseKerning(use bool) {
 
 // Parse parse
 func (t *TTFParser) Parse(filepath string) error {
-	data, err := os.ReadFile(filepath)
+	data, err := env.FileExists(filepath)
 	if err != nil {
 		return err
 	}
@@ -229,7 +245,7 @@ func (t *TTFParser) ParseFontData(fontData []byte) error {
 		return err
 	}
 	if !bytes.Equal(version, []byte{0x00, 0x01, 0x00, 0x00}) {
-		return errors.New("Unrecognized file (font) format")
+		return errs.New("Unrecognized file (font) format")
 	}
 
 	i := uint(0)
@@ -242,7 +258,7 @@ func (t *TTFParser) ParseFontData(fontData []byte) error {
 		return err
 	}
 
-	t.tables = make(map[string]TableDirectoryEntry)
+	t.tables = make(map[string]tableDirectoryEntry)
 	for i < numTables {
 
 		tag, err := t.Read(fd, 4)
@@ -264,7 +280,7 @@ func (t *TTFParser) ParseFontData(fontData []byte) error {
 		if err != nil {
 			return err
 		}
-		var table TableDirectoryEntry
+		var table tableDirectoryEntry
 		table.Offset = uint(offset)
 		table.CheckSum = CheckSum
 		table.Length = length
@@ -562,7 +578,7 @@ func (t *TTFParser) ParseName(fd *bytes.Reader) error {
 			}
 			//s := fmt.Sprintf("%s", string(tmpStmp)) //strings(stmp)
 			s := string(tmpStmp)
-			s = strings.Replace(s, strconv.Itoa(0), "", -1)
+			s = tinystring.Convert(s).Replace(0, "").String()
 			s, err = t.PregReplace("|[ \\[\\](){}<>/%]|", "", s)
 			if err != nil {
 				return err
@@ -573,7 +589,7 @@ func (t *TTFParser) ParseName(fd *bytes.Reader) error {
 	}
 
 	if t.postScriptName == "" {
-		return ERROR_POSTSCRIPT_NAME_NOT_FOUND
+		return eRROR_POSTSCRIPT_NAME_NOT_FOUND
 	}
 
 	return nil
@@ -630,7 +646,7 @@ func (t *TTFParser) ParseCmap(fd *bytes.Reader) error {
 
 	if offset31 == 0 {
 		//No Unicode encoding found
-		return ERROR_NO_UNICODE_ENCODING_FOUND
+		return eRROR_NO_UNICODE_ENCODING_FOUND
 	}
 
 	var startCount, endCount, idDelta, idRangeOffset, glyphIDArray []uint
@@ -647,7 +663,7 @@ func (t *TTFParser) ParseCmap(fd *bytes.Reader) error {
 
 	if format != 4 {
 		//Unexpected subtable format
-		return ERROR_UNEXPECTED_SUBTABLE_FORMAT
+		return eRROR_UNEXPECTED_SUBTABLE_FORMAT
 	}
 
 	length, err := t.ReadUShort(fd)
@@ -843,7 +859,7 @@ func (t *TTFParser) ParseHead(fd *bytes.Reader) error {
 	}
 
 	if magicNumber != 0x5F0F3CF5 {
-		return ERROR_INCORRECT_MAGIC_NUMBER
+		return eRROR_INCORRECT_MAGIC_NUMBER
 	}
 
 	err = t.Skip(fd, 2)
@@ -948,7 +964,7 @@ func (t *TTFParser) ParseMaxp(fd *bytes.Reader) error {
 }
 
 // ErrTableNotFound error table not found
-var ErrTableNotFound = errors.New("table not found")
+var ErrTableNotFound = errs.New("table not found")
 
 // Seek seek by tag
 func (t *TTFParser) Seek(fd *bytes.Reader, tag string) error {
@@ -1031,7 +1047,7 @@ func (t *TTFParser) Read(fd *bytes.Reader, length int) ([]byte, error) {
 		return nil, err
 	}
 	if readlength != length {
-		return nil, errors.New("file out of length")
+		return nil, errs.New("file out of length")
 	}
 	return buff, nil
 }

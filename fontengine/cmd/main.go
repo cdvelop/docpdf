@@ -1,11 +1,13 @@
 package main
 
+//go:generate go run main.go
+
 import (
 	"bytes"
 	"fmt"
 	"os"
 
-	"github.com/cdvelop/docpdf/fontmaker/core"
+	"github.com/cdvelop/docpdf/fontengine"
 	//"runtime/debug"
 )
 
@@ -23,7 +25,16 @@ func main() {
 	fontpath := os.Args[i+2]
 	outputpath := os.Args[i+3]
 
-	fmk := core.NewFontMaker()
+	fmk := fontengine.NewFontEngine(func(filename string, data []byte) error {
+		os.MkdirAll(outputpath, os.ModePerm)
+		f, err := os.Create(outputpath + "/" + filename)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		_, err = f.Write(data)
+		return err
+	})
 	err := fmk.MakeFont(fontpath, mappath, encoding, outputpath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "\nERROR: %s\n\n", err.Error())
