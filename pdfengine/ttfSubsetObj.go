@@ -16,7 +16,7 @@ var errGlyphNotFound = errs.New("glyph not found")
 
 // ttfSubsetObj pdf subsetFont object
 type ttfSubsetObj struct {
-	ttfp                  core.TTFParser
+	ttfp                  fontengine.TTFParser
 	Family                string
 	CharacterToGlyphIndex *mapOfCharacterToGlyphIndex
 	CountOfFont           int
@@ -148,7 +148,7 @@ func (s *ttfSubsetObj) GetTtfFontOption() TtfOption {
 }
 
 // KernValueByLeft find kern value from kern table by left
-func (s *ttfSubsetObj) KernValueByLeft(left uint) (bool, *core.KernValue) {
+func (s *ttfSubsetObj) KernValueByLeft(left uint) (bool, *fontengine.KernValue) {
 
 	if !s.ttfFontOption.UseKerning {
 		return false, nil
@@ -380,7 +380,7 @@ func (s *ttfSubsetObj) GlyphIndexToPdfWidth(glyphIndex uint) uint {
 }
 
 // GetTTFParser gets TTFParser.
-func (s *ttfSubsetObj) GetTTFParser() *core.TTFParser {
+func (s *ttfSubsetObj) GetTTFParser() *fontengine.TTFParser {
 	return &s.ttfp
 }
 

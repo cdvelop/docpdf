@@ -25,7 +25,7 @@ var eRROR_POSTSCRIPT_NAME_NOT_FOUND = errs.New("PostScript name not found")
 
 // TTFParser true type font parser
 type TTFParser struct {
-	tables map[string]tableDirectoryEntry
+	tables map[string]TableDirectoryEntry
 	//head
 	unitsPerEm       uint
 	xMin             int
@@ -84,13 +84,13 @@ type TTFParser struct {
 	kern       *kernTable
 }
 
-type tableDirectoryEntry struct {
+type TableDirectoryEntry struct {
 	CheckSum uint
 	Offset   uint
 	Length   uint
 }
 
-func (t tableDirectoryEntry) PaddedLength() int {
+func (t TableDirectoryEntry) PaddedLength() int {
 	l := int(t.Length)
 	return (l + 3) & ^3
 }
@@ -208,7 +208,7 @@ func (t *TTFParser) Chars() map[int]uint {
 	return t.chars
 }
 
-func (t *TTFParser) GetTables() map[string]tableDirectoryEntry {
+func (t *TTFParser) GetTables() map[string]TableDirectoryEntry {
 	return t.tables
 }
 
@@ -258,7 +258,7 @@ func (t *TTFParser) ParseFontData(fontData []byte) error {
 		return err
 	}
 
-	t.tables = make(map[string]tableDirectoryEntry)
+	t.tables = make(map[string]TableDirectoryEntry)
 	for i < numTables {
 
 		tag, err := t.Read(fd, 4)
@@ -280,7 +280,7 @@ func (t *TTFParser) ParseFontData(fontData []byte) error {
 		if err != nil {
 			return err
 		}
-		var table tableDirectoryEntry
+		var table TableDirectoryEntry
 		table.Offset = uint(offset)
 		table.CheckSum = CheckSum
 		table.Length = length

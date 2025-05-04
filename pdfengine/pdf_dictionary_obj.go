@@ -3,9 +3,10 @@ package pdfengine
 import (
 	"compress/zlib"
 	"fmt"
-	"github.com/cdvelop/docpdf/fontengine"
 	"io"
 	"sort"
+
+	"github.com/cdvelop/docpdf/fontengine"
 )
 
 // entrySelectors entry selectors
@@ -99,7 +100,7 @@ func (p *pdfDictionaryObj) distinctInts(nn []int) []int {
 
 func (p *pdfDictionaryObj) makeGlyfAndLocaTable() ([]byte, []int, error) {
 	ttfp := p.PtrToSubsetFontObj.GetTTFParser()
-	var glyf core.tableDirectoryEntry
+	var glyf fontengine.TableDirectoryEntry
 
 	numGlyphs := int(ttfp.NumGlyphs())
 
@@ -179,7 +180,7 @@ func (p *pdfDictionaryObj) getGlyphData(glyph int) []byte {
 func (p *pdfDictionaryObj) makeFont() ([]byte, error) {
 	var buff buff
 	ttfp := p.PtrToSubsetFontObj.GetTTFParser()
-	tables := make(map[string]core.tableDirectoryEntry)
+	tables := make(map[string]fontengine.TableDirectoryEntry)
 	tables["cvt "] = ttfp.GetTables()["cvt "] //มีช่องว่างด้วยนะ
 	tables["fpgm"] = ttfp.GetTables()["fpgm"]
 	tables["glyf"] = ttfp.GetTables()["glyf"]

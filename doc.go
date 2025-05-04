@@ -3,6 +3,7 @@ package docpdf
 import (
 	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/env"
 	"github.com/cdvelop/docpdf/pdfengine"
 )
 
@@ -62,7 +63,7 @@ func NewDocument(configs ...any) *Document {
 	// Process all configurations in one place
 	for _, v := range configs {
 		switch v := v.(type) {
-		case pdfengine.FileWriter:
+		case env.FileWriter:
 			// Set custom file writer if provided
 			doc.FileWriter = v
 		case func(...any):
