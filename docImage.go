@@ -142,18 +142,21 @@ func (img *docImage) Draw() error {
 
 	// Determine alignment.Alignment (after possible page break)
 	x, y := img.calculatePosition(finalWidth)
-
-	// Adjust vertical alignment.Alignment for inline images based on alignment
+	// Adjust vertical alignment for inline images based on alignment
 	if img.inline {
 		lineHeight := img.doc.GetLineHeight()
 
+		// Adjust for proper baseline alignment
+		baselineOffset := lineHeight * 0.15 // Small offset to position correctly against text baseline
+
 		switch img.valign {
-		case 0: // alignment.Top alignment
-			// No adjustment needed
-		case 1: // alignment.Middle alignment
+		case 0: // Top alignment
+			// Add small offset to match with text top
+			y = y - baselineOffset
+		case 1: // Middle alignment
 			y = y + (lineHeight-finalHeight)/2
-		case 2: // alignment.Bottom alignment
-			y = y + lineHeight - finalHeight
+		case 2: // Bottom alignment
+			y = y + lineHeight - finalHeight + baselineOffset
 		default:
 			// Default to middle alignment
 			y = y + (lineHeight-finalHeight)/2
@@ -170,25 +173,27 @@ func (img *docImage) Draw() error {
 	if err != nil {
 		return err
 	}
-
-	// Handle alignment.Alignment updates based on inline setting
+	// Handle alignment updates based on inline setting
 	if img.inline {
-		// For inline images, advance X alignment.Alignment but keep Y unchanged
+		// For inline images, advance X position but keep Y unchanged
 		img.doc.SetX(x + finalWidth)
 
-		// Store that we have an inline element active
+		// Store that we have an inline element active and remember its width
 		img.doc.inlineMode = true
+		img.doc.lastInlineWidth = finalWidth
 	} else {
-		// For block images, advance Y alignment.Alignment to avoid text overlapping with the image
+		// For block images, advance Y position to avoid text overlapping with the image
 		if !img.hasPos {
-			img.doc.newLineBreakBasedOnDefaultFont(y + finalHeight)
+			// Use a small adjustment to prevent excessive spacing under images
+			img.doc.SetY(y + finalHeight - 2)
 		}
 
-		// Reset X alignment.Alignment to left margin since this is a block element
+		// Reset X position to left margin since this is a block element
 		img.doc.SetX(img.doc.Margins().Left)
 
 		// Reset inline mode
 		img.doc.inlineMode = false
+		img.doc.lastInlineWidth = 0
 	}
 
 	return nil
@@ -208,16 +213,37 @@ func (img *docImage) getImageDimensions(imageContent []byte) (float64, float64, 
 
 // calculateDimensions determines the final width and height of the image
 func (img *docImage) calculateDimensions(imgWidth, imgHeight float64) (float64, float64) {
+	// Handle zero dimensions gracefully
+	if imgWidth <= 0 {
+		imgWidth = 1
+	}
+	if imgHeight <= 0 {
+		imgHeight = 1
+	}
+
 	// Default to original dimensions
 	finalWidth := imgWidth
 	finalHeight := imgHeight
 
-	// Scale down if original image is too large
-	contentAreaWidth := img.doc.contentAreaWidth - img.doc.Margins().Left - img.doc.Margins().Right
+	// Original aspect ratio
+	aspectRatio := imgWidth / imgHeight
+
+	// Calculate available content area with proper margin consideration
+	contentAreaWidth := img.doc.contentAreaWidth
+	availablePageHeight := img.doc.Config.PageSize.H - img.doc.Margins().Top - img.doc.Margins().Bottom
+
+	// Scale down if original image is too large for page width
 	if finalWidth > contentAreaWidth {
 		ratio := contentAreaWidth / finalWidth
 		finalWidth = contentAreaWidth
 		finalHeight = finalHeight * ratio
+	}
+
+	// Also check height constraints for non-inline images
+	if !img.inline && finalHeight > availablePageHeight {
+		ratio := availablePageHeight / finalHeight
+		finalHeight = availablePageHeight
+		finalWidth = finalWidth * ratio
 	}
 
 	// Apply user-specified dimensions
@@ -227,14 +253,20 @@ func (img *docImage) calculateDimensions(imgWidth, imgHeight float64) (float64, 
 		finalHeight = img.height
 	} else if img.width > 0 && img.keepRatio {
 		// Only width specified, calculate height to maintain aspect ratio
-		ratio := img.width / finalWidth
 		finalWidth = img.width
-		finalHeight = finalHeight * ratio
+		finalHeight = finalWidth / aspectRatio
 	} else if img.height > 0 && img.keepRatio {
 		// Only height specified, calculate width to maintain aspect ratio
-		ratio := img.height / finalHeight
 		finalHeight = img.height
-		finalWidth = finalWidth * ratio
+		finalWidth = finalHeight * aspectRatio
+	}
+
+	// Safety check for minimum dimensions
+	if finalWidth < 1 {
+		finalWidth = 1
+	}
+	if finalHeight < 1 {
+		finalHeight = 1
 	}
 
 	return finalWidth, finalHeight

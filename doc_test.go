@@ -199,7 +199,7 @@ func TestDocumentAPIUsage(t *testing.T) {
 
 	doc.AddText("This table is right-aligned.").AlignRight().Draw()
 
-	// add page for checking page header and footer
+	// add blank page for checking page header and footer
 	doc.AddPage()
 
 	// Save the document to the specified location
