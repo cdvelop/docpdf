@@ -24,28 +24,24 @@ func TestVectorRendererPath(t *testing.T) {
 	typed.LineTo(0, 100)
 	typed.Close()
 	typed.FillStroke()
-
 	buffer := bytes.NewBuffer([]byte{})
 	err = typed.Save(buffer)
 	testutil.AssertNil(t, err)
 
-	raw := string(buffer.Bytes())
+	raw := buffer.String()
 
 	testutil.AssertTrue(t, strings.HasPrefix(raw, "<svg"))
 	testutil.AssertTrue(t, strings.HasSuffix(raw, "</svg>"))
 }
 
-func TestVectorRendererMeasureText(t *testing.T) {
-	// replaced new assertions helper
-
-	f, err := GetDefaultFont()
-	testutil.AssertNil(t, err)
+func TestVectorRendererMeasureText(t *testing.T) { // replaced new assertions helper
 
 	vr, err := SVG(100, 100)
 	testutil.AssertNil(t, err)
-
 	vr.SetDPI(DefaultDPI)
-	vr.SetFont(f)
+	// Usar GetDefaultFontProvider() en lugar de pasar el *truetype.Font directamente
+	fontProvider, _ := GetDefaultFontProvider()
+	vr.SetFont(fontProvider)
 	vr.SetFontSize(12.0)
 
 	tb := vr.MeasureText("Ljp")

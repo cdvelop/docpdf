@@ -144,7 +144,7 @@ func LegendThin(c *Chart, userDefaults ...Style) Renderable {
 			legendStyle = chartDefaults.InheritFrom(legendDefaults)
 		}
 
-		r.SetFont(legendStyle.GetFont())
+		r.SetFont(legendStyle.GetFontProvider())
 		r.SetFontColor(legendStyle.GetFontColor())
 		r.SetFontSize(legendStyle.GetFontSize())
 
@@ -180,10 +180,9 @@ func LegendThin(c *Chart, userDefaults ...Style) Renderable {
 			Top:    legendYMargin,
 			Bottom: legendYMargin + legendBoxHeight,
 		}
-
 		Draw.Box(r, legendBox, legendDefaults)
 
-		r.SetFont(legendStyle.GetFont())
+		r.SetFont(legendStyle.GetFontProvider())
 		r.SetFontColor(legendStyle.GetFontColor())
 		r.SetFontSize(legendStyle.GetFontSize())
 

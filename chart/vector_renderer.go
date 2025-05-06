@@ -173,8 +173,15 @@ func (vr *vectorRenderer) Circle(radius float64, x, y int) {
 }
 
 // SetFont implements the interface method.
-func (vr *vectorRenderer) SetFont(f *truetype.Font) {
-	vr.s.Font = f
+func (vr *vectorRenderer) SetFont(f FontProvider) {
+	// Si es un adaptador TrueType, usamos el Font interno
+	if adapter, ok := f.(*TrueTypeFontAdapter); ok {
+		vr.s.Font = adapter.Font
+	} else {
+		// Aquí manejaríamos otros tipos de fuentes en el futuro
+		// Por ahora, para SVG, solo necesitamos el ID que será referenciado
+		// Lo guardaremos en un campo adicional cuando implementemos completamente SVG
+	}
 }
 
 // SetFontColor implements the interface method.

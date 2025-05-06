@@ -394,7 +394,7 @@ func (sbc StackedBarChart) drawHorizontalYAxis(r Renderer, canvasBox canvas.Box)
 
 func (sbc StackedBarChart) drawTitle(r Renderer) {
 	if len(sbc.Title) > 0 && !sbc.TitleStyle.Hidden {
-		r.SetFont(sbc.TitleStyle.GetFont(sbc.GetFont()))
+		r.SetFont(sbc.TitleStyle.GetFontProvider())
 		r.SetFontColor(sbc.TitleStyle.GetFontColor(sbc.GetColorPalette().TextColor()))
 		titleFontSize := sbc.TitleStyle.GetFontSize(DefaultTitleFontSize)
 		r.SetFontSize(titleFontSize)

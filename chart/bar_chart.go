@@ -269,7 +269,8 @@ func (bc BarChart) drawYAxis(r Renderer, canvasBox canvas.Box, yr Range, ticks [
 
 func (bc BarChart) drawTitle(r Renderer) {
 	if len(bc.Title) > 0 && !bc.TitleStyle.Hidden {
-		r.SetFont(bc.TitleStyle.GetFont(bc.GetFont()))
+		// Usar GetFontProvider en lugar de GetFont para compatibilidad con la nueva interfaz
+		r.SetFont(bc.TitleStyle.GetFontProvider())
 		r.SetFontColor(bc.TitleStyle.GetFontColor(bc.GetColorPalette().TextColor()))
 		titleFontSize := bc.TitleStyle.GetFontSize(bc.getTitleFontSize())
 		r.SetFontSize(titleFontSize)
@@ -498,7 +499,7 @@ func (bc BarChart) measureTitleHeight(r Renderer) int {
 		return 0
 	}
 	style := bc.styleDefaultsTitle() // Get combined style
-	r.SetFont(style.GetFont(bc.GetFont()))
+	r.SetFont(style.GetFontProvider())
 	r.SetFontColor(style.GetFontColor(bc.GetColorPalette().TextColor()))
 	r.SetFontSize(style.GetFontSize(bc.getTitleFontSize()))
 

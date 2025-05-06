@@ -59,12 +59,12 @@ type Style struct {
 
 	DotWidthProvider SizeProvider
 	DotColorProvider DotColorProvider
+	FillColor        style.Color
 
-	FillColor style.Color
-
-	FontSize  float64
-	FontColor style.Color
-	Font      *truetype.Font
+	FontSize     float64
+	FontColor    style.Color
+	Font         *truetype.Font
+	FontProvider FontProvider
 
 	TextHorizontalAlign TextHorizontalAlign
 	TextVerticalAlign   TextVerticalAlign
@@ -84,6 +84,7 @@ func (s Style) IsZero() bool {
 		s.FontColor.IsZero() &&
 		s.FontSize == 0 &&
 		s.Font == nil &&
+		s.FontProvider == nil &&
 		s.ClassName == ""
 }
 
@@ -284,6 +285,27 @@ func (s Style) GetFont(defaults ...*truetype.Font) *truetype.Font {
 	return s.Font
 }
 
+// GetFontProvider returns the font provider.
+func (s Style) GetFontProvider(defaults ...FontProvider) FontProvider {
+	if s.FontProvider != nil {
+		return s.FontProvider
+	}
+	// Si no hay FontProvider pero hay un Font truetype, crear un adaptador
+	if s.Font != nil {
+		return &TrueTypeFontAdapter{
+			Font:       s.Font,
+			FontName:   "Default", // Valores predeterminados que serán reemplazados en implementaciones futuras
+			FontFamily: "Default",
+			FontWeight: "regular",
+			FontStyle:  "normal",
+		}
+	}
+	if len(defaults) > 0 {
+		return defaults[0]
+	}
+	return nil
+}
+
 // GetPadding returns the padding.
 func (s Style) GetPadding(defaults ...canvas.Box) canvas.Box {
 	if s.Padding.IsZero() {
@@ -356,7 +378,7 @@ func (s Style) WriteToRenderer(r Renderer) {
 	r.SetStrokeWidth(s.GetStrokeWidth())
 	r.SetStrokeDashArray(s.GetStrokeDashArray())
 	r.SetFillColor(s.GetFillColor())
-	r.SetFont(s.GetFont())
+	r.SetFont(s.GetFontProvider())
 	r.SetFontColor(s.GetFontColor())
 	r.SetFontSize(s.GetFontSize())
 
@@ -378,7 +400,7 @@ func (s Style) WriteDrawingOptionsToRenderer(r Renderer) {
 // WriteTextOptionsToRenderer passes just the text style options to a renderer.
 func (s Style) WriteTextOptionsToRenderer(r Renderer) {
 	r.SetClassName(s.GetClassName())
-	r.SetFont(s.GetFont())
+	r.SetFont(s.GetFontProvider())
 	r.SetFontColor(s.GetFontColor())
 	r.SetFontSize(s.GetFontSize())
 }
@@ -396,11 +418,11 @@ func (s Style) InheritFrom(defaults Style) (final Style) {
 
 	final.DotWidthProvider = s.DotWidthProvider
 	final.DotColorProvider = s.DotColorProvider
-
 	final.FillColor = s.GetFillColor(defaults.FillColor)
 	final.FontColor = s.GetFontColor(defaults.FontColor)
 	final.FontSize = s.GetFontSize(defaults.FontSize)
 	final.Font = s.GetFont(defaults.Font)
+	final.FontProvider = s.GetFontProvider(defaults.FontProvider)
 	final.Padding = s.GetPadding(defaults.Padding)
 	final.TextHorizontalAlign = s.GetTextHorizontalAlign(defaults.TextHorizontalAlign)
 	final.TextVerticalAlign = s.GetTextVerticalAlign(defaults.TextVerticalAlign)
@@ -454,10 +476,10 @@ func (s Style) GetFillAndStrokeOptions() Style {
 // GetTextOptions returns just the text components of the style.
 func (s Style) GetTextOptions() Style {
 	return Style{
-		ClassName:           s.ClassName,
-		FontColor:           s.FontColor,
+		ClassName: s.ClassName, FontColor: s.FontColor,
 		FontSize:            s.FontSize,
 		Font:                s.Font,
+		FontProvider:        s.FontProvider,
 		TextHorizontalAlign: s.TextHorizontalAlign,
 		TextVerticalAlign:   s.TextVerticalAlign,
 		TextWrap:            s.TextWrap,

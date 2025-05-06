@@ -8,7 +8,6 @@ import (
 
 	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/drawing"
-	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
 	"github.com/cdvelop/docpdf/style"
 )
@@ -135,8 +134,13 @@ func (rr *rasterRenderer) Circle(radius float64, x, y int) {
 }
 
 // SetFont implements the interface method.
-func (rr *rasterRenderer) SetFont(f *truetype.Font) {
-	rr.s.Font = f
+func (rr *rasterRenderer) SetFont(f FontProvider) {
+	// Si es un adaptador TrueType, usamos el Font interno
+	if adapter, ok := f.(*TrueTypeFontAdapter); ok {
+		rr.s.Font = adapter.Font
+	} else {
+		// En implementaciones futuras, aquí manejaríamos otros tipos de fuentes
+	}
 }
 
 // SetFontSize implements the interface method.

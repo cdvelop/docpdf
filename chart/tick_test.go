@@ -9,12 +9,12 @@ import (
 func TestGenerateContinuousTicks(t *testing.T) {
 	// replaced new assertions helper
 
-	f, err := GetDefaultFont()
+	fontProvider, err := GetDefaultFontProvider()
 	testutil.AssertNil(t, err)
 
 	r, err := PNG(1024, 1024)
 	testutil.AssertNil(t, err)
-	r.SetFont(f)
+	r.SetFont(fontProvider)
 
 	ra := &ContinuousRange{
 		Min:    0.0,
@@ -34,12 +34,12 @@ func TestGenerateContinuousTicks(t *testing.T) {
 func TestGenerateContinuousTicksDescending(t *testing.T) {
 	// replaced new assertions helper
 
-	f, err := GetDefaultFont()
+	fontProvider, err := GetDefaultFontProvider()
 	testutil.AssertNil(t, err)
 
 	r, err := PNG(1024, 1024)
 	testutil.AssertNil(t, err)
-	r.SetFont(f)
+	r.SetFont(fontProvider)
 
 	ra := &ContinuousRange{
 		Min:        0.0,

@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/cdvelop/docpdf/canvas"
-	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/style"
 )
 
@@ -60,12 +59,12 @@ type Renderer interface {
 
 	// FillStroke fills and strokes a path.
 	FillStroke()
-
 	// Circle draws a circle at the given coords with a given radius.
 	Circle(radius float64, x, y int)
 
 	// SetFont sets a font for a text field.
-	SetFont(*truetype.Font)
+	// Old signature: SetFont(*truetype.Font)
+	SetFont(FontProvider)
 
 	// SetFontColor sets a font's color
 	SetFontColor(style.Color)

@@ -494,7 +494,7 @@ func (c Chart) drawSeries(r Renderer, canvasBox canvas.Box, xrange, yrange, yran
 
 func (c Chart) drawTitle(r Renderer) {
 	if len(c.Title) > 0 && !c.TitleStyle.Hidden {
-		r.SetFont(c.TitleStyle.GetFont(c.GetFont()))
+		r.SetFont(c.TitleStyle.GetFontProvider())
 		r.SetFontColor(c.TitleStyle.GetFontColor(c.GetColorPalette().TextColor()))
 		titleFontSize := c.TitleStyle.GetFontSize(DefaultTitleFontSize)
 		r.SetFontSize(titleFontSize)
