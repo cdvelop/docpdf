@@ -87,9 +87,9 @@ Las siguientes etapas se irán completando secuencialmente:
    - ✅ Identificar todos los métodos que usan directamente tipos de freetype
    - ✅ Crear interfaces para abstraer funcionalidades de fuentes. La interfaz clave para esto es `FontProvider`, que se encuentra en el paquete `fontengine` (y se usa como `fontengine.FontProvider`).
    - ✅ Adaptar las implementaciones existentes para usar `fontengine.FontProvider`
+   - ✅ Implementar un renderizador PdfRenderer que cumpla con la interfaz `Renderer` de chart para dibujar directamente en PDF
    - ⏳ Reemplazar importaciones y usos de [`freetype`](freetype )
    - ⏳ Mantener solo el renderizador SVG
-   - ⏳ Implementar un renderizador que cumpla con la interfaz `Renderer` de chart para dibujar directamente en PDF
 
 5. **Implementar abstracción de fontengine.FontProvider**: ✅
    ```go
@@ -268,12 +268,174 @@ Las siguientes etapas se irán completando secuencialmente:
 - ✅ Verificación de que todos los códigos compilen sin errores
 
 ### Próximos Pasos Inmediatos:
-1. Implementar un renderizador PDF (PdfRenderer) que implemente la interfaz Renderer. Los métodos de figuras geométricas ya están centralizados en [`geometricFigures.go`](geometricFigures.go ) en el paquete `pdfengine`, pero es necesario refactorizar estos métodos para que coincidan con la interfaz `Renderer` de chart.
-2. Crear una función NewPdfRendererProvider que genere un RendererProvider para dibujar directamente en PDF
+1. ✅ Implementar un renderizador PDF (PdfRenderer) que implemente la interfaz Renderer.
+2. ✅ Crear una función NewPdfRendererProvider que genere un RendererProvider para dibujar directamente en PDF
 3. Modificar los métodos Draw de los gráficos para usar el renderizador PDF cuando corresponda
 4. Adaptar los estilos en SVG para usar información de fontengine.FontProvider (familia, peso, estilo)
 5. Crear el método Document.InsertSVG() para insertar gráficos SVG en el PDF
 6. Eliminar completamente el renderizado PNG y la dependencia de freetype
 
 ### Avance actual (Mayo 2025):
-Hemos completado la primera fase crítica de la refactorización al abstraer la interfaz de fuentes mediante fontengine.FontProvider. Ahora todos los renderizadores utilizan esta interfaz en lugar de depender directamente del tipo *truetype.Font. Las pruebas han sido actualizadas y todo el código compila correctamente con los cambios.
+Hemos completado importantes avances en la refactorización:
+
+1. **Abstracción de fuentes**: Implementamos la interfaz `fontengine.FontProvider` que ahora todos los renderizadores utilizan en lugar de depender directamente del tipo `*truetype.Font`.
+
+2. **PdfRenderer completo**: Hemos implementado exitosamente un renderizador directo a PDF que:
+   - Implementa completamente la interfaz `chart.Renderer`
+   - Permite trazar gráficos directamente en el PDF sin generar imágenes intermedias
+   - Utiliza el mismo motor de renderizado que el resto del documento (PdfEngine)
+   - Incorpora manejo adecuado de:
+     - Medición precisa de texto usando `MeasureTextWidth`
+     - Operaciones de trazo y relleno usando operaciones nativas de PDF
+     - Rotación de texto
+     - Gestión de paths (caminos) compleja con MoveTo, LineTo, QuadCurveTo, etc.
+     - Transformación de coordenadas entre sistemas de referencia
+
+3. **Creación de RendererProvider**: Se ha implementado `NewPdfRendererProvider` que permite a los componentes de chart obtener un renderizador compatible con el motor PDF.
+
+El siguiente paso clave es modificar los métodos Draw de los componentes gráficos para que utilicen el nuevo renderizador PDF cuando sea apropiado, y eliminar progresivamente la dependencia de freetype.
+
+## 11. Implementación del Renderizador PDF para Chart
+
+Ahora que hemos implementado exitosamente el `PdfRenderer` para trazar gráficos directamente en PDF, detallamos los aspectos clave de esta implementación:
+
+### Estructura del Renderizador
+
+```go
+// PdfRenderer implementa la interfaz chart.Renderer y permite dibujar
+// directamente en un PDF usando el motor existente de docpdf
+type PdfRenderer struct {
+    engine      *pdfengine.PdfEngine
+    fontFamily  string
+    fontSize    float64
+    fontColor   color.RGBA
+    strokeColor color.RGBA
+    fillColor   color.RGBA
+    lineWidth   float64
+    
+    // Variables para seguimiento de paths
+    pathStartX    float64
+    pathStartY    float64
+    pathPoints    []Point
+    pathClosed    bool
+}
+
+// Point representa un punto en un camino (path) para el renderizado
+type Point struct {
+    X, Y float64
+}
+```
+
+### Funciones y Métodos Clave
+
+```go
+// NewPdfRenderer crea un nuevo renderizador para PDF
+func NewPdfRenderer(engine *pdfengine.PdfEngine) *PdfRenderer {
+    return &PdfRenderer{
+        engine:    engine,
+        fontSize:  12,
+        fontColor: color.RGBA{0, 0, 0, 255},
+        lineWidth: 0.1,
+        pathPoints: make([]Point, 0),
+    }
+}
+
+// NewPdfRendererProvider retorna un RendererProvider que puede generar
+// instancias de PdfRenderer
+func NewPdfRendererProvider(engine *pdfengine.PdfEngine) RendererProvider {
+    return func(width int, height int) (Renderer, error) {
+        return NewPdfRenderer(engine), nil
+    }
+}
+
+// MeasureText utiliza el motor de PDF para calcular las dimensiones del texto
+func (r *PdfRenderer) MeasureText(body string) canvas.Box {
+    width, err := r.engine.MeasureTextWidth(body)
+    if err != nil {
+        width = float64(len(body)) * r.fontSize * 0.5
+    }
+    height := r.fontSize * 1.2
+    return canvas.Box{
+        Right:  int(width),
+        Bottom: int(height),
+        Left:   0,
+        Top:    0,
+    }
+}
+
+// Text dibuja texto en el PDF con rotación
+func (r *PdfRenderer) Text(body string, x, y float64, options ...TextOption) {
+    rotation := 0.0
+    for _, option := range options {
+        if option.TextRotation != nil {
+            rotation = *option.TextRotation
+        }
+    }
+    
+    if rotation != 0 {
+        r.engine.Rotate(rotation, x, y)
+        r.engine.Text(body, x, y, true)
+        r.engine.RotateReset()
+    } else {
+        r.engine.Text(body, x, y, true)
+    }
+}
+
+// Stroke aplica un trazo al path actual
+func (r *PdfRenderer) Stroke() {
+    if len(r.pathPoints) > 1 {
+        r.engine.Draw()
+        r.pathPoints = make([]Point, 0)
+        r.pathClosed = false
+    }
+}
+
+// Fill rellena el path actual
+func (r *PdfRenderer) Fill() {
+    if len(r.pathPoints) > 1 {
+        r.engine.Fill()
+        r.pathPoints = make([]Point, 0)
+        r.pathClosed = false
+    }
+}
+
+// FillStroke rellena y traza el path actual
+func (r *PdfRenderer) FillStroke() {
+    if len(r.pathPoints) > 1 {
+        r.engine.FillDraw()
+        r.pathPoints = make([]Point, 0)
+        r.pathClosed = false
+    }
+}
+```
+
+### Manejo de Paths
+
+Se implementó soporte completo para trazado de paths (caminos) con:
+
+1. **Seguimiento de puntos**:
+   - `MoveTo`: Inicia un nuevo path o mueve el punto actual
+   - `LineTo`: Añade una línea al path actual
+   - `QuadCurveTo`: Añade una curva cuadrática al path
+
+2. **Operaciones de cierre**:
+   - `Close`: Cierra el path actual conectando con el punto inicial
+
+3. **Operaciones de renderizado**:
+   - `Stroke`: Dibuja el contorno del path
+   - `Fill`: Rellena el área del path
+   - `FillStroke`: Rellena y dibuja el contorno
+
+### Transformación de coordenadas
+
+El renderizador se encarga de transformar las coordenadas entre el sistema de chart (origen en esquina superior izquierda) y el sistema de coordenadas PDF (origen en esquina inferior izquierda), preservando la coherencia visual del renderizado.
+
+### Integración con PdfEngine
+
+El renderizador aprovecha las funciones existentes en PdfEngine para operaciones como:
+
+- Dibujo de texto con `Text()`
+- Medición de texto con `MeasureTextWidth()`
+- Rotación con `Rotate()` y `RotateReset()`
+- Operaciones de path con `MoveTo()`, `LineTo()`, etc.
+- Operaciones de renderizado con `Draw()`, `Fill()` y `FillDraw()`
