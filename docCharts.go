@@ -26,6 +26,8 @@ type docCharts struct {
 // Chart es el punto de entrada para la API de gráficos
 func (doc *Document) Chart() *docCharts {
 	// Inicializar fontbridge con la configuración de fuentes del documento
+	// Esto es necesario para mantener compatibilidad con renderizadores antiguos
+	// Pero el PdfRenderer usa directamente el fontProvider de docpdf
 	if fontbridge.SharedFontConfig.Font == nil && doc != nil {
 		// Color para elementos del gráfico
 		titleColor := fontbridge.GetDrawingColor(

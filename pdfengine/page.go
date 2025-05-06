@@ -27,7 +27,7 @@ func (gp *PdfEngine) AddFooter(f func()) {
 }
 
 // metodo que obteine la estrucutua  tamaño de la pagina
-func (gp *PdfEngine) GetCurrentPageSize() *canvas.Rect {
+func (gp *PdfEngine) GetPageSize() *canvas.Rect {
 	return gp.curr.pageSize
 }
 
@@ -126,10 +126,6 @@ func (p *pagesObj) Write(w Writer, objID int) error {
 
 func (p *pagesObj) GetType() string {
 	return "Pages"
-}
-
-func (p *pagesObj) test() {
-	fmt.Print(p.GetType() + "\n")
 }
 
 // PageOption option of page

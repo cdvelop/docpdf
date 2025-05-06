@@ -43,11 +43,13 @@ type PdfRenderer struct {
 
 // NewPdfRenderer crea un nuevo renderizador PDF usando el motor PdfEngine existente
 func NewPdfRenderer(engine *pdfengine.PdfEngine) *PdfRenderer {
+
 	return &PdfRenderer{
 		engine:      engine,
 		dpi:         96.0, // DPI estándar para SVG
 		strokeColor: style.ColorBlack,
 		fillColor:   style.ColorWhite,
+		font:        engine, // Usar la fuente predeterminada en lugar del engine
 		strokeWidth: 1.0,
 		fontSize:    10.0,
 		fontColor:   style.ColorBlack,

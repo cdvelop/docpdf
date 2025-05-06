@@ -10,15 +10,11 @@ func TestCharts(t *testing.T) {
 	doc := NewDocument()
 
 	// Añadir un título
-	doc.AddHeader1("Ejemplo de gráficos con la nueva API").AlignCenter().Draw()
-	doc.AddText("Este ejemplo muestra cómo usar la nueva API de gráficos con diferentes tipos.").Draw()
+	doc.AddHeader1("Prueba de integración de PdfRenderer con gráfico Donut").AlignCenter().Draw()
+	doc.AddText("Esta prueba enfoca exclusivamente en el renderizado directo a PDF usando PdfRenderer.").Draw()
 
-	// Crear un gráfico de barras usando la nueva API
-	doc.AddHeader2("1. Gráfico de barras").Draw()
-	doc.AddText("Se puede crear un gráfico de barras con Chart().Bar():").Draw()
-
-	// Datos para el gráfico de barras
-	bars := []struct {
+	// Datos para el gráfico
+	data := []struct {
 		val   float64
 		label string
 	}{
@@ -28,43 +24,32 @@ func TestCharts(t *testing.T) {
 		{3456789, "RR.HH."},
 		{4567890, "Ventas"},
 	}
-	// Crear el gráfico de barras con la nueva API
-	barChart := doc.Chart().Bar().
-		Title("Ventas por Departamento").
-		WithTruncateNameFormatter(3, 30) // Formato consistente para etiquetas
 
 	// Ordenar de mayor a menor
-	sort.Slice(bars, func(i, j int) bool {
-		return bars[i].val > bars[j].val
+	sort.Slice(data, func(i, j int) bool {
+		return data[i].val > data[j].val
 	})
 
-	// Añadir las barras
-	for _, b := range bars {
-		barChart.AddBar(b.val, b.label)
-	}
-
-	// Dibujar el gráfico de barras
-	barChart.Draw()
-
-	// Crear un gráfico de tipo donut
-	doc.AddHeader2("2. Gráfico tipo Donut").Draw()
-	doc.AddText("Se puede crear un gráfico de tipo donut con Chart().Donut():").Draw()
+	// Crear un gráfico de tipo donut - Prueba de renderizado directo a PDF
+	doc.AddHeader2("Gráfico tipo Donut con renderizado directo a PDF").Draw()
+	doc.AddText("Este gráfico utiliza PdfRenderer para dibujar directamente en el PDF:").Draw()
 
 	// Crear el gráfico de donut con la nueva API unificada
 	donutChart := doc.Chart().Donut().
-		Title("Distribución de Ventas")
-		// WithTruncateNameFormatter(3, 30) // Mismo formato que el gráfico de barras
+		Title("Distribución de Ventas").
+		WithTruncateNameFormatter(3, 30) // Aplicamos formato consistente para etiquetas
 
-	// Usar los mismos datos que el gráfico de barras
-	for _, b := range bars {
-		donutChart.AddValue(b.val, b.label)
+	// Añadir datos al gráfico donut
+	for _, item := range data {
+		donutChart.AddValue(item.val, item.label)
 	}
 
-	// Dibujar el gráfico de donut
+	// Dibujar el gráfico de donut usando el renderizador directo a PDF
 	donutChart.Draw()
 
 	// Agregar texto explicativo
-	doc.AddText("Ambos gráficos ahora comparten una configuración uniforme de texto y estilo.").Draw()
+	doc.AddText("El gráfico anterior fue renderizado directamente en el PDF sin generar imágenes intermedias,").Draw()
+	doc.AddText("utilizando el nuevo PdfRenderer que implementa la interfaz chart.Renderer.").Draw()
 
 	// Guardar el documento
 	err := doc.WritePdf("docCharts_test.pdf")

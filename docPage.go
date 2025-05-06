@@ -43,7 +43,7 @@ func (doc *Document) EnsureElementFits(height float64, minBottomMargin ...float6
 	}
 
 	// Calculate available space considering header/footer
-	availableSpace := doc.GetCurrentPageSize().H - currentY - bottomMargin - (headerSpace + footerSpace)
+	availableSpace := doc.GetPageSize().H - currentY - bottomMargin - (headerSpace + footerSpace)
 
 	// Check if we need to add a page
 	if height > availableSpace {

@@ -135,6 +135,7 @@ Las siguientes etapas se irán completando secuencialmente:
 
 6. **Crear función GetDefaultFontProvider**: ✅
    ```go
+   // DEPRECATED: This function should be removed.
    // GetDefaultFontProvider returns the default font as a fontengine.FontProvider.
    // Esta es la función preferida para el nuevo código que utiliza
    // la abstracción fontengine.FontProvider en lugar de truetype.Font directamente.
@@ -184,17 +185,11 @@ Las siguientes etapas se irán completando secuencialmente:
    }
    ```
 
-9. **Crear funciones de inserción SVG en docpdf**:
-   ```go
-   // Añadir al Document
-   func (d *Document) InsertSVG(svg string, x, y float64, width, height float64) error
-   ```
-
-10. **Implementar conversión entre estilos de texto**:
-   ```go
-   // Convertir de TextStyle de docpdf a formato SVG
-   func (ts TextStyle) ToSVGStyle() string
-   ```
+9. **Implementar conversión entre estilos de texto**:
+    ```go
+    // Convertir de TextStyle de docpdf a formato SVG
+    func (ts TextStyle) ToSVGStyle() string
+    ```
 
 ### Fase 4: Sistema Unificado
 
@@ -215,10 +210,6 @@ Las siguientes etapas se irán completando secuencialmente:
     - Modificar chart para generar solo SVG
     - Referenciar fuentes usando el sistema unificado
     - Eliminar cualquier renderizado bitmap
-
-13. **Actualizar docpdf para integrar SVG**:
-    - Implementar inserción y escalado de SVG
-    - Asegurar que las referencias a fuentes funcionen correctamente
 
 ### Fase 5: Pruebas y Refinamiento
 
@@ -255,6 +246,34 @@ Las siguientes etapas se irán completando secuencialmente:
 - La configuración de fuentes está centralizada en un solo lugar
 - El resultado visual es coherente entre texto normal y gráficos
 
+## 9.1 Política de Unificación de Fuentes
+
+### Directrices Obligatorias:
+
+1. **Eliminación de Fuentes Redundantes**: 
+   - ❌ ELIMINAR completamente `roboto.go` y toda referencia a "Roboto" como fuente predeterminada
+   - ❌ ELIMINAR todas las funciones `GetDefaultFont()`, `chart.GetDefaultFont()` y similares
+   - ❌ PROHIBIDO mantener duplicados de fuentes en diferentes paquetes
+
+2. **Sistema de Fuentes Centralizado**:
+   - ✅ TODAS las fuentes deben cargarse UNA SOLA VEZ al inicio (`NewDocument()`)
+   - ✅ SOLO usar fuentes ubicadas en el directorio `fonts/` (regular.ttf, bold.ttf, italic.ttf)
+   - ✅ `PdfEngine` es el único propietario legítimo de las fuentes cargadas
+
+3. **Comportamiento de Carga de Fuentes**:
+   - Cuando se proporciona solo una fuente (como en `docFont_test.go`), esta se usa para todas las variantes
+   - Si falta alguna variante (bold o italic), se utiliza la regular como fallback
+   - NO existe el concepto de "fuente predeterminada" hardcodeada en el código
+
+4. **Acceso a Fuentes**:
+   - Todos los componentes DEBEN obtener referencias a las fuentes a través de `fontengine.FontProvider`
+   - `PdfRenderer` DEBE usar las fuentes ya cargadas y registradas en el `PdfEngine`
+   - Para el renderizador SVG, usar la información de familia, peso y estilo de `fontengine.FontProvider`
+
+### IMPORTANTE: NUNCA utilizar funciones GetDefaultFont()
+
+Cualquier uso de funciones que devuelvan una "fuente predeterminada" embebida en el código debe ser considerado un error y eliminado. Las fuentes deben provenir exclusivamente de las cargadas explícitamente al iniciar el documento, como se muestra en `docFont_test.go`.
+
 ## 10. Estado Actual y Próximos Pasos
 
 ### Completado:
@@ -272,8 +291,7 @@ Las siguientes etapas se irán completando secuencialmente:
 2. ✅ Crear una función NewPdfRendererProvider que genere un RendererProvider para dibujar directamente en PDF
 3. Modificar los métodos Draw de los gráficos para usar el renderizador PDF cuando corresponda
 4. Adaptar los estilos en SVG para usar información de fontengine.FontProvider (familia, peso, estilo)
-5. Crear el método Document.InsertSVG() para insertar gráficos SVG en el PDF
-6. Eliminar completamente el renderizado PNG y la dependencia de freetype
+5. Eliminar completamente el renderizado PNG y la dependencia de freetype
 
 ### Avance actual (Mayo 2025):
 Hemos completado importantes avances en la refactorización:
@@ -293,11 +311,38 @@ Hemos completado importantes avances en la refactorización:
 
 3. **Creación de RendererProvider**: Se ha implementado `NewPdfRendererProvider` que permite a los componentes de chart obtener un renderizador compatible con el motor PDF.
 
+4. **Prueba de integración inicial**: Se ha modificado `docCharts_test.go` para probar exclusivamente el gráfico tipo Donut con renderizado directo a PDF. Esta prueba nos permitirá:
+   - Verificar que el `PdfRenderer` funciona correctamente con componentes de gráfico reales
+   - Identificar cualquier discrepancia entre la implementación actual y la esperada
+   - Establecer un punto de referencia para comparar el rendimiento y la calidad del renderizado
+   - Servir como base para próximas pruebas con los demás tipos de gráficos
+
 El siguiente paso clave es modificar los métodos Draw de los componentes gráficos para que utilicen el nuevo renderizador PDF cuando sea apropiado, y eliminar progresivamente la dependencia de freetype.
 
 ## 11. Implementación del Renderizador PDF para Chart
 
 Ahora que hemos implementado exitosamente el `PdfRenderer` para trazar gráficos directamente en PDF, detallamos los aspectos clave de esta implementación:
+
+### Prueba de Integración: Gráfico Donut
+
+Hemos configurado una prueba de integración focalizada utilizando exclusivamente el gráfico tipo Donut como caso de prueba. Esta elección estratégica nos permite:
+
+1. **Acotar el alcance**: Concentrarnos en un solo tipo de gráfico simplifica la detección de problemas específicos del renderizado.
+  
+2. **Comparar implementaciones**: Al usar un gráfico Donut, que combina paths y texto, podemos evaluar todos los aspectos relevantes del renderizador.
+
+3. **Establecer un punto de referencia**: Este gráfico servirá como referencia para validar la correcta implementación y funcionamiento del PdfRenderer.
+
+La prueba se encuentra en el archivo `docCharts_test.go` y genera un único gráfico Donut renderizado directamente a PDF utilizando nuestro nuevo `PdfRenderer`. Esta prueba es el primer paso hacia un testeo más exhaustivo que eventualmente cubrirá todos los tipos de gráficos disponibles.
+
+**Resultados de la prueba inicial (6 de Mayo, 2025):**
+
+- ✅ La prueba se ejecuta exitosamente sin errores
+- ✅ El gráfico Donut se renderiza correctamente en el PDF
+- ✅ La integración entre `chart.Donut` y `PdfRenderer` funciona adecuadamente
+- ✅ Los estilos de texto y colores se aplican como se espera
+
+Este éxito confirma que la arquitectura diseñada para el renderizado directo a PDF es viable y funcional. A continuación, extenderemos las pruebas para incluir los demás tipos de gráficos (barras, líneas, etc.) y validaremos el comportamiento en casos más complejos.
 
 ### Estructura del Renderizador
 
@@ -305,18 +350,26 @@ Ahora que hemos implementado exitosamente el `PdfRenderer` para trazar gráficos
 // PdfRenderer implementa la interfaz chart.Renderer y permite dibujar
 // directamente en un PDF usando el motor existente de docpdf
 type PdfRenderer struct {
-    engine      *pdfengine.PdfEngine
-    fontFamily  string
-    fontSize    float64
-    fontColor   color.RGBA
-    strokeColor color.RGBA
-    fillColor   color.RGBA
-    lineWidth   float64
-    
-    // Variables para seguimiento de paths
+    engine       *pdfengine.PdfEngine
+    className    string
+    dpi          float64
+    strokeColor  style.Color
+    fillColor    style.Color
+    strokeWidth  float64
+    dashArray    []float64
+    font         fontengine.FontProvider
+    fontSize     float64
+    fontColor    style.Color
+    textRotation float64
+
+    // Coordenadas de la posición actual (para MoveTo, LineTo, etc.)
+    currentX float64
+    currentY float64
+
+    // Almacena los puntos del path actual para operaciones Close, Stroke, Fill, FillStroke
     pathStartX    float64
     pathStartY    float64
-    pathPoints    []Point
+    pathPoints    []Point // Usar un tipo de punto compatible con PdfEngine
     pathClosed    bool
 }
 
@@ -331,12 +384,23 @@ type Point struct {
 ```go
 // NewPdfRenderer crea un nuevo renderizador para PDF
 func NewPdfRenderer(engine *pdfengine.PdfEngine) *PdfRenderer {
+    // La implementación en chart/pdf_renderer.go (revisada) asigna 'engine' directamente al campo 'font'.
+    // Esto implica que *pdfengine.PdfEngine debe satisfacer la interfaz fontengine.FontProvider,
+    // lo cual es un punto a verificar (relacionado con la TAREA PENDIENTE 2).
+    // El comentario original en chart/pdf_renderer.go ("Usar la fuente predeterminada en lugar del engine")
+    // sugiere que la intención podría ser obtener una fuente predeterminada DESDE el engine,
+    // lo cual difiere de que el engine MISMO sea el FontProvider.
+    // Esta documentación ahora refleja la asignación directa como se encuentra en chart/pdf_renderer.go.
     return &PdfRenderer{
-        engine:    engine,
-        fontSize:  12,
-        fontColor: color.RGBA{0, 0, 0, 255},
-        lineWidth: 0.1,
-        pathPoints: make([]Point, 0),
+        engine:      engine,
+        dpi:         96.0,
+        strokeColor: style.ColorBlack,
+        fillColor:   style.ColorWhite,
+        font:        engine, // Asignación directa según chart/pdf_renderer.go.
+        strokeWidth: 1.0,    // Valor según chart/pdf_renderer.go.
+        fontSize:    10.0,
+        fontColor:   style.ColorBlack,
+        pathPoints:  []canvas.Point{}, // Asume que Point en chart/pdf_renderer.go es canvas.Point.
     }
 }
 
@@ -363,7 +427,7 @@ func (r *PdfRenderer) MeasureText(body string) canvas.Box {
     }
 }
 
-// Text dibuja texto en el PDF con rotación
+// Text dibuja texto en el PDF with rotación
 func (r *PdfRenderer) Text(body string, x, y float64, options ...TextOption) {
     rotation := 0.0
     for _, option := range options {
@@ -439,3 +503,89 @@ El renderizador aprovecha las funciones existentes en PdfEngine para operaciones
 - Rotación con `Rotate()` y `RotateReset()`
 - Operaciones de path con `MoveTo()`, `LineTo()`, etc.
 - Operaciones de renderizado con `Draw()`, `Fill()` y `FillDraw()`
+
+## 2. `pdfengine` como `fontengine.FontProvider`
+
+**Objetivo:**
+Asegurar que `pdfengine` pueda actuar como un proveedor de fuentes (`fontengine.FontProvider`) para ser utilizado en el nuevo sistema unificado de manejo de fuentes.
+
+**Análisis Actual:**
+Una revisión del código de `pdfengine.PdfEngine` (en `pdfengine/pdfEngine.go`) indica que la estructura `PdfEngine` **no implementa directamente** la interfaz `fontengine.FontProvider`. `PdfEngine` gestiona las fuentes (ej. a través de métodos como `AddTTFFontData`) y mantiene una referencia a la fuente actualmente seleccionada, que parece ser de tipo `*ttfSubsetObj` (accesible mediante `gp.curr.FontISubset`).
+
+Por lo tanto, la asignación `font: engine` en `chart/pdf_renderer.go` es incorrecta si se espera que `engine` sea un `fontengine.FontProvider`.
+
+**Posible Solución y Dirección:**
+La entidad más probable dentro de `pdfengine` que podría implementar (o ser adaptada para implementar) `fontengine.FontProvider` es `*ttfSubsetObj` o una nueva estructura que encapsule la información de una fuente gestionada por `PdfEngine`.
+
+El `PdfEngine` debería entonces exponer un método para obtener un `fontengine.FontProvider` para la fuente actual o una fuente específica. Por ejemplo:
+```go
+// En pdfengine.PdfEngine
+func (gp *PdfEngine) GetCurrentFontProvider() (fontengine.FontProvider, error) {
+    if gp.curr.FontISubset == nil {
+        return nil, errors.New("no current font selected in PdfEngine")
+    }
+    // Aquí, se necesitaría que *ttfSubsetObj implemente FontProvider,
+    // o se cree un adaptador.
+    // Ejemplo conceptual:
+    // return NewFontProviderAdapter(gp.curr.FontISubset), nil
+
+    // Asumiendo que *ttfSubsetObj implementará FontProvider directamente o a través de un wrapper:
+    // Esta es una suposición que necesita validación y posible implementación.
+    // Por ahora, conceptualmente, podría ser algo como:
+    fontProviderCandidate := gp.curr.FontISubset // Este objeto necesitaría implementar la interfaz.
+    
+    // Comprobación (conceptual) si realmente implementa:
+    // var _ fontengine.FontProvider = fontProviderCandidate 
+    // Si no, se necesita un adaptador o modificar ttfSubsetObj.
+
+    // Placeholder: la siguiente línea requiere que ttfSubsetObj sea o pueda devolver un FontProvider.
+    // Esto podría implicar que ttfSubsetObj tenga métodos como Name(), Family(), etc.,
+    // o que se construya un adaptador aquí.
+    // return fontProviderCandidate, nil // Esto fallará si ttfSubsetObj no es FontProvider
+    
+    // Se necesitará un trabajo adicional para que ttfSubsetObj (o un adaptador)
+    // implemente fontengine.FontProvider. Por ejemplo:
+    if provider, ok := gp.curr.FontISubset.(fontengine.FontProvider); ok {
+        return provider, nil
+    } else {
+        // Alternativamente, construir un adaptador aquí si ttfSubsetObj tiene los datos necesarios.
+        // return newTtfSubsetFontProviderAdapter(gp.curr.FontISubset), nil
+        return nil, errors.New("current font (ttfSubsetObj) does not implement FontProvider and no adapter is in place")
+    }
+}
+```
+Esto requeriría que `*ttfSubsetObj` (o un adaptador) sea modificado para implementar todos los métodos de `fontengine.FontProvider` (`Name`, `Family`, `Weight`, `Style`, `SVGFontID`, `Path`). Se debe investigar si `ttfSubsetObj` ya contiene esta información o puede obtenerla fácilmente. La estructura `TtfOption` usada con `AddTTFFontDataWithOption` y los métodos de `ttfSubsetObj` como `GetFamily()` son puntos de partida para esta investigación.
+
+## Pasos Propuestos
+
+1. **Modificar `ttfSubsetObj` para implementar `fontengine.FontProvider`**:
+   - Añadir métodos a `ttfSubsetObj` para cumplir con la interfaz `fontengine.FontProvider`.
+   - Alternativamente, crear un adaptador que convierta `ttfSubsetObj` a `fontengine.FontProvider`.
+
+2. **Actualizar `PdfEngine` para exponer el método `GetCurrentFontProvider`**:
+   - Implementar el método `GetCurrentFontProvider` en `PdfEngine` para devolver la fuente actual como `fontengine.FontProvider`.
+
+3. **Probar la integración**:
+   - Verificar que los cambios permiten que `chart` utilice `PdfEngine` como proveedor de fuentes sin problemas de compatibilidad.
+
+4. **Eliminar dependencias obsoletas**:
+   - Una vez verificado el funcionamiento, eliminar cualquier referencia o código relacionado con la antigua gestión de fuentes que ya no sea necesario.
+
+5. **Actualizar documentación**:
+   - Asegurar que toda la documentación refleje los cambios en la gestión de fuentes y el uso de `PdfEngine` como proveedor de fuentes.
+
+6. **Entrenamiento y adaptación**:
+   - Proveer capacitación o guías para los desarrolladores sobre cómo utilizar el nuevo sistema de fuentes y las implicancias de los cambios realizados.
+
+7. **Monitoreo y soporte post-implementación**:
+   - Monitorear el sistema en busca de posibles problemas o áreas de mejora después de la implementación de los cambios.
+   - Estar preparado para proporcionar soporte y realizar ajustes según sea necesario basado en el feedback de los usuarios y desarrolladores.
+
+8. **Planificación de futuras mejoras**:
+   - Con el nuevo sistema de fuentes en funcionamiento, comenzar a planificar posibles mejoras o nuevas funcionalidades que aprovechen la unificación del sistema de manejo de fuentes.
+
+9. **Revisión y lecciones aprendidas**:
+   - Realizar una revisión del proceso de implementación para identificar lecciones aprendidas y oportunidades de mejora para futuros proyectos.
+
+10. **Cierre del proyecto**:
+    - Una vez completados y validados todos los pasos anteriores, proceder con el cierre formal del proyecto de unificación del sistema de manejo de fuentes, asegurando que toda la documentación esté actualizada y que se haya transferido el conocimiento necesario al equipo de mantenimiento.

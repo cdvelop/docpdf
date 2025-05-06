@@ -177,6 +177,15 @@ func (c *docChart) calculateBarLayout() {
 
 // Draw renderiza el gráfico en el documento con manejo de saltos de página
 func (c *docChart) Draw() error {
+	// Verificar si podemos usar renderizado directo a PDF para el gráfico donut
+	// Solo habilitado para donut como prueba de integración
+	if c.chartType == donutChartType {
+		// Transferir los valores desde el docDonutChart.values
+		// Esto asegura que tenemos los valores correctos al renderizar
+		return c.drawWithPdfRenderer()
+	}
+
+	// Si no podemos usar renderizado directo, continuamos con el método tradicional
 	// Crear un buffer en memoria para almacenar la imagen del gráfico
 	var buf bytes.Buffer
 
