@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/fontengine"
 	"github.com/cdvelop/docpdf/style"
 )
 
@@ -64,7 +65,7 @@ type Renderer interface {
 
 	// SetFont sets a font for a text field.
 	// Old signature: SetFont(*truetype.Font)
-	SetFont(FontProvider)
+	SetFont(fontengine.FontProvider)
 
 	// SetFontColor sets a font's color
 	SetFontColor(style.Color)

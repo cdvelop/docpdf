@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/fontengine"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
 	"github.com/cdvelop/docpdf/style"
@@ -64,7 +65,7 @@ type Style struct {
 	FontSize     float64
 	FontColor    style.Color
 	Font         *truetype.Font
-	FontProvider FontProvider
+	FontProvider fontengine.FontProvider
 
 	TextHorizontalAlign TextHorizontalAlign
 	TextVerticalAlign   TextVerticalAlign
@@ -286,11 +287,11 @@ func (s Style) GetFont(defaults ...*truetype.Font) *truetype.Font {
 }
 
 // GetFontProvider returns the font provider.
-func (s Style) GetFontProvider(defaults ...FontProvider) FontProvider {
+func (s Style) GetFontProvider(defaults ...fontengine.FontProvider) fontengine.FontProvider {
 	if s.FontProvider != nil {
 		return s.FontProvider
 	}
-	// Si no hay FontProvider pero hay un Font truetype, crear un adaptador
+	// Si no hay fontengine.FontProvider pero hay un Font truetype, crear un adaptador
 	if s.Font != nil {
 		return &TrueTypeFontAdapter{
 			Font:       s.Font,
