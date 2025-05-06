@@ -79,16 +79,6 @@ type fontDescItem struct {
 	Val string
 }
 
-// // Chr
-// func Chr(n int) byte {
-// 	return byte(n) //toByte(fmt.Sprintf("%c", n ))
-// }
-
-// toByte returns the first byte of a string.
-func toByte(chr string) byte {
-	return []byte(chr)[0]
-}
-
 // fontObj font obj
 type fontObj struct {
 	Family string

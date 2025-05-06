@@ -4,7 +4,7 @@
 
 Actualmente, el sistema `docpdf` se enfrenta a un problema de inconsistencia en el manejo de fuentes:
 
-- **docpdf** utiliza [`fontmaker`](fontmaker ) para preprocesar fuentes TrueType y luego renderizarlas mediante su motor interno ([`PdfEngine`](PdfEngine ))
+- **docpdf** utiliza [`fontengine`](fontengine ) para preprocesar fuentes TrueType y luego renderizarlas mediante su motor interno ([`PdfEngine`](PdfEngine ))
 - **chart** (integrado en docpdf) utiliza la biblioteca [`freetype`](freetype ) para renderizar texto en imágenes bitmap
 - Esto provoca una gestión de fuentes fragmentada, incoherente y duplicada
 - [`docFont.go`](docFont.go ) intenta centralizar la configuración de fuentes, pero no resuelve esta duplicidad
@@ -22,16 +22,16 @@ Crear un sistema unificado de manejo de fuentes que:
 
 ### Componentes existentes:
 
-- **fontmaker**: Preprocesa fuentes TTF para uso en docpdf
+- **fontengine**: Preprocesa fuentes TTF para uso en docpdf
 - **PdfEngine**: Motor que renderiza fuentes en PDF
 - **chart**: Biblioteca que genera gráficos utilizando freetype
 - **[`docFont.go`](docFont.go )**: Define configuraciones de fuentes, pero solo para docpdf. La estructura `FontConfig` contiene la lógica de configuración de fuentes que se desea unificar, pero su ubicación actual crea problemas de dependencias circulares al intentar compartirla con otras partes del sistema.
-- **fontbridge**: Paquete actual que intenta compartir configuraciones entre chart y docpdf, pero resulta muy difícil de mantener debido a la duplicidad de código y la lógica fragmentada
+- **fontbridge**: Paquete actual que intenta compartir configuraciones entre chart y docpdf, pero resulta muy difícil de mantener debido a la duplicidad de código y la lógica fragmentada (se necesita eliminar)
 
 ### Flujos actuales:
 
 1. **Para texto regular en PDF**:
-   - Se cargan fuentes procesadas por fontmaker
+   - Se cargan fuentes procesadas por fontengine
    - PdfEngine las renderiza directamente en el PDF
 
 2. **Para gráficos**:
@@ -55,7 +55,7 @@ Aprovechar que [`chart`](chart ) puede generar SVG (vectorial) para unificar el 
 Las siguientes etapas se irán completando secuencialmente:
 
 - [ ] **Etapa 1: Migración a SVG** - Eliminar la funcionalidad de renderizado PNG de chart y usar exclusivamente SVG
-- [ ] **Etapa 2: Mapeo de dependencias** - Analizar y documentar todas las dependencias actuales de freetype y fontbridge
+- [x] **Etapa 2: Mapeo de dependencias** - Analizar y documentar todas las dependencias actuales de freetype y fontbridge
 - [ ] **Etapa 3: Nuevo sistema de fuentes** - Diseñar e implementar el sistema unificado de manejo de fuentes
 - [ ] **Etapa 4: Integración SVG** - Implementar el sistema de inserción de SVG en docpdf
 - [ ] **Etapa 5: Eliminación de fontbridge** - Refactorizar toda funcionalidad que dependa de fontbridge hacia el nuevo sistema
@@ -83,22 +83,45 @@ Las siguientes etapas se irán completando secuencialmente:
 
 ### Fase 2: Modificación de chart
 
-4. **Eliminar dependencia de freetype**:
-   - Eliminar importaciones de [`freetype`](freetype )
-   - Mantener solo el renderizador SVG
-   - Modificar cualquier función que dependa de freetype
+4. **Eliminar dependencia de freetype**: 👈 ESTAMOS AQUÍ
+   - ✅ Identificar todos los métodos que usan directamente tipos de freetype
+   - ⏳ Crear interfaces para abstraer funcionalidades de fuentes
+   - ⏳ Reemplazar importaciones y usos de [`freetype`](freetype )
+   - ⏳ Mantener solo el renderizador SVG
 
-5. **Mejorar el renderizador SVG**:
-   - Asegurar que puede especificar fuentes por nombre/ruta
-   - Implementar todas las características necesarias (tamaños, colores, etc.)
-
-6. **Crear sistema de referencia de fuentes**:
+5. **Implementar abstracción de FontProvider**:
    ```go
-   type FontReference struct {
-       Name      string
-       Weight    string // regular, bold, etc.
-       Style     string // normal, italic, etc.
-       FontFamily string // Para referenciar en SVG
+   // Reemplazar SetFont(*truetype.Font) con SetFont(FontProvider)
+   
+   // FontProvider es una interfaz que abstrae las propiedades necesarias de una fuente
+   type FontProvider interface {
+       // Identificación de la fuente
+       Name() string       // Nombre de la fuente
+       Family() string     // Familia de la fuente
+       
+       // Propiedades de estilo
+       Weight() string     // Peso: regular, bold, etc.
+       Style() string      // Estilo: normal, italic, etc.
+       
+       // Propiedades para renderizado SVG
+       SVGFontID() string  // ID para referenciar en SVG
+       
+       // Opcionalmente, para sistemas que necesiten la ruta al archivo
+       Path() string       // Ruta al archivo de la fuente
+   }
+   
+   // Adaptador transitorio para compatibilidad con código existente
+   type TrueTypeFontAdapter struct {
+       Font *truetype.Font
+       FontName string
+       FontFamily string
+       FontWeight string
+       FontStyle string
+       FontPath string
+   }
+   
+   func NewTrueTypeFontAdapter(font *truetype.Font, name, family, weight, style, path string) FontProvider {
+       return &TrueTypeFontAdapter{/* inicialización */}
    }
    ```
 
