@@ -194,7 +194,6 @@ This will result in true vector graphics for charts within the PDF, eliminate th
 
 This library would not have been possible without github repositories:
 - signintech/gopdf
-- phpdave11/gofpdi
 - wcharczuk/go-chart
 
 
