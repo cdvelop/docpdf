@@ -92,6 +92,7 @@ Las siguientes etapas se irán completando secuencialmente:
    - ⏳ Mantener solo el renderizador SVG
 
 5. **Implementar abstracción de fontengine.FontProvider**: ✅
+   - Los métodos de `fontengine.FontProvider` para `PdfEngine` se encuentran en `c:\Users\Cesar\Packages\Internal\docpdf\pdfengine\font_provider.go`.
    ```go
    // COMPLETADO: Se ha implementado la interfaz fontengine.FontProvider
 
@@ -132,6 +133,7 @@ Las siguientes etapas se irán completando secuencialmente:
        }
    }
    ```
+   Los métodos de `fontengine.FontProvider` para `PdfEngine` (definido en `c:\\Users\\Cesar\\Packages\\Internal\\docpdf\\fontengine\\provider.go`) se encuentran implementados en `c:\\Users\\Cesar\\Packages\\Internal\\docpdf\\pdfengine\\font_provider.go`.
 
 6. **Crear función GetDefaultFontProvider**: ✅
    ```go

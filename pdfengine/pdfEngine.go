@@ -969,5 +969,3 @@ func (gp *PdfEngine) IsCurrFontContainGlyph(r rune) (bool, error) {
 
 	return true, nil
 }
-
-//tool for validate pdf https://www.pdf-online.com/osa/validate.aspx
