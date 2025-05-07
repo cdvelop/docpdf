@@ -196,7 +196,6 @@ This library would not have been possible without github repositories:
 - signintech/gopdf
 - phpdave11/gofpdi
 - wcharczuk/go-chart
-- golang/freetype
 
 
 ## Important
