@@ -50,8 +50,7 @@ func is_numeric(val any) bool {
 			return false
 		}
 		// Trim any whitespace
-		str = customTrimSpace(str)
-		tinystring.Convert(&str).Trim().String()
+		tinystring.Convert(&str).Trim().Apply()
 		//fmt.Println(str)
 		if str[0] == '-' || str[0] == '+' {
 			if len(str) == 1 {
