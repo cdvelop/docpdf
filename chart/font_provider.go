@@ -1,11 +1,11 @@
 package chart
 
 import (
-	"github.com/cdvelop/docpdf/fontengine"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 )
 
-// TrueTypeFontAdapter adapta un *truetype.Font a la interfaz fontengine.FontProvider
+// TrueTypeFontAdapter adapta un *truetype.Font a la interfaz config.FontFamily
 // Esto se usará durante la transición mientras se refactoriza el código que usa freetype
 type TrueTypeFontAdapter struct {
 	Font       *truetype.Font
@@ -17,7 +17,7 @@ type TrueTypeFontAdapter struct {
 }
 
 // NewTrueTypeFontAdapter crea un nuevo adaptador para truetype.Font
-func NewTrueTypeFontAdapter(font *truetype.Font, name, family, weight, style, path string) fontengine.FontProvider {
+func NewTrueTypeFontAdapter(font *truetype.Font, name, family, weight, style, path string) config.FontFamily {
 	return &TrueTypeFontAdapter{
 		Font:       font,
 		FontName:   name,
@@ -28,7 +28,7 @@ func NewTrueTypeFontAdapter(font *truetype.Font, name, family, weight, style, pa
 	}
 }
 
-// Implementación de la interfaz fontengine.FontProvider
+// Implementación de la interfaz config.FontFamily
 func (a *TrueTypeFontAdapter) Name() string   { return a.FontName }
 func (a *TrueTypeFontAdapter) Family() string { return a.FontFamily }
 func (a *TrueTypeFontAdapter) Weight() string { return a.FontWeight }

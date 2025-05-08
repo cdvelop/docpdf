@@ -3,12 +3,12 @@ package docpdf
 import "github.com/cdvelop/docpdf/pdfengine"
 
 // EnsureElementFits checks if an element with the specified height will fit on the current page.
-// If it doesn't fit, it adds a new page and returns the new Y alignment.Alignment.
+// If it doesn't fit, it adds a new page and returns the new Y config.Alignment.
 // Parameters:
 //   - height: height of the element in document units
 //   - minBottomMargin: optional minimum margin to leave at bottom of page
 // Returns:
-//   - positionY: the Y alignment.Alignment where the element should be drawn
+//   - positionY: the Y config.Alignment where the element should be drawn
 //   - newPageAdded: true if a new page was added
 func (doc *Document) EnsureElementFits(height float64, minBottomMargin ...float64) float64 {
 	// Convert height to points (internal PDF unit)
@@ -21,7 +21,7 @@ func (doc *Document) EnsureElementFits(height float64, minBottomMargin ...float6
 		doc.UnitsToPointsVar(&bottomMargin)
 	}
 
-	// Get current Y alignment.Alignment
+	// Get current Y config.Alignment
 	currentY := doc.CurrentPdf().Y
 
 	// Calculate header/footer space if they exist
@@ -85,7 +85,7 @@ func (doc *Document) EnsureElementFits(height float64, minBottomMargin ...float6
 			doc.CurrentPdf().SetTxtColor(currentTxtColor)
 		}
 
-		return doc.CurrentPdf().Y // Return the top margin alignment.Alignment of the new page
+		return doc.CurrentPdf().Y // Return the top margin config.Alignment of the new page
 	}
 
 	// The element fits on the current page

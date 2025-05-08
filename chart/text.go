@@ -11,7 +11,7 @@ import (
 type TextHorizontalAlign int
 
 const (
-	// TextHorizontalAlignUnset is the unset state for text horizontal alignment.
+	// TextHorizontalAlignUnset is the unset state for text horizontal config.
 	TextHorizontalAlignUnset TextHorizontalAlign = 0
 	// TextHorizontalAlignLeft aligns a string horizontally so that it's left ligature starts at horizontal pixel 0.
 	TextHorizontalAlignLeft TextHorizontalAlign = 1

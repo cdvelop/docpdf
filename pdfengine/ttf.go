@@ -3,6 +3,7 @@ package pdfengine
 import (
 	"bytes"
 
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/env"
 )
 
@@ -16,7 +17,7 @@ type relateFont struct {
 	CountOfFont int
 	//etc  5 0 R
 	IndexOfObj int
-	Style      int // Regular|Bold|Italic
+	Style      config.FontIntStyle // Regular|Bold|Italic
 }
 
 // IsContainsFamily checks if font family exists.
@@ -30,7 +31,7 @@ func (re *relateFonts) IsContainsFamily(family string) bool {
 }
 
 // IsContainsFamilyAndStyle checks if font with same name and style already exists .
-func (re *relateFonts) IsContainsFamilyAndStyle(family string, style int) bool {
+func (re *relateFonts) IsContainsFamilyAndStyle(family string, style config.FontIntStyle) bool {
 	for _, rf := range *re {
 		if rf.Family == family && rf.Style == style {
 			return true
@@ -39,9 +40,48 @@ func (re *relateFonts) IsContainsFamilyAndStyle(family string, style int) bool {
 	return false
 }
 
-// AddTTFFont : add font file
+// AddTTFFont : add font file - Legacy method, preserved for compatibility
 func (gp *PdfEngine) AddTTFFont(family string, ttfpath string) error {
 	return gp.AddTTFFontWithOption(family, ttfpath, defaultTtfFontOption())
+}
+
+// AddFontFamilyConfig adds a font using config.FontFamily structure
+func (gp *PdfEngine) AddFontFamilyConfig(fontFamily config.FontFamily) error {
+	fontPath := fontFamily.Path
+	if fontPath == "" {
+		fontPath = "fonts/"
+	}
+
+	// Add regular font
+	if err := gp.AddTTFFontWithOption(fontFamily.Regular, fontPath+fontFamily.Regular, defaultTtfFontOption()); err != nil {
+		return err
+	}
+
+	// Add bold font if provided and different from regular
+	if fontFamily.Bold != "" && fontFamily.Bold != fontFamily.Regular {
+		if err := gp.AddTTFFontWithOption(fontFamily.Bold, fontPath+fontFamily.Bold,
+			TtfOption{Style: config.FontStyleBold, UseKerning: true}); err != nil {
+			return err
+		}
+	}
+
+	// Add italic font if provided and different from regular
+	if fontFamily.Italic != "" && fontFamily.Italic != fontFamily.Regular {
+		if err := gp.AddTTFFontWithOption(fontFamily.Italic, fontPath+fontFamily.Italic,
+			TtfOption{Style: config.FontStyleItalic, UseKerning: true}); err != nil {
+			return err
+		}
+	}
+
+	// Add underline font if provided and different from regular
+	if fontFamily.Underline != "" && fontFamily.Underline != fontFamily.Regular {
+		if err := gp.AddTTFFontWithOption(fontFamily.Underline, fontPath+fontFamily.Underline,
+			TtfOption{Style: config.FontStyleUnderline, UseKerning: true}); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // AddTTFFontByReader adds font file by reader.
@@ -117,8 +157,8 @@ func (gp *PdfEngine) setSubsetFontObject(subsetFont *ttfSubsetObj, family string
 
 	if gp.indexOfProcSet != -1 {
 		procset := gp.pdfObjs[gp.indexOfProcSet].(*procSetObj)
-		if !procset.Relates.IsContainsFamilyAndStyle(family, option.Style&^Underline) {
-			procset.Relates = append(procset.Relates, relateFont{Family: family, IndexOfObj: index, CountOfFont: gp.curr.CountOfFont, Style: option.Style &^ Underline})
+		if !procset.Relates.IsContainsFamilyAndStyle(family, option.Style&^config.FontStyleUnderline) {
+			procset.Relates = append(procset.Relates, relateFont{Family: family, IndexOfObj: index, CountOfFont: gp.curr.CountOfFont, Style: option.Style &^ config.FontStyleUnderline})
 			subsetFont.CountOfFont = gp.curr.CountOfFont
 			gp.curr.CountOfFont++
 		}

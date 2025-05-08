@@ -565,7 +565,7 @@ func (this *pdfReader) resolveCompressedObject(objSpec *pdfValue) (*pdfValue, er
 	// Now create an io.ReadSeeker
 	rs := io.ReadSeeker(bytes.NewReader(compressedObj.Stream.Bytes))
 
-	// Determine where to seek to (sub-object alignment.Alignment + /First)
+	// Determine where to seek to (sub-object config.Alignment + /First)
 	seekTo := int64(subObjPos + first)
 
 	// Fast forward to the object
@@ -611,18 +611,18 @@ func (this *pdfReader) resolveObject(objSpec *pdfValue) (*pdfValue, error) {
 			return this.resolveCompressedObject(objSpec)
 		}
 
-		// Save current file alignment.Alignment
+		// Save current file config.Alignment
 		// This is needed if you want to resolve reference while you're reading another object.
 		// (e.g.: if you need to determine the length of a stream)
 		old_pos, err = this.f.Seek(0, os.SEEK_CUR)
 		if err != nil {
-			return nil, errs.New(err, "Failed to get current alignment.Alignment of file")
+			return nil, errs.New(err, "Failed to get current config.Alignment of file")
 		}
 
 		// Reposition the file pointer and load the object header
 		_, err = this.f.Seek(int64(offset), 0)
 		if err != nil {
-			return nil, errs.New(err, "Failed to set alignment.Alignment of file")
+			return nil, errs.New(err, "Failed to set config.Alignment of file")
 		}
 
 		token, err := this.readToken(r)
@@ -730,10 +730,10 @@ func (this *pdfReader) resolveObject(objSpec *pdfValue) (*pdfValue, error) {
 			return nil, errs.New("Expected next token to be: endobj, got: " + token)
 		}
 
-		// Reposition the file pointer to previous alignment.Alignment
+		// Reposition the file pointer to previous config.Alignment
 		_, err = this.f.Seek(old_pos, 0)
 		if err != nil {
-			return nil, errs.New(err, "Failed to set alignment.Alignment of file")
+			return nil, errs.New(err, "Failed to set config.Alignment of file")
 		}
 
 		return result, nil
@@ -766,7 +766,7 @@ func (this *pdfReader) findXref() error {
 	// Perform seek operation
 	_, err = this.f.Seek(-toRead, whence)
 	if err != nil {
-		return errs.New(err, "Failed to set alignment.Alignment of file")
+		return errs.New(err, "Failed to set config.Alignment of file")
 	}
 
 	// Create new bufio.Reader
@@ -788,10 +788,10 @@ func (this *pdfReader) findXref() error {
 			// Convert line (string) into int
 			result, err = strconv.Atoi(token)
 			if err != nil {
-				return errs.New(err, "Failed to convert xref alignment.Alignment into integer: "+token)
+				return errs.New(err, "Failed to convert xref config.Alignment into integer: "+token)
 			}
 
-			// Successfully read the xref alignment.Alignment
+			// Successfully read the xref config.Alignment
 			this.xrefPos = result
 			break
 		}
@@ -801,7 +801,7 @@ func (this *pdfReader) findXref() error {
 	whence = 0
 	_, err = this.f.Seek(0, whence)
 	if err != nil {
-		return errs.New(err, "Failed to set alignment.Alignment of file")
+		return errs.New(err, "Failed to set config.Alignment of file")
 	}
 
 	this.xrefPos = result
@@ -819,7 +819,7 @@ func (this *pdfReader) readXref() error {
 	// Set file pointer to xref start
 	_, err = this.f.Seek(int64(this.xrefPos), 0)
 	if err != nil {
-		return errs.New(err, "Failed to set alignment.Alignment of file")
+		return errs.New(err, "Failed to set config.Alignment of file")
 	}
 
 	// Xref should start with 'xref'
@@ -1042,7 +1042,7 @@ func (this *pdfReader) readXref() error {
 							// Append map[int]int
 							this.xref[i] = make(map[int]int, 1)
 
-							// Set object id, generation, and alignment.Alignment
+							// Set object id, generation, and config.Alignment
 							this.xref[i][objGen] = objPos
 						} else if objectData[0] == 2 {
 							// Compressed objects
@@ -1109,17 +1109,17 @@ func (this *pdfReader) readXref() error {
 			return errs.New(err, "Failed to convert num object to integer: "+t)
 		}
 
-		// For all objects in xref, read object alignment.Alignment, object generation, and status (free or new)
+		// For all objects in xref, read object config.Alignment, object generation, and status (free or new)
 		for i := startObject; i < startObject+numObject; i++ {
 			t, err = this.readToken(r)
 			if err != nil {
 				return errs.New(err, "Failed to read token")
 			}
 
-			// Get object alignment.Alignment as int
+			// Get object config.Alignment as int
 			objPos, err := strconv.Atoi(t)
 			if err != nil {
-				return errs.New(err, "Failed to convert object alignment.Alignment to integer: "+t)
+				return errs.New(err, "Failed to convert object config.Alignment to integer: "+t)
 			}
 
 			t, err = this.readToken(r)
@@ -1145,7 +1145,7 @@ func (this *pdfReader) readXref() error {
 			// Append map[int]int
 			this.xref[i] = make(map[int]int, 1)
 
-			// Set object id, generation, and alignment.Alignment
+			// Set object id, generation, and config.Alignment
 			this.xref[i][objGen] = objPos
 		}
 	}
@@ -1605,10 +1605,10 @@ func (this *pdfReader) read() error {
 	if !this.alreadyRead {
 		var err error
 
-		// Find xref alignment.Alignment
+		// Find xref config.Alignment
 		err = this.findXref()
 		if err != nil {
-			return errs.New(err, "Failed to find xref alignment.Alignment")
+			return errs.New(err, "Failed to find xref config.Alignment")
 		}
 
 		// Parse xref table

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/cdvelop/docpdf/config"
 )
 
 func TestExtractFontName(t *testing.T) {
@@ -70,20 +72,20 @@ func TestNewDocument(t *testing.T) {
 		doc := NewDocument()
 
 		// Updated expected default font names
-		expectedFont := Font{
+		expectedFont := config.FontFamily{
 			Regular: "regular.ttf",
 			Bold:    "bold.ttf",
 			Italic:  "italic.ttf",
 			Path:    "fonts/",
 		}
 
-		if doc.fontConfig.Family != expectedFont {
-			t.Errorf("got font = %v, want %v", doc.fontConfig.Family, expectedFont)
+		if doc.fontConfig.FontFamily != expectedFont {
+			t.Errorf("got font = %v, want %v", doc.fontConfig.FontFamily, expectedFont)
 		}
 	})
 
 	t.Run("Custom font configuration", func(t *testing.T) {
-		customFont := Font{
+		customFont := config.FontFamily{
 			Regular: "font.ttf",
 			Bold:    "font-bold.ttf",
 			Italic:  "font-italic.ttf",
@@ -92,8 +94,8 @@ func TestNewDocument(t *testing.T) {
 
 		doc := NewDocument(customFont)
 
-		if doc.fontConfig.Family != customFont {
-			t.Errorf("got font = %v, want %v", doc.fontConfig.Family, customFont)
+		if doc.fontConfig.FontFamily != customFont {
+			t.Errorf("got font = %v, want %v", doc.fontConfig.FontFamily, customFont)
 		}
 	})
 	t.Run("Logger captures errors", func(t *testing.T) {
@@ -105,7 +107,7 @@ func TestNewDocument(t *testing.T) {
 		}
 
 		// Create a custom font that doesn't exist
-		customFont := Font{
+		customFont := config.FontFamily{
 			Regular: "nonexistent/font.ttf",
 			Bold:    "nonexistent/font-bold.ttf",
 			Italic:  "nonexistent/font-italic.ttf",
@@ -128,7 +130,7 @@ func TestNewDocument(t *testing.T) {
 	t.Run("Load only one font", func(t *testing.T) {
 		var logOutput []any
 
-		oneCustomFont := Font{
+		oneCustomFont := config.FontFamily{
 			Regular: "LiberationSerif-Regular.ttf", // Use a different name for clarity
 			Path:    "pdfengine/test/res/",
 		}
@@ -138,7 +140,7 @@ func TestNewDocument(t *testing.T) {
 		}, oneCustomFont)
 
 		// The expected result after NewDocument applies the fallback logic
-		expectedFont := Font{
+		expectedFont := config.FontFamily{
 			Regular: oneCustomFont.Regular,
 			Bold:    oneCustomFont.Regular, // Should fallback to regular
 			Italic:  oneCustomFont.Regular, // Should fallback to regular
@@ -150,8 +152,8 @@ func TestNewDocument(t *testing.T) {
 		}
 
 		// Compare the actual font config set by NewDocument with the expected one
-		if doc.fontConfig.Family != expectedFont {
-			t.Errorf("got font = %v, want %v", doc.fontConfig.Family, expectedFont)
+		if doc.fontConfig.FontFamily != expectedFont {
+			t.Errorf("got font = %v, want %v", doc.fontConfig.FontFamily, expectedFont)
 		}
 	})
 }

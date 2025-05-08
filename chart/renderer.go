@@ -4,9 +4,12 @@ import (
 	"io"
 
 	"github.com/cdvelop/docpdf/canvas"
-	"github.com/cdvelop/docpdf/fontengine"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/style"
 )
+
+// RendererProvider is a function that returns a renderer.
+type RendererProvider func(int, int) (Renderer, error)
 
 // Renderer represents the basic methods required to draw a chart.
 type Renderer interface {
@@ -65,7 +68,7 @@ type Renderer interface {
 
 	// SetFont sets a font for a text field.
 	// Old signature: SetFont(*truetype.Font)
-	SetFont(fontengine.FontProvider)
+	SetFont(config.FontFamily)
 
 	// SetFontColor sets a font's color
 	SetFontColor(style.Color)

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/cdvelop/docpdf/alignment"
+	"github.com/cdvelop/docpdf/config"
 )
 
 func TestLargeTablePagination(t *testing.T) {
@@ -21,7 +21,7 @@ func TestLargeTablePagination(t *testing.T) {
 		ShowOnFirstPage()
 
 	doc.SetPageFooter().
-		WithPageTotal(alignment.Right).
+		WithPageTotal(config.Right).
 		ShowOnFirstPage()
 
 	// Add a title

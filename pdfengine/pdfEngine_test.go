@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/errs"
 	"github.com/cdvelop/docpdf/pdfengine"
 )
@@ -417,7 +417,7 @@ func TestWhiteTransparent(t *testing.T) {
 		return
 	}
 	// write text.
-	op := pdfengine.CellOption{Align: alignment.Left | alignment.Middle}
+	op := pdfengine.CellOption{Align: config.Left | config.Middle}
 	rect := canvas.Rect{W: 20, H: 30}
 	pdf.SetXY(350, 50)
 	err = pdf.Cell(&rect, "あい")
@@ -526,7 +526,7 @@ func TestWhiteTransparent195(t *testing.T) {
 		return
 	}
 	// write text.
-	op := pdfengine.CellOption{Align: alignment.Left | alignment.Middle}
+	op := pdfengine.CellOption{Align: config.Left | config.Middle}
 	rect := canvas.Rect{W: 20, H: 30}
 	pdf.SetXY(350, 50)
 	//err = pdf.Cell(&rect, "あいうえ") // OK.

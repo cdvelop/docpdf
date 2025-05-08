@@ -10,8 +10,8 @@ import (
 	"golang.org/x/image/font"
 
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/drawing"
-	"github.com/cdvelop/docpdf/fontengine"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
 	"github.com/cdvelop/docpdf/style"
@@ -174,7 +174,7 @@ func (vr *vectorRenderer) Circle(radius float64, x, y int) {
 }
 
 // SetFont implements the interface method.
-func (vr *vectorRenderer) SetFont(f fontengine.FontProvider) {
+func (vr *vectorRenderer) SetFont(f config.FontFamily) {
 	// Si es un adaptador TrueType, usamos el Font interno
 	if adapter, ok := f.(*TrueTypeFontAdapter); ok {
 		vr.s.Font = adapter.Font

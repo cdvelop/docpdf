@@ -4,19 +4,19 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cdvelop/docpdf/alignment"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/style"
 )
 
 // tableFormat represents the formatting options for a table header
 type tableFormat struct {
-	HeaderTitle     string              // The displayed title text
-	HeaderAlignment alignment.Alignment // Alignment of the header text (alignment.Left, alignment.Center, alignment.Right)
-	ColumnAlignment alignment.Alignment // Alignment of the column values (alignment.Left, alignment.Center, alignment.Right)
-	Prefix          string              // Prefix to add before each value in the column
-	Suffix          string              // Suffix to add after each value in the column
-	Width           float64             // Width of the column (0 = auto)
-	WidthMode       tableWidthMode      // Table width mode: auto, fixed, or percent
+	HeaderTitle     string           // The displayed title text
+	HeaderAlignment config.Alignment // Alignment of the header text (config.Left, config.Center, config.Right)
+	ColumnAlignment config.Alignment // Alignment of the column values (config.Left, config.Center, config.Right)
+	Prefix          string           // Prefix to add before each value in the column
+	Suffix          string           // Suffix to add after each value in the column
+	Width           float64          // Width of the column (0 = auto)
+	WidthMode       tableWidthMode   // Table width mode: auto, fixed, or percent
 }
 
 // parseTableFormat parses a header, column string with format options
@@ -24,16 +24,16 @@ type tableFormat struct {
 //
 // Examples:
 //
-//	"Name" -> {HeaderTitle: "Name", HeaderAlignment: alignment.Center, ColumnAlignment: alignment.Left}
-//	"Price|HR,CR" -> {HeaderTitle: "Price", HeaderAlignment: alignment.Right, ColumnAlignment: alignment.Right}
-//	"Amount|HR,CR,P:$" -> {HeaderTitle: "Amount", HeaderAlignment: alignment.Right, ColumnAlignment: alignment.Right, Prefix: "$"}
-//	"Percent|HC,CC,S:%" -> {HeaderTitle: "Percent", HeaderAlignment: alignment.Center, ColumnAlignment: alignment.Center, Suffix: "%"}
-//	"Name|HL,CL,W:30%" -> {HeaderTitle: "Name", HeaderAlignment: alignment.Left, ColumnAlignment: alignment.Left, Width: 30, WidthMode: percent}
+//	"Name" -> {HeaderTitle: "Name", HeaderAlignment: config.Center, ColumnAlignment: config.Left}
+//	"Price|HR,CR" -> {HeaderTitle: "Price", HeaderAlignment: config.Right, ColumnAlignment: config.Right}
+//	"Amount|HR,CR,P:$" -> {HeaderTitle: "Amount", HeaderAlignment: config.Right, ColumnAlignment: config.Right, Prefix: "$"}
+//	"Percent|HC,CC,S:%" -> {HeaderTitle: "Percent", HeaderAlignment: config.Center, ColumnAlignment: config.Center, Suffix: "%"}
+//	"Name|HL,CL,W:30%" -> {HeaderTitle: "Name", HeaderAlignment: config.Left, ColumnAlignment: config.Left, Width: 30, WidthMode: percent}
 func parseTableFormat(headerStr string) tableFormat {
 	result := tableFormat{
-		HeaderAlignment: alignment.Center, // Default header alignment is center
-		ColumnAlignment: alignment.Left,   // Default column alignment is left
-		WidthMode:       widthModeAuto,    // Default width mode is auto (enum)
+		HeaderAlignment: config.Center, // Default header alignment is center
+		ColumnAlignment: config.Left,   // Default column alignment is left
+		WidthMode:       widthModeAuto, // Default width mode is auto (enum)
 	}
 
 	// Split by the separator character
@@ -56,22 +56,22 @@ func parseTableFormat(headerStr string) tableFormat {
 		// Process header alignment
 		if strings.HasPrefix(option, "H") {
 			if option == "HL" {
-				result.HeaderAlignment = alignment.Left
+				result.HeaderAlignment = config.Left
 			} else if option == "HR" {
-				result.HeaderAlignment = alignment.Right
+				result.HeaderAlignment = config.Right
 			} else if option == "HC" {
-				result.HeaderAlignment = alignment.Center
+				result.HeaderAlignment = config.Center
 			}
 		}
 
 		// Process column alignment
 		if strings.HasPrefix(option, "C") {
 			if option == "CL" {
-				result.ColumnAlignment = alignment.Left
+				result.ColumnAlignment = config.Left
 			} else if option == "CR" {
-				result.ColumnAlignment = alignment.Right
+				result.ColumnAlignment = config.Right
 			} else if option == "CC" {
-				result.ColumnAlignment = alignment.Center
+				result.ColumnAlignment = config.Center
 			}
 		}
 

@@ -42,7 +42,7 @@ type PdfEngine struct {
 	// Index of first page obj
 	indexOfFirstPageObj int
 
-	// currentPdf alignment.Alignment
+	// currentPdf config.Alignment
 	curr currentPdf
 
 	indexEncodingObjFonts []int
@@ -190,7 +190,7 @@ func (gp *PdfEngine) AddOutline(title string) {
 	gp.outlines.AddOutline(gp.curr.IndexOfPageObj+1, title)
 }
 
-// AddOutlineWithPosition add an outline with alignment.Alignment
+// AddOutlineWithPosition add an outline with config.Alignment
 func (gp *PdfEngine) AddOutlineWithPosition(title string) *outlineObj {
 	return gp.outlines.AddOutlinesWithPosition(gp.curr.IndexOfPageObj+1, title, gp.Config.PageSize.H-gp.curr.Y+20)
 }

@@ -1,8 +1,6 @@
 package pdfengine
 
-import (
-	"github.com/cdvelop/docpdf/alignment"
-)
+import "github.com/cdvelop/docpdf/config"
 
 type listCacheContent struct {
 	caches []ICacheContent
@@ -51,10 +49,10 @@ func (l *listCacheContent) appendContentText(cache cacheContentText, text string
 		return x, y, err
 	}
 
-	if cacheFont.cellOpt.Float == 0 || cacheFont.cellOpt.Float&alignment.Right == alignment.Right || cacheFont.contentType == contentTypeText {
+	if cacheFont.cellOpt.Float == 0 || cacheFont.cellOpt.Float&config.Right == config.Right || cacheFont.contentType == contentTypeText {
 		x = cacheFont.x + textWidthPdfUnit
 	}
-	if cacheFont.cellOpt.Float&alignment.Bottom == alignment.Bottom {
+	if cacheFont.cellOpt.Float&config.Bottom == config.Bottom {
 		y = cacheFont.y + textHeightPdfUnit
 	}
 

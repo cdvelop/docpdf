@@ -103,7 +103,7 @@ func (t *TTFParser) Kern() *kernTable {
 	return t.kern
 }
 
-// UnderlinePosition alignment.Alignment of underline
+// UnderlinePosition config.Alignment of underline
 func (t *TTFParser) UnderlinePosition() int {
 	return t.underlinePosition
 }

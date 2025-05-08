@@ -3,7 +3,7 @@ package docpdf
 import (
 	"testing"
 
-	"github.com/cdvelop/docpdf/alignment"
+	"github.com/cdvelop/docpdf/config"
 )
 
 func TestParseHeaderFormat(t *testing.T) {
@@ -17,8 +17,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Name",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Name",
-				HeaderAlignment: alignment.Center,
-				ColumnAlignment: alignment.Left,
+				HeaderAlignment: config.Center,
+				ColumnAlignment: config.Left,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           0,
@@ -30,8 +30,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Name|HL",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Name",
-				HeaderAlignment: alignment.Left,
-				ColumnAlignment: alignment.Left,
+				HeaderAlignment: config.Left,
+				ColumnAlignment: config.Left,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           0,
@@ -43,8 +43,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Price|HR",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Price",
-				HeaderAlignment: alignment.Right,
-				ColumnAlignment: alignment.Left,
+				HeaderAlignment: config.Right,
+				ColumnAlignment: config.Left,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           0,
@@ -56,8 +56,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Amount|CR",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Amount",
-				HeaderAlignment: alignment.Center,
-				ColumnAlignment: alignment.Right,
+				HeaderAlignment: config.Center,
+				ColumnAlignment: config.Right,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           0,
@@ -69,8 +69,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Price|HR,CR",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Price",
-				HeaderAlignment: alignment.Right,
-				ColumnAlignment: alignment.Right,
+				HeaderAlignment: config.Right,
+				ColumnAlignment: config.Right,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           0,
@@ -82,8 +82,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Price|HR,CR,P:$",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Price",
-				HeaderAlignment: alignment.Right,
-				ColumnAlignment: alignment.Right,
+				HeaderAlignment: config.Right,
+				ColumnAlignment: config.Right,
 				Prefix:          "$",
 				Suffix:          "",
 				Width:           0,
@@ -95,8 +95,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Percentage|HC,CC,S:%",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Percentage",
-				HeaderAlignment: alignment.Center,
-				ColumnAlignment: alignment.Center,
+				HeaderAlignment: config.Center,
+				ColumnAlignment: config.Center,
 				Prefix:          "",
 				Suffix:          "%",
 				Width:           0,
@@ -108,8 +108,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Balance|HR,CR,P:$,S:USD",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Balance",
-				HeaderAlignment: alignment.Right,
-				ColumnAlignment: alignment.Right,
+				HeaderAlignment: config.Right,
+				ColumnAlignment: config.Right,
 				Prefix:          "$",
 				Suffix:          "USD",
 				Width:           0,
@@ -121,8 +121,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Name|HL,CL,W:120",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Name",
-				HeaderAlignment: alignment.Left,
-				ColumnAlignment: alignment.Left,
+				HeaderAlignment: config.Left,
+				ColumnAlignment: config.Left,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           120,
@@ -134,8 +134,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Name|HL,CL,W:30%",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Name",
-				HeaderAlignment: alignment.Left,
-				ColumnAlignment: alignment.Left,
+				HeaderAlignment: config.Left,
+				ColumnAlignment: config.Left,
 				Prefix:          "",
 				Suffix:          "",
 				Width:           30,
@@ -147,8 +147,8 @@ func TestParseHeaderFormat(t *testing.T) {
 			input: "Product|HL,CR,P:Item:,S:USD,W:40%",
 			expectedResult: tableFormat{
 				HeaderTitle:     "Product",
-				HeaderAlignment: alignment.Left,
-				ColumnAlignment: alignment.Right,
+				HeaderAlignment: config.Left,
+				ColumnAlignment: config.Right,
 				Prefix:          "Item:",
 				Suffix:          "USD",
 				Width:           40,

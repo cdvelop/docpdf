@@ -4,8 +4,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/errs"
 )
 
@@ -181,7 +181,7 @@ func (jt *JustifiedText) Draw(gp *PdfEngine, x, y float64) error {
 // MultiCellJustified dibuja texto justificado dentro de un rectángulo
 func (gp *PdfEngine) MultiCellJustified(rectangle *canvas.Rect, text string) error {
 	opt := CellOption{
-		Align: alignment.Justify,
+		Align: config.Justify,
 	}
 	return gp.MultiCellWithOption(rectangle, text, opt)
 }

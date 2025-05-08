@@ -2,7 +2,7 @@ package chart
 
 import (
 	"github.com/cdvelop/docpdf/chart/roboto"
-	"github.com/cdvelop/docpdf/fontengine"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 )
 
@@ -14,7 +14,7 @@ var defaultEngine *ChartEngine
 // Esta función ahora inicializa un ChartEngine si no existe uno
 // para mantener compatibilidad con el código existente.
 // NOTA: Para código nuevo, usar GetDefaultFontProvider() en su lugar
-// que es compatible con la nueva abstracción fontengine.FontProvider.
+// que es compatible con la nueva abstracción config.FontFamily.
 func GetDefaultFont() (*truetype.Font, error) {
 	// Si ya tenemos un motor inicializado con una fuente, lo usamos
 	if defaultEngine != nil && defaultEngine.defaultFont != nil {
@@ -31,10 +31,10 @@ func GetDefaultFont() (*truetype.Font, error) {
 	return defaultEngine.defaultFont, nil
 }
 
-// GetDefaultFontProvider returns the default font as a fontengine.FontProvider.
+// GetDefaultFontProvider returns the default font as a config.FontFamily.
 // Esta es la función preferida para el nuevo código que utiliza
-// la abstracción fontengine.FontProvider en lugar de truetype.Font directamente.
-func GetDefaultFontProvider() (fontengine.FontProvider, error) {
+// la abstracción config.FontFamily en lugar de truetype.Font directamente.
+func GetDefaultFontProvider() (config.FontFamily, error) {
 	// Primero obtenemos la fuente por el método anterior
 	font, err := GetDefaultFont()
 	if err != nil {

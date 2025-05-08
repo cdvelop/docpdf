@@ -5,6 +5,6 @@ go 1.23.0
 toolchain go1.23.8
 
 require (
-	github.com/cdvelop/tinystring v0.0.26
+	github.com/cdvelop/tinystring v0.0.29
 	golang.org/x/image v0.27.0
 )

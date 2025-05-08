@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/cdvelop/docpdf"
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/pdfengine"
 )
 
@@ -139,11 +139,11 @@ func TestMultiCellWithOption(t *testing.T) {
 
 	rect := &canvas.Rect{W: 200, H: 100}
 	opt := pdfengine.CellOption{
-		Align: alignment.Left | alignment.Top,
+		Align: config.Left | config.Top,
 	}
 
 	// Prueba con opciones básicas
-	err = pdf.MultiCellWithOption(rect, "This is a text to test MultiCellWithOption with left and top alignment.", opt)
+	err = pdf.MultiCellWithOption(rect, "This is a text to test MultiCellWithOption with left and top config.", opt)
 	if err != nil {
 		t.Error(err)
 		return
@@ -254,7 +254,7 @@ func TestMultiCellWithMaxLines(t *testing.T) {
 		text      string
 		maxLines  int
 		width     float64
-		align     alignment.Alignment
+		align     config.Alignment
 		expectErr bool
 	}{
 		{
@@ -262,7 +262,7 @@ func TestMultiCellWithMaxLines(t *testing.T) {
 			text:      "Texto corto",
 			maxLines:  2,
 			width:     100,
-			align:     alignment.Left,
+			align:     config.Left,
 			expectErr: false,
 		},
 		{
@@ -270,7 +270,7 @@ func TestMultiCellWithMaxLines(t *testing.T) {
 			text:      "Este es un texto muy largo que debe truncarse a una sola línea con puntos suspensivos al final",
 			maxLines:  1,
 			width:     100,
-			align:     alignment.Left,
+			align:     config.Left,
 			expectErr: false,
 		},
 		{
@@ -278,7 +278,7 @@ func TestMultiCellWithMaxLines(t *testing.T) {
 			text:      "Este es un texto muy largo que debe truncarse a dos líneas, con puntos suspensivos al final de la segunda línea para indicar que hay más contenido que no se muestra",
 			maxLines:  2,
 			width:     100,
-			align:     alignment.Left,
+			align:     config.Left,
 			expectErr: false,
 		},
 		{
@@ -286,7 +286,7 @@ func TestMultiCellWithMaxLines(t *testing.T) {
 			text:      "Este es un texto largo que debería estar justificado cuando se muestra en múltiples líneas dentro de la celda, para mejorar su apariencia y legibilidad.",
 			maxLines:  2,
 			width:     100,
-			align:     alignment.Justify,
+			align:     config.Justify,
 			expectErr: false,
 		},
 		{
@@ -294,7 +294,7 @@ func TestMultiCellWithMaxLines(t *testing.T) {
 			text:      "Texto con valor maxLines negativo",
 			maxLines:  -1,
 			width:     100,
-			align:     alignment.Left,
+			align:     config.Left,
 			expectErr: false, // No debería dar error, sino usar valor por defecto (1)
 		},
 	}

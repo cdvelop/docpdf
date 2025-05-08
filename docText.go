@@ -1,10 +1,9 @@
 package docpdf
 
 import (
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/pdfengine"
-	"github.com/cdvelop/docpdf/style"
 )
 
 // FontStyle defines the available font styles
@@ -22,23 +21,13 @@ const (
 	fixedPosition   elementPosition = "fixed"   //posicionamiento fijo (no se mueve con el texto)
 )
 
-// TextStyle defines text appearance properties
-type TextStyle struct {
-	Size        float64
-	Color       style.Color
-	LineSpacing float64
-	Alignment   alignment.Alignment // Uses same alignment constants as cellOption (alignment.Left, alignment.Center, alignment.Right, etc)
-	SpaceBefore float64             // Space before paragraph (in points)
-	SpaceAfter  float64             // Space after paragraph (in points)
-}
-
 // docText is a helper struct to build text cells
 type docText struct {
 	doc         *Document
 	text        string
 	opts        pdfengine.CellOption
 	rect        *canvas.Rect
-	style       TextStyle
+	style       config.TextStyle
 	fontName    string
 	fullWidth   bool            // Por defecto es false (solo usa el ancho necesario)
 	positioning elementPosition // "inline", "newline" (por defecto newline)
@@ -46,7 +35,7 @@ type docText struct {
 }
 
 // newTextBuilder creates a new docText with the given style
-func (d *Document) newTextBuilder(text string, style TextStyle, fontName string) *docText {
+func (d *Document) newTextBuilder(text string, style config.TextStyle, fontName string) *docText {
 	builder := &docText{
 		doc:         d,
 		text:        text,
@@ -62,7 +51,7 @@ func (d *Document) newTextBuilder(text string, style TextStyle, fontName string)
 		opts: pdfengine.CellOption{
 			Align: style.Alignment,
 			// Border:         AllBorders,
-			Float:          alignment.Bottom,
+			Float:          config.Bottom,
 			CoefLineHeight: style.LineSpacing,
 		},
 	}
@@ -108,28 +97,28 @@ func (d *Document) AddJustifiedText(text string) *docText {
 }
 
 func (dt *docText) AlignCenter() *docText {
-	dt.opts.Align = alignment.Center | alignment.Top
+	dt.opts.Align = config.Center | config.Top
 	return dt
 }
 
 func (dt *docText) AlignRight() *docText {
-	dt.opts.Align = alignment.Right | alignment.Top
+	dt.opts.Align = config.Right | config.Top
 	dt.fullWidth = true
 	return dt
 }
 
 func (dt *docText) AlignLeft() *docText {
-	dt.opts.Align = alignment.Left | alignment.Top
+	dt.opts.Align = config.Left | config.Top
 	return dt
 }
 
 func (dt *docText) Justify() *docText {
-	dt.opts.Align = alignment.Justify | alignment.Top
+	dt.opts.Align = config.Justify | config.Top
 	return dt
 }
 
 func (dt *docText) WithBorder() *docText {
-	dt.opts.Border = alignment.AllBorders
+	dt.opts.Border = config.AllBorders
 	return dt
 }
 
@@ -280,7 +269,7 @@ func (dt *docText) Draw() error {
 	}
 
 	// Special handling for right-aligned inline text
-	isRightAligned := (dt.opts.Align == alignment.Right || dt.opts.Align == (alignment.Right|alignment.Top))
+	isRightAligned := (dt.opts.Align == config.Right || dt.opts.Align == (config.Right|config.Top))
 
 	// Configure word wrap to prevent cutting words
 	if dt.wordWrap {

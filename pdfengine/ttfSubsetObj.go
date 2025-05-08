@@ -393,7 +393,7 @@ func (s *ttfSubsetObj) GetUnderlineThicknessPx(fontSize float64) float64 {
 	return (float64(s.ttfp.UnderlineThickness()) / float64(s.ttfp.UnitsPerEm())) * fontSize
 }
 
-// GetUnderlinePosition underline alignment.Alignment.
+// GetUnderlinePosition underline config.Alignment.
 func (s *ttfSubsetObj) GetUnderlinePosition() int {
 	return s.ttfp.UnderlinePosition()
 }

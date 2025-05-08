@@ -1,9 +1,9 @@
 package docpdf
 
 import (
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/chartutils"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/fontbridge"
 	"github.com/cdvelop/docpdf/style"
 )
@@ -55,8 +55,8 @@ func (doc *Document) Chart() *docCharts {
 
 		// Inicializar la configuración compartida
 		fontbridge.InitFromDocConfig(
-			doc.fontConfig.Family.Path,
-			doc.fontConfig.Family.Regular,
+			doc.fontConfig.FontFamily.Path,
+			doc.fontConfig.FontFamily.Regular,
 			float64(doc.fontConfig.Header2.Size),
 			float64(doc.fontConfig.ChartLabel.Size),
 			float64(doc.fontConfig.Footnote.Size),
@@ -77,7 +77,7 @@ func (doc *Document) Chart() *docCharts {
 }
 
 // Bar crea un nuevo elemento de gráfico de barras
-// default alignment: alignment.Center
+// default alignment: config.Center
 func (c *docCharts) Bar() *docBarChart {
 	// Usar la función de configuración común
 	base := configureBaseChart(c.doc, barChartType)
@@ -93,7 +93,7 @@ func (c *docCharts) Bar() *docBarChart {
 }
 
 // Donut crea un nuevo elemento de gráfico de tipo donut
-// default alignment: alignment.Center
+// default alignment: config.Center
 func (c *docCharts) Donut() *docDonutChart {
 	// Usar la función de configuración común de todo el gráfico
 	base := configureBaseChart(c.doc, donutChartType)
@@ -156,19 +156,19 @@ func (c *docBarChart) FixedPosition(x, y float64) *docBarChart {
 
 // AlignLeft alinea el gráfico de barras al margen izquierdo
 func (c *docBarChart) AlignLeft() *docBarChart {
-	c.docChart.alignment = alignment.Left
+	c.docChart.alignment = config.Left
 	return c
 }
 
 // AlignCenter centra el gráfico de barras horizontalmente
 func (c *docBarChart) AlignCenter() *docBarChart {
-	c.docChart.alignment = alignment.Center
+	c.docChart.alignment = config.Center
 	return c
 }
 
 // AlignRight alinea el gráfico de barras al margen derecho
 func (c *docBarChart) AlignRight() *docBarChart {
-	c.docChart.alignment = alignment.Right
+	c.docChart.alignment = config.Right
 	return c
 }
 
@@ -296,19 +296,19 @@ func (c *docDonutChart) FixedPosition(x, y float64) *docDonutChart {
 
 // AlignLeft alinea el gráfico de donut al margen izquierdo
 func (c *docDonutChart) AlignLeft() *docDonutChart {
-	c.docChart.alignment = alignment.Left
+	c.docChart.alignment = config.Left
 	return c
 }
 
 // AlignCenter centra el gráfico de donut horizontalmente
 func (c *docDonutChart) AlignCenter() *docDonutChart {
-	c.docChart.alignment = alignment.Center
+	c.docChart.alignment = config.Center
 	return c
 }
 
 // AlignRight alinea el gráfico de donut al margen derecho
 func (c *docDonutChart) AlignRight() *docDonutChart {
-	c.docChart.alignment = alignment.Right
+	c.docChart.alignment = config.Right
 	return c
 }
 

@@ -52,7 +52,7 @@ func DegreesToCompass(deg float64) float64 {
 	return DegreesAdd(deg, -90.0)
 }
 
-// CirclePoint returns the absolute alignment.Alignment of a circle diameter point given
+// CirclePoint returns the absolute config.Alignment of a circle diameter point given
 // by the radius and the theta.
 func CirclePoint(cx, cy int, radius, thetaRadians float64) (x, y int) {
 	x = cx + int(radius*math.Sin(thetaRadians))

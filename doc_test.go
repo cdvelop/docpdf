@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/style"
 )
 
@@ -27,7 +27,7 @@ func TestDocumentAPIUsage(t *testing.T) {
 
 	// Setup header and footer with the new API
 	doc.SetPageHeader().
-		SetLeftText("Header alignment.Left").
+		SetLeftText("Header config.Left").
 		SetCenterText("Document Example").
 		SetRightText("Confidential").
 		// ShowOnFirstPage()
@@ -36,7 +36,7 @@ func TestDocumentAPIUsage(t *testing.T) {
 		doc.SetPageFooter().
 		SetLeftText("Created: 2023-10-01").
 		SetCenterText("footer center example").
-		WithPageTotal(alignment.Right).
+		WithPageTotal(config.Right).
 		ShowOnFirstPage()
 
 	// add logo image
@@ -131,10 +131,10 @@ func TestDocumentAPIUsage(t *testing.T) {
 		"Code|CC,W:8%",                // Centered header and centered content, 8% width
 		"Product|W:15%",               // Default left alignment, 15% width
 		"Description|W:25%",           // Default left alignment, 25% width
-		"Quantity|HR,CR,S: pcs,W:13%", // alignment.Right-aligned header and content with "pcs" suffix, 13% width
-		"Price|CR,P:$,W:13%",          // alignment.Right-aligned content with "$" prefix, 13% width
-		"Discount|HR,CR,S:%,W:13%",    // alignment.Right-aligned header with "%" suffix, 13% width
-		"Total|CR,P:$,W:13%",          // alignment.Right-aligned content with "$" prefix, 13% width
+		"Quantity|HR,CR,S: pcs,W:13%", // config.Right-aligned header and content with "pcs" suffix, 13% width
+		"Price|CR,P:$,W:13%",          // config.Right-aligned content with "$" prefix, 13% width
+		"Discount|HR,CR,S:%,W:13%",    // config.Right-aligned header with "%" suffix, 13% width
+		"Total|CR,P:$,W:13%",          // config.Right-aligned content with "$" prefix, 13% width
 	)
 
 	// Customize header style
@@ -185,7 +185,7 @@ func TestDocumentAPIUsage(t *testing.T) {
 	comprehensiveTable.Draw()
 
 	// Keep only the right-aligned table example
-	doc.AddHeader3("2. alignment.Right-aligned Table Example").Draw()
+	doc.AddHeader3("2. config.Right-aligned Table Example").Draw()
 	doc.AddText("Table with right alignment:").Draw()
 
 	// Create a right-aligned table with specific column widths

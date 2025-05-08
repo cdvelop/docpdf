@@ -241,9 +241,9 @@ func (c *cacheContentOval) Write(w Writer, protection *pdfProtection) error {
 
 	cp := 0.55228                              // Magnification of the control point
 	v1 := [2]float64{x1 + (x2-x1)/2, h - y2}   // Vertex of the lower
-	v2 := [2]float64{x2, h - (y1 + (y2-y1)/2)} // .. alignment.Right
+	v2 := [2]float64{x2, h - (y1 + (y2-y1)/2)} // .. config.Right
 	v3 := [2]float64{x1 + (x2-x1)/2, h - y1}   // .. Upper
-	v4 := [2]float64{x1, h - (y1 + (y2-y1)/2)} // .. alignment.Left
+	v4 := [2]float64{x1, h - (y1 + (y2-y1)/2)} // .. config.Left
 
 	fmt.Fprintf(w, "%0.2f %0.2f m\n", v1[0], v1[1])
 	fmt.Fprintf(w,

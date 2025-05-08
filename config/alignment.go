@@ -1,4 +1,4 @@
-package alignment
+package config
 
 // position representa una posición o alineación en el documento
 type Alignment int

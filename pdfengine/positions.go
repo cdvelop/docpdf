@@ -6,19 +6,19 @@ type point struct {
 	Y float64
 }
 
-// SetX : set current alignment.Alignment X
+// SetX : set current config.Alignment X
 func (gp *PdfEngine) SetX(x float64) {
 	gp.UnitsToPointsVar(&x)
 	gp.curr.setXCount++
 	gp.curr.X = x
 }
 
-// GetX : get current alignment.Alignment X
+// GetX : get current config.Alignment X
 func (gp *PdfEngine) GetX() float64 {
 	return gp.pointsToUnits(gp.curr.X)
 }
 
-// SetNewY : set current alignment.Alignment y, and modified y if add a new page.
+// SetNewY : set current config.Alignment y, and modified y if add a new page.
 // Example:
 // For example, if the page height is set to 841px, MarginTop is 20px,
 // MarginBottom is 10px, and the height of the element(such as text) to be inserted is 25px,
@@ -36,7 +36,7 @@ func (gp *PdfEngine) SetNewY(y float64, h float64) {
 	gp.curr.Y = y
 }
 
-// SetNewYIfNoOffset : set current alignment.Alignment y, and modified y if add a new page.
+// SetNewYIfNoOffset : set current config.Alignment y, and modified y if add a new page.
 // Example:
 // For example, if the page height is set to 841px, MarginTop is 20px,
 // MarginBottom is 10px, and the height of the element(such as image) to be inserted is 200px,
@@ -52,7 +52,7 @@ func (gp *PdfEngine) SetNewYIfNoOffset(y float64, h float64) {
 	gp.curr.Y = y
 }
 
-// SetNewXY : set current alignment.Alignment x and y, and modified y if add a new page.
+// SetNewXY : set current config.Alignment x and y, and modified y if add a new page.
 // Example:
 // For example, if the page height is set to 841px, MarginTop is 20px,
 // MarginBottom is 10px, and the height of the element to be inserted is 25px,
@@ -70,18 +70,18 @@ func (gp *PdfEngine) SetNewXY(y float64, x, h float64) {
 	gp.SetX(x)
 }
 
-// SetY : set current alignment.Alignment y
+// SetY : set current config.Alignment y
 func (gp *PdfEngine) SetY(y float64) {
 	gp.UnitsToPointsVar(&y)
 	gp.curr.Y = y
 }
 
-// GetY : get current alignment.Alignment y
+// GetY : get current config.Alignment y
 func (gp *PdfEngine) GetY() float64 {
 	return gp.pointsToUnits(gp.curr.Y)
 }
 
-// SetXY : set current alignment.Alignment x and y
+// SetXY : set current config.Alignment x and y
 func (gp *PdfEngine) SetXY(x, y float64) {
 	gp.UnitsToPointsVar(&x)
 	gp.curr.setXCount++

@@ -1,6 +1,9 @@
 package pdfengine
 
-import "github.com/cdvelop/docpdf/errs"
+import (
+	"github.com/cdvelop/docpdf/errs"
+	"github.com/cdvelop/tinystring"
+)
 
 // convertNumericToFloat64 : accept numeric types, return float64-value
 func convertNumericToFloat64(size any) (fontSize float64, err error) {
@@ -48,6 +51,7 @@ func is_numeric(val any) bool {
 		}
 		// Trim any whitespace
 		str = customTrimSpace(str)
+		tinystring.Convert(&str).Trim().String()
 		//fmt.Println(str)
 		if str[0] == '-' || str[0] == '+' {
 			if len(str) == 1 {
@@ -156,20 +160,6 @@ func filterPaeth(cdat, pdat []byte, bytesPerPixel int) {
 			c = b
 		}
 	}
-}
-
-// customTrimSpace quita espacios en blanco al inicio y al final
-func customTrimSpace(s string) string {
-	i, j := 0, len(s)-1
-	// Avanza desde la izquierda
-	for i <= j && (s[i] == ' ' || s[i] == '\t' || s[i] == '\r' || s[i] == '\n') {
-		i++
-	}
-	// Avanza desde la derecha
-	for j >= i && (s[j] == ' ' || s[j] == '\t' || s[j] == '\r' || s[j] == '\n') {
-		j--
-	}
-	return s[i : j+1]
 }
 
 // funcKernOverride  return your custome pair value

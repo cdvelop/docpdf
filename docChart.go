@@ -4,10 +4,10 @@ package docpdf
 import (
 	"bytes"
 
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart"
 	"github.com/cdvelop/docpdf/chartutils"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/fontbridge"
 	"github.com/cdvelop/docpdf/style"
 	"github.com/cdvelop/tinystring"
@@ -19,7 +19,7 @@ type docChart struct {
 	width     float64
 	height    float64
 	keepRatio bool
-	alignment alignment.Alignment
+	alignment config.Alignment
 	x, y      float64
 	hasPos    bool
 	inline    bool
@@ -468,7 +468,7 @@ func configureBaseChart(doc *Document, chartType chartType) *docChart {
 		width:          500, // Ancho predeterminado
 		height:         300, // Alto predeterminado
 		keepRatio:      true,
-		alignment:      alignment.Center,
+		alignment:      config.Center,
 		dpi:            150,                                   // DPI reducido a 150
 		strokeWidth:    1.0,                                   // Ancho de línea por defecto
 		valueFormatter: chartutils.FormatNumberValueFormatter, // Formateador de valores predeterminado con separadores de miles

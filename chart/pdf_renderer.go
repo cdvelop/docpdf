@@ -5,7 +5,7 @@ import (
 	"math"
 
 	"github.com/cdvelop/docpdf/canvas"
-	"github.com/cdvelop/docpdf/fontengine"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/pdfengine"
 	"github.com/cdvelop/docpdf/style"
 )
@@ -25,7 +25,7 @@ type PdfRenderer struct {
 	fillColor    style.Color
 	strokeWidth  float64
 	dashArray    []float64
-	font         fontengine.FontProvider
+	font         config.FontFamily
 	fontSize     float64
 	fontColor    style.Color
 	textRotation float64
@@ -385,7 +385,7 @@ func (r *PdfRenderer) Circle(radius float64, x, y int) {
 }
 
 // SetFont establece una fuente para un campo de texto
-func (r *PdfRenderer) SetFont(font fontengine.FontProvider) {
+func (r *PdfRenderer) SetFont(font config.FontFamily) {
 	r.font = font
 
 	// Configurar la fuente en PdfEngine

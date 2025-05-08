@@ -215,7 +215,7 @@ func main() {
 		Height:  %d,
 		Ascent:  %d,
 		Descent: %d,
-		alignment.Left: %d,
+		config.Left: %d,
 		Mask: &image.Alpha{
 			Stride: %d,
 			Rect: image.Rectangle{Max: image.Point{%d, %d*%d}},

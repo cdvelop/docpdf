@@ -1,4 +1,4 @@
-github.com/cdvelop/tinystring v0.0.26 h1:4gwSnWgLENuZwHaa7LOUzFd7ysNC8m/fMEhiZmRuX+Y=
-github.com/cdvelop/tinystring v0.0.26/go.mod h1:85ltrACJtjf1Zu/o8kqwHGKAiN0oBwb+TR2tkXdURJo=
+github.com/cdvelop/tinystring v0.0.29 h1:OyPTs1SoLnbD3Mi/bfH6elGew3qwv3QK93vNKRFDja0=
+github.com/cdvelop/tinystring v0.0.29/go.mod h1:85ltrACJtjf1Zu/o8kqwHGKAiN0oBwb+TR2tkXdURJo=
 golang.org/x/image v0.27.0 h1:C8gA4oWU/tKkdCfYT6T2u4faJu3MeNS5O8UPWlPF61w=
 golang.org/x/image v0.27.0/go.mod h1:xbdrClrAUway1MUTEZDq9mz/UpRwYAkFFNUslZtcB+g=

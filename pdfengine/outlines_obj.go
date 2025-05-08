@@ -65,7 +65,7 @@ func (o *outlinesObj) AddOutline(dest int, title string) {
 	o.count++
 }
 
-// AddOutlinesWithPosition add outlines with alignment.Alignment
+// AddOutlinesWithPosition add outlines with config.Alignment
 func (o *outlinesObj) AddOutlinesWithPosition(dest int, title string, y float64) *outlineObj {
 	oo := &outlineObj{title: title, dest: dest, parent: o.index, prev: o.last, next: -1, height: y}
 	o.last = o.getRoot().addObj(oo) + 1

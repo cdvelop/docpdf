@@ -241,7 +241,7 @@ func (this *pdfWriter) shaOfInt(i int) string {
 func (this *pdfWriter) outObjRef(objId int) {
 	sha := this.shaOfInt(objId)
 
-	// Keep track of object hash and alignment.Alignment - to be replaced with actual object id (integer)
+	// Keep track of object hash and config.Alignment - to be replaced with actual object id (integer)
 	this.written_obj_pos[this.current_obj.id][this.current_obj.buffer.Len()] = sha
 
 	if this.use_hash {
@@ -382,7 +382,7 @@ func (this *pdfWriter) PutFormXobjects(reader *pdfReader) (map[string]*pdfObject
 
 		tpl.N = this.n
 
-		// Return xobject form name and object alignment.Alignment
+		// Return xobject form name and object config.Alignment
 		pdfObjId := new(pdfObjectId)
 		pdfObjId.id = cN
 		pdfObjId.hash = this.shaOfInt(cN)

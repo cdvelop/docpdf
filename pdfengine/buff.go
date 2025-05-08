@@ -7,7 +7,7 @@ import (
 
 // buff for pdf content
 type buff struct {
-	pos   int // Cambiado de alignment.Alignment a int para evitar conflictos de tipo
+	pos   int // Cambiado de config.Alignment a int para evitar conflictos de tipo
 	datas []byte
 }
 
@@ -36,12 +36,12 @@ func (b *buff) Bytes() []byte {
 	return b.datas
 }
 
-// alignment.Alignment : get current alignment.Alignment
+// config.Alignment : get current config.Alignment
 func (b *buff) Alignment() int {
 	return b.pos
 }
 
-// SetPosition : set current alignment.Alignment
+// SetPosition : set current config.Alignment
 func (b *buff) SetPosition(pos int) {
 	b.pos = pos
 }

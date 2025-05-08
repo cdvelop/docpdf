@@ -48,7 +48,7 @@ Aprovechar que [`chart`](chart ) puede generar SVG (vectorial) para unificar el 
 4. Implementar un sistema para incrustar SVG directamente en documentos PDF
 5. Centralizar la gestión de fuentes en una única estructura
 6. Eliminar completamente el paquete **fontbridge**, reemplazándolo con el nuevo sistema unificado de manejo de fuentes
-7. Crear un nuevo paquete llamado `config` donde la estructura `FontConfig` será refactorizada como `TextStyles`, permitiendo su uso sin dependencias circulares. Esto hará que la API se use como `config.TextStyles` en lugar de estar embebida directamente en el paquete docpdf.
+7. Crear un nuevo paquete llamado `config` donde la estructura `FontConfig` será refactorizada como `TextStyles` y se implementará una estructura `FontFamily` para gestionar las fuentes, permitiendo su uso sin dependencias circulares. Esto hará que la API se use como `config.TextStyles` y `config.FontFamily` en lugar de estar embebida directamente en el paquete docpdf.
 
 ## 5. Etapas de Refactorización
 
@@ -56,7 +56,7 @@ Las siguientes etapas se irán completando secuencialmente:
 
 - [ ] **Etapa 1: Migración a SVG** - Eliminar la funcionalidad de renderizado PNG de chart y usar exclusivamente SVG
 - [x] **Etapa 2: Mapeo de dependencias** - Analizar y documentar todas las dependencias actuales de freetype y fontbridge
-- [ ] **Etapa 3: Nuevo sistema de fuentes** - Diseñar e implementar el sistema unificado de manejo de fuentes
+- [x] **Etapa 3: Nuevo sistema de fuentes** - Diseñar e implementar el sistema unificado de manejo de fuentes ✅
 - [ ] **Etapa 4: Integración SVG** - Implementar el sistema de inserción de SVG en docpdf
 - [ ] **Etapa 5: Eliminación de fontbridge** - Refactorizar toda funcionalidad que dependa de fontbridge hacia el nuevo sistema
 - [ ] **Etapa 6: Pruebas de integración** - Verificar que todos los tipos de gráficos se rendericen correctamente
@@ -78,12 +78,12 @@ Las siguientes etapas se irán completando secuencialmente:
 3. **Implementar ChartEngine centralizado**:
    - ✅ Crear estructura `ChartEngine` para centralizar la inicialización de fuentes
    - ✅ Implementar inicialización directa sin usar patrones singleton
-   - ✅ Implementar métodos para encadenar la creación de gráficos (ej: `engine.DonutChart().PieChart()`)
+   - ✅ Implementar métodos para encadenar la creación de gráficos (ej: `engine.Donut().PieChart()`)
    - ✅ Centralizar configuración común (tamaños, DPI, estilos, paleta de colores)
 
 ### Fase 2: Modificación de chart
 
-4. **Eliminar dependencia de freetype**: 👈 ESTAMOS AQUÍ
+4. **Eliminar dependencia de freetype**:
    - ✅ Identificar todos los métodos que usan directamente tipos de freetype
    - ✅ Crear interfaces para abstraer funcionalidades de fuentes. La interfaz clave para esto es `FontProvider`, que se encuentra en el paquete `fontengine` (y se usa como `fontengine.FontProvider`).
    - ✅ Adaptar las implementaciones existentes para usar `fontengine.FontProvider`
@@ -93,88 +93,15 @@ Las siguientes etapas se irán completando secuencialmente:
 
 5. **Implementar abstracción de fontengine.FontProvider**: ✅
    - Los métodos de `fontengine.FontProvider` para `PdfEngine` se encuentran en `c:\Users\Cesar\Packages\Internal\docpdf\pdfengine\font_provider.go`.
-   ```go
-   // COMPLETADO: Se ha implementado la interfaz fontengine.FontProvider
-
-   // fontengine.FontProvider es una interfaz que abstrae las propiedades necesarias de una fuente
-   type fontengine.FontProvider interface {
-       // Identificación de la fuente
-       Name() string       // Nombre de la fuente
-       Family() string     // Familia de la fuente
-       
-       // Propiedades de estilo
-       Weight() string     // Peso: regular, bold, etc.
-       Style() string      // Estilo: normal, italic, etc.
-       
-       // Propiedades para renderizado SVG
-       SVGFontID() string  // ID para referenciar en SVG
-       
-       // Opcionalmente, para sistemas que necesiten la ruta al archivo
-       Path() string       // Ruta al archivo de la fuente
-   }
-   
-   // Adaptador transitorio para compatibilidad con código existente
-   type TrueTypeFontAdapter struct {
-       Font *truetype.Font
-       FontName string
-       FontFamily string
-       FontWeight string
-       FontStyle string
-       FontPath string
-   }
-     func NewTrueTypeFontAdapter(font *truetype.Font, name, family, weight, style, path string) fontengine.FontProvider {
-       return &TrueTypeFontAdapter{
-           Font:       font,
-           FontName:   name,
-           FontFamily: family,
-           FontWeight: weight,
-           FontStyle:  style,
-           FontPath:   path,
-       }
-   }
-   ```
-   Los métodos de `fontengine.FontProvider` para `PdfEngine` (definido en `c:\\Users\\Cesar\\Packages\\Internal\\docpdf\\fontengine\\provider.go`) se encuentran implementados en `c:\\Users\\Cesar\\Packages\\Internal\\docpdf\\pdfengine\\font_provider.go`.
-
-6. **Crear función GetDefaultFontProvider**: ✅
-   ```go
-   // DEPRECATED: This function should be removed.
-   // GetDefaultFontProvider returns the default font as a fontengine.FontProvider.
-   // Esta es la función preferida para el nuevo código que utiliza
-   // la abstracción fontengine.FontProvider en lugar de truetype.Font directamente.
-   func GetDefaultFontProvider() (fontengine.FontProvider, error) {
-       // Primero obtenemos la fuente por el método anterior
-       font, err := GetDefaultFont()
-       if err != nil {
-           return nil, err
-       }
-       
-       // Crear un adaptador para la fuente
-       return &TrueTypeFontAdapter{
-           Font:       font,
-           FontName:   "Roboto-Medium",
-           FontFamily: "Roboto",
-           FontWeight: "Medium",
-           FontStyle:  "normal",
-           FontPath:   "", // No necesitamos la ruta para la fuente incorporada
-       }, nil
-   }
-   ```
 
 ### Fase 3: Integración con docpdf
 
-7. **Crear paquete config y mover la configuración de fuentes**:
-   ```go
-   // Mover desde docFont.go al nuevo paquete config
-   package config
-
-   // TextStyles representa la configuración de estilos de texto (anteriormente FontConfig)
-   type TextStyles struct {
-       Family         Font
-       Normal         TextStyle
-       Header1        TextStyle
-       // ...demás campos...
-   }
-   ```
+7. **Crear paquete config y mover la configuración de fuentes**: ✅ COMPLETADO
+   - Se ha creado el paquete `config` en `c:\Users\Cesar\Packages\Internal\docpdf\config\`
+   - Se ha implementado la estructura `Font` para representar los archivos de fuentes
+   - Se ha renombrado `FontConfig` a `TextStyles` y se ha trasladado al nuevo paquete
+   - Se han implementado todas las estructuras necesarias para los estilos de texto
+   - El nuevo sistema permite una configuración centralizada y coherente de fuentes
 
 8. **Extender el nuevo TextStyles para soportar SVG**:
    ```go
@@ -287,6 +214,8 @@ Cualquier uso de funciones que devuelvan una "fuente predeterminada" embebida en
 - ✅ Creación de la función GetDefaultFontProvider
 - ✅ Actualización de todos los archivos de prueba para usar la nueva interfaz
 - ✅ Verificación de que todos los códigos compilen sin errores
+- ✅ Creación del paquete config con las estructuras TextStyles y FontFamily
+- ✅ Migración de la configuración de fuentes de docFont.go al nuevo paquete
 
 ### Próximos Pasos Inmediatos:
 1. ✅ Implementar un renderizador PDF (PdfRenderer) que implemente la interfaz Renderer.
@@ -294,6 +223,7 @@ Cualquier uso de funciones que devuelvan una "fuente predeterminada" embebida en
 3. Modificar los métodos Draw de los gráficos para usar el renderizador PDF cuando corresponda
 4. Adaptar los estilos en SVG para usar información de fontengine.FontProvider (familia, peso, estilo)
 5. Eliminar completamente el renderizado PNG y la dependencia de freetype
+6. Implementar la conversión entre TextStyle y estilos SVG
 
 ### Avance actual (Mayo 2025):
 Hemos completado importantes avances en la refactorización:

@@ -6,8 +6,8 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/errs"
 )
 
@@ -31,7 +31,7 @@ type cacheContentText struct {
 	txtColorMode   string
 	fontCountIndex int //Curr.FontFontCount+1
 	fontSize       float64
-	fontStyle      int
+	fontStyle      config.FontIntStyle //Regular|Bold|Italic
 	charSpacing    float64
 	setXCount      int //จำนวนครั้งที่ใช้ setX
 	x, y           float64
@@ -97,9 +97,9 @@ func (c *cacheContentText) calY() (float64, error) {
 		return pageHeight - c.y, nil
 	} else if c.contentType == contentTypeCell {
 		y := float64(0.0)
-		if c.cellOpt.Align&alignment.Bottom == alignment.Bottom {
+		if c.cellOpt.Align&config.Bottom == config.Bottom {
 			y = pageHeight - c.y - c.cellHeightPdfUnit - c.calTypoDescender()
-		} else if c.cellOpt.Align&alignment.Middle == alignment.Middle {
+		} else if c.cellOpt.Align&config.Middle == config.Middle {
 			y = pageHeight - c.y - c.cellHeightPdfUnit*0.5 - (c.calTypoDescender()+c.calTypoAscender())*0.5
 		} else {
 			//top
@@ -116,9 +116,9 @@ func (c *cacheContentText) calX() (float64, error) {
 		return c.x, nil
 	} else if c.contentType == contentTypeCell {
 		x := float64(0.0)
-		if c.cellOpt.Align&alignment.Right == alignment.Right {
+		if c.cellOpt.Align&config.Right == config.Right {
 			x = c.x + c.cellWidthPdfUnit - c.textWidthPdfUnit
-		} else if c.cellOpt.Align&alignment.Center == alignment.Center {
+		} else if c.cellOpt.Align&config.Center == config.Center {
 			x = c.x + c.cellWidthPdfUnit*0.5 - c.textWidthPdfUnit*0.5
 		} else {
 			x = c.x
@@ -194,7 +194,7 @@ func (c *cacheContentText) Write(w Writer, protection *pdfProtection) error {
 	io.WriteString(w, ">] TJ\n")
 	io.WriteString(w, "ET\n")
 
-	if c.fontStyle&Underline == Underline {
+	if c.fontStyle&config.FontStyleUnderline == config.FontStyleUnderline {
 		if err := c.underline(w); err != nil {
 			return err
 		}
@@ -210,7 +210,7 @@ func (c *cacheContentText) drawBorder(w Writer) error {
 	//stream.WriteString(fmt.Sprintf("%.2f w\n", 0.1))
 	lineOffset := c.lineWidth * 0.5
 
-	if c.cellOpt.Border&alignment.Top == alignment.Top {
+	if c.cellOpt.Border&config.Top == config.Top {
 
 		startX := c.x - lineOffset
 		startY := c.pageHeight() - c.y
@@ -222,7 +222,7 @@ func (c *cacheContentText) drawBorder(w Writer) error {
 		}
 	}
 
-	if c.cellOpt.Border&alignment.Left == alignment.Left {
+	if c.cellOpt.Border&config.Left == config.Left {
 		startX := c.x
 		startY := c.pageHeight() - c.y
 		endX := c.x
@@ -233,7 +233,7 @@ func (c *cacheContentText) drawBorder(w Writer) error {
 		}
 	}
 
-	if c.cellOpt.Border&alignment.Right == alignment.Right {
+	if c.cellOpt.Border&config.Right == config.Right {
 		startX := c.x + c.cellWidthPdfUnit
 		startY := c.pageHeight() - c.y
 		endX := c.x + c.cellWidthPdfUnit
@@ -244,7 +244,7 @@ func (c *cacheContentText) drawBorder(w Writer) error {
 		}
 	}
 
-	if c.cellOpt.Border&alignment.Bottom == alignment.Bottom {
+	if c.cellOpt.Border&config.Bottom == config.Bottom {
 		startX := c.x - lineOffset
 		startY := c.pageHeight() - c.y - c.cellHeightPdfUnit
 		endX := c.x + c.cellWidthPdfUnit + lineOffset
@@ -393,7 +393,7 @@ func (c *cacheContent) Setup(rectangle *canvas.Rect,
 	grayFill float64,
 	fontCountIndex int, //Curr.FontFontCount+1
 	fontSize float64,
-	fontStyle int,
+	fontStyle config.FontIntStyle,
 	charSpacing float64,
 	setXCount int, //จำนวนครั้งที่ใช้ setX
 	x, y float64,

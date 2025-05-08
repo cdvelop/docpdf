@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/pdfengine"
 )
 
@@ -53,7 +53,7 @@ func TestPlaceHolderText(t *testing.T) {
 		pdf.Text("content content content content content contents...")
 	}
 
-	err = pdf.FillInPlaceHoldText("totalnumber", fmt.Sprintf("%d", 5), alignment.Left) //<-- fillin text to PlaceHolder
+	err = pdf.FillInPlaceHoldText("totalnumber", fmt.Sprintf("%d", 5), config.Left) //<-- fillin text to PlaceHolder
 	if err != nil {
 		t.Log(err.Error())
 		return
@@ -113,7 +113,7 @@ func TestPlaceHolderText2(t *testing.T) {
 		}
 		pdf.Text("content content content content content contents...")
 
-		err = pdf.FillInPlaceHoldText(pagenumberPH, fmt.Sprintf("%d", i+1), alignment.Center) //<-- fillin text to PlaceHolder
+		err = pdf.FillInPlaceHoldText(pagenumberPH, fmt.Sprintf("%d", i+1), config.Center) //<-- fillin text to PlaceHolder
 		if err != nil {
 			t.Log(err.Error())
 			return
@@ -121,7 +121,7 @@ func TestPlaceHolderText2(t *testing.T) {
 
 	}
 
-	err = pdf.FillInPlaceHoldText("totalnumber", fmt.Sprintf("%d", 5), alignment.Center) //<-- fillin text to PlaceHolder
+	err = pdf.FillInPlaceHoldText("totalnumber", fmt.Sprintf("%d", 5), config.Center) //<-- fillin text to PlaceHolder
 	if err != nil {
 		t.Log(err.Error())
 		return

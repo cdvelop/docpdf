@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/errs"
 	"github.com/cdvelop/docpdf/pdfengine"
 )
@@ -95,7 +95,7 @@ func TestJustify(t *testing.T) {
 	// Justified text
 	pdf.SetY(100)
 	opt := pdfengine.CellOption{
-		Align: alignment.Justify,
+		Align: config.Justify,
 	}
 	err = pdf.MultiCellWithOption(rect, "This is justified text. It should show uniform canvas.Margins on both sides except for the last line.", opt)
 	if err != nil {
@@ -114,7 +114,7 @@ func TestJustify(t *testing.T) {
 
 	// Convenience method for justifying text
 	pdf.SetY(300)
-	err = pdf.MultiCellJustified(rect, "This text uses the MultiCellJustified convenience method which internally uses the alignment.Justify option.")
+	err = pdf.MultiCellJustified(rect, "This text uses the MultiCellJustified convenience method which internally uses the config.Justify option.")
 	if err != nil {
 		t.Error(err)
 		return

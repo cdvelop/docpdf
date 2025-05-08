@@ -1,8 +1,8 @@
 package docpdf
 
 import (
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/chart"
+	"github.com/cdvelop/docpdf/config"
 )
 
 // drawWithPdfRenderer renderiza directamente al PDF usando PdfRenderer
@@ -37,11 +37,11 @@ func (c *docChart) drawWithPdfRenderer() error {
 		contentAreaWidth := c.doc.contentAreaWidth
 
 		switch c.alignment {
-		case alignment.Left:
+		case config.Left:
 			x = docMargins.Left
-		case alignment.Center:
+		case config.Center:
 			x = docMargins.Left + (contentAreaWidth-c.width)/2
-		case alignment.Right:
+		case config.Right:
 			x = docMargins.Left + contentAreaWidth - c.width
 		default: // Default to left alignment
 			x = docMargins.Left

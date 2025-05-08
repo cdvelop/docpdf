@@ -1,15 +1,15 @@
 package docpdf
 
 import (
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/env"
 	"github.com/cdvelop/docpdf/pdfengine"
 )
 
 type Document struct {
 	*pdfengine.PdfEngine
-	fontConfig         FontConfig
+	fontConfig         config.TextStyles
 	contentAreaWidth   float64       // Width of the content area (page width - canvas.Margins)
 	inlineMode         bool          // Add this field to track inline element state
 	lastInlineWidth    float64       // Track the width of the last inline element
@@ -23,8 +23,8 @@ type Document struct {
 // Accepts optional configurations:
 //
 // Optional configurations include:
-//   - FontConfig: Custom font configuration
-//   - Font: Custom font family
+//   - config.TextStyles: Custom text styles for different sections
+//   - config.FontFamily: Custom font family
 //   - canvas.Margins: Custom canvas.Margins in millimeters (more intuitive than points)
 //   - canvas.PageSize: Custom page size with desired units
 //   - *canvas.Rect: Predefined page size (like PageSizeLetter, canvas.PageSizeA4, etc.)
@@ -33,10 +33,10 @@ type Document struct {
 // Examples:
 //   - NewDocument() // Uses default file writer
 //   - NewDocument(os.WriteFile) // Custom file writer
-//   - NewDocument(canvas.Margins{alignment.Left: 15, alignment.Top: 10, alignment.Right: 10, alignment.Bottom: 10})
+//   - NewDocument(canvas.Margins{config.Left: 15, config.Top: 10, config.Right: 10, config.Bottom: 10})
 //   - NewDocument(canvas.PageSize{Width: 210, Height: 297, Unit: canvas.UnitMM}) // A4 size in mm
 //   - NewDocument(canvas.PageSizeA4) // Using predefined page size
-//   - NewDocument(os.WriteFile, canvas.PageSizeA4, canvas.Margins{alignment.Left: 20, alignment.Top: 10, alignment.Right: 20, alignment.Bottom: 10})
+//   - NewDocument(os.WriteFile, canvas.PageSizeA4, canvas.Margins{config.Left: 20, config.Top: 10, config.Right: 20, config.Bottom: 10})
 //
 // For web applications:
 //   - NewDocument(func(filename string, data []byte) error {
@@ -48,7 +48,7 @@ func NewDocument(configs ...any) *Document {
 
 	doc := &Document{
 		PdfEngine:       &pdfengine.PdfEngine{},
-		fontConfig:      defaultFontConfig(),
+		fontConfig:      config.DefaultTextStyles(),
 		inlineMode:      false,
 		lastInlineWidth: 0,
 	}
@@ -69,10 +69,10 @@ func NewDocument(configs ...any) *Document {
 		case func(...any):
 			// Custom logger
 			doc.Log = v
-		case FontConfig:
+		case config.TextStyles:
 			doc.fontConfig = v
-		case Font:
-			doc.fontConfig.Family = v
+		case config.FontFamily:
+			doc.fontConfig.FontFamily = v
 		case canvas.Margins:
 			// Convert millimeters to points (1 mm = 72.0/25.4 points)
 			doc.SetMargins(
@@ -192,7 +192,7 @@ func (doc *Document) RedrawHeaderFooter() {
 }
 
 // calculateElementPosition determina la posición X de un elemento basado en su alineación y ancho
-func (doc *Document) calculateElementPosition(width float64, align alignment.Alignment, withPadding bool) float64 {
+func (doc *Document) calculateElementPosition(width float64, align config.Alignment, withPadding bool) float64 {
 	// Ancho total disponible en la página (incluyendo márgenes)
 	// totalWidth := doc.contentAreaWidth
 
@@ -209,22 +209,22 @@ func (doc *Document) calculateElementPosition(width float64, align alignment.Ali
 	// Calcular posición X basada en la alineación
 	var x float64
 	switch align {
-	case alignment.Center:
+	case config.Center:
 		// Para centrado: margen izquierdo + mitad del espacio disponible - mitad del ancho
 		x = doc.Margins().Left + (contentWidth / 2) - (width / 2)
-	case alignment.Right:
+	case config.Right:
 		// Para alineado a la derecha: posición derecha - ancho
 		x = doc.contentAreaWidth - doc.Margins().Right - width
-	default: // alignment.Left
+	default: // config.Left
 		// Para alineado a la izquierda: simplemente el margen izquierdo
 		x = doc.Margins().Left
 	}
 
 	// Aplicar padding solo a la posición, no al cálculo del ancho
 	if withPadding {
-		if align == alignment.Left {
+		if align == config.Left {
 			x += padding
-		} else if align == alignment.Right {
+		} else if align == config.Right {
 			x -= padding
 		}
 		// Para centrado, no aplicamos padding adicional

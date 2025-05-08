@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/cdvelop/docpdf/canvas"
-	"github.com/cdvelop/docpdf/fontengine"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
 	"github.com/cdvelop/docpdf/style"
@@ -65,7 +65,7 @@ type Style struct {
 	FontSize     float64
 	FontColor    style.Color
 	Font         *truetype.Font
-	FontProvider fontengine.FontProvider
+	FontProvider config.FontFamily
 
 	TextHorizontalAlign TextHorizontalAlign
 	TextVerticalAlign   TextVerticalAlign
@@ -287,11 +287,11 @@ func (s Style) GetFont(defaults ...*truetype.Font) *truetype.Font {
 }
 
 // GetFontProvider returns the font provider.
-func (s Style) GetFontProvider(defaults ...fontengine.FontProvider) fontengine.FontProvider {
+func (s Style) GetFontProvider(defaults ...config.FontFamily) config.FontFamily {
 	if s.FontProvider != nil {
 		return s.FontProvider
 	}
-	// Si no hay fontengine.FontProvider pero hay un Font truetype, crear un adaptador
+	// Si no hay config.FontFamily pero hay un Font truetype, crear un adaptador
 	if s.Font != nil {
 		return &TrueTypeFontAdapter{
 			Font:       s.Font,
@@ -318,7 +318,7 @@ func (s Style) GetPadding(defaults ...canvas.Box) canvas.Box {
 	return s.Padding
 }
 
-// GetTextHorizontalAlign returns the horizontal alignment.
+// GetTextHorizontalAlign returns the horizontal config.
 func (s Style) GetTextHorizontalAlign(defaults ...TextHorizontalAlign) TextHorizontalAlign {
 	if s.TextHorizontalAlign == TextHorizontalAlignUnset {
 		if len(defaults) > 0 {
@@ -329,7 +329,7 @@ func (s Style) GetTextHorizontalAlign(defaults ...TextHorizontalAlign) TextHoriz
 	return s.TextHorizontalAlign
 }
 
-// GetTextVerticalAlign returns the vertical alignment.
+// GetTextVerticalAlign returns the vertical config.
 func (s Style) GetTextVerticalAlign(defaults ...TextVerticalAlign) TextVerticalAlign {
 	if s.TextVerticalAlign == TextVerticalAlignUnset {
 		if len(defaults) > 0 {

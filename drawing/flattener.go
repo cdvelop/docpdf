@@ -2,7 +2,7 @@ package drawing
 
 // Liner receive segment definition
 type Liner interface {
-	// LineTo Draw a line from the current alignment.Alignment to the point (x, y)
+	// LineTo Draw a line from the current config.Alignment to the point (x, y)
 	LineTo(x, y float64)
 }
 
@@ -10,7 +10,7 @@ type Liner interface {
 type Flattener interface {
 	// MoveTo Start a New line from the point (x, y)
 	MoveTo(x, y float64)
-	// LineTo Draw a line from the current alignment.Alignment to the point (x, y)
+	// LineTo Draw a line from the current config.Alignment to the point (x, y)
 	LineTo(x, y float64)
 	// LineJoin add the most recent starting point to close the path to create a polygon
 	LineJoin()

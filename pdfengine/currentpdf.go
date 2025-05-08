@@ -1,6 +1,9 @@
 package pdfengine
 
-import "github.com/cdvelop/docpdf/canvas"
+import (
+	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
+)
 
 // currentPdf current state
 type currentPdf struct {
@@ -14,7 +17,7 @@ type currentPdf struct {
 	CountOfL       int
 
 	FontSize      float64
-	FontStyle     int // Regular|Bold|Italic|Underline
+	FontStyle     config.FontIntStyle
 	FontFontCount int
 	FontType      int // CURRENT_FONT_TYPE_IFONT or  CURRENT_FONT_TYPE_SUBSET
 

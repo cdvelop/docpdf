@@ -3,8 +3,8 @@ package pdfengine
 import (
 	"strings"
 
-	"github.com/cdvelop/docpdf/alignment"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/errs"
 )
 
@@ -48,10 +48,10 @@ func (bo BreakOption) HasSeparator() bool {
 
 // CellOption cell option
 type CellOption struct {
-	Align                  alignment.Alignment //Allows to align the text. Possible values are: alignment.Left,alignment.Center,alignment.Right,alignment.Top,alignment.Bottom,alignment.Middle
-	Border                 alignment.Alignment //Indicates if borders must be drawn around the cell. Possible values are: alignment.Left, alignment.Top, alignment.Right, alignment.Bottom, ALL
-	Float                  alignment.Alignment //Indicates where the current alignment.Alignment should go after the call. Possible values are: alignment.Right, alignment.Bottom
-	TruncateLines          int                 // Si > 0, limita el texto a este número de líneas y añade puntos suspensivos si es necesario
+	Align                  config.Alignment //Allows to align the text. Possible values are: config.Left,config.Center,config.Right,config.Top,config.Bottom,config.Middle
+	Border                 config.Alignment //Indicates if borders must be drawn around the cell. Possible values are: config.Left, config.Top, config.Right, config.Bottom, ALL
+	Float                  config.Alignment //Indicates where the current config.Alignment should go after the call. Possible values are: config.Right, config.Bottom
+	TruncateLines          int              // Si > 0, limita el texto a este número de líneas y añade puntos suspensivos si es necesario
 	transparency           *transparency
 	CoefUnderlinePosition  float64
 	CoefLineHeight         float64
@@ -105,9 +105,9 @@ func (gp *PdfEngine) CellWithOption(rectangle *canvas.Rect, text string, opt Cel
 func (gp *PdfEngine) Cell(rectangle *canvas.Rect, text string) error {
 	rectangle = rectangle.UnitsToPoints(gp.Config.Unit)
 	defaultopt := CellOption{
-		Align:  alignment.Left | alignment.Top,
+		Align:  config.Left | config.Top,
 		Border: 0,
-		Float:  alignment.Right,
+		Float:  config.Right,
 	}
 
 	text, err := gp.curr.FontISubset.AddChars(text)
@@ -160,8 +160,8 @@ func (gp *PdfEngine) PlaceHolderText(placeHolderName string, placeHolderWidth fl
 
 // [experimental]
 // fill in text that created by function PlaceHolderText
-// align: alignment.Left,alignment.Right,alignment.Center
-func (gp *PdfEngine) FillInPlaceHoldText(placeHolderName string, text string, align alignment.Alignment) error {
+// align: config.Left,config.Right,config.Center
+func (gp *PdfEngine) FillInPlaceHoldText(placeHolderName string, text string, align config.Alignment) error {
 
 	infos, ok := gp.placeHolderTexts[placeHolderName]
 	if !ok {
@@ -180,17 +180,17 @@ func (gp *PdfEngine) FillInPlaceHoldText(placeHolderName string, text string, al
 		info.fontISubset.AddChars(text)
 		contentText.text = text
 
-		//Calculate alignment.Alignment
+		//Calculate config.Alignment
 		_, _, textWidthPdfUnit, err := CreateContent(gp.curr.FontISubset, text, info.fontSize, info.charSpacing, nil)
 		if err != nil {
 			return err
 		}
 		width := canvas.PointsToUnitsCfg(gp.Config, textWidthPdfUnit)
 
-		if align == alignment.Right {
+		if align == config.Right {
 			diff := info.placeHolderWidth - width
 			contentText.x = contentText.x + diff
-		} else if align == alignment.Center {
+		} else if align == config.Center {
 			diff := info.placeHolderWidth - width
 			contentText.x = contentText.x + diff/2
 		}
@@ -311,7 +311,7 @@ func (gp *PdfEngine) MultiCellWithOption(rectangle *canvas.Rect, text string, op
 	}
 
 	// Si es justificado, aseguramos que use BreakModeIndicatorSensitive para evitar cortar palabras
-	isJustify := (opt.Align & alignment.Justify) == alignment.Justify
+	isJustify := (opt.Align & config.Justify) == config.Justify
 	if isJustify {
 		// Guardar las opciones originales, pero forzar modo sensible a indicadores (espacios)
 		originalOpt := *opt.BreakOption
@@ -393,7 +393,7 @@ func (gp *PdfEngine) MultiCellWithOption(rectangle *canvas.Rect, text string, op
 			// Usar el método normal para alineación no justificada o última línea
 			gp.CellWithOption(&canvas.Rect{W: rectangle.W, H: lineHeight}, string(text), opt)
 
-			// Reset Y alignment.Alignment to ensure consistent behavior with justified text
+			// Reset Y config.Alignment to ensure consistent behavior with justified text
 			// CellWithOption advances Y, so we need to undo that advancement
 			gp.SetY(beforeY)
 		}
@@ -486,7 +486,7 @@ func (gp *PdfEngine) SplitTextWithOption(text string, width float64, opt *BreakO
 	if err != nil {
 		return nil, err
 	}
-	// possible (not conflicting) alignment.Alignment of the separator within the currently processed line
+	// possible (not conflicting) config.Alignment of the separator within the currently processed line
 	separatorIdx := 0
 	for i := 0; i < utf8TextsLen; i++ {
 		lineWidth, err := gp.MeasureTextWidth(string(lineText))
