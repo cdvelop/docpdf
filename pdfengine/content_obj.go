@@ -107,7 +107,6 @@ func (c *contentObj) appendStreamPlaceHolderText(placeHolderWidth float64) error
 	textColor := c.getRoot().curr.textColor()
 	grayFill := c.getRoot().curr.grayFill
 	fontCountIndex := c.getRoot().curr.FontFontCount + 1
-	fontSize := c.getRoot().curr.FontSize
 	fontStyle := c.getRoot().curr.FontStyle
 	charSpacing := c.getRoot().curr.CharSpacing
 	x := c.getRoot().curr.X
@@ -116,14 +115,12 @@ func (c *contentObj) appendStreamPlaceHolderText(placeHolderWidth float64) error
 	fontSubset := c.getRoot().curr.FontISubset
 
 	CellOption := CellOption{transparency: c.getRoot().curr.transparency}
-
 	cache := cacheContentText{
 		fontSubset:     fontSubset,
 		rectangle:      nil,
 		textColor:      textColor,
 		grayFill:       grayFill,
 		fontCountIndex: fontCountIndex,
-		fontSize:       fontSize,
 		fontStyle:      fontStyle,
 		charSpacing:    charSpacing,
 		setXCount:      setXCount,
@@ -155,7 +152,6 @@ func (c *contentObj) AppendStreamText(text string) error {
 	textColor := c.getRoot().curr.textColor()
 	grayFill := c.getRoot().curr.grayFill
 	fontCountIndex := c.getRoot().curr.FontFontCount + 1
-	fontSize := c.getRoot().curr.FontSize
 	fontStyle := c.getRoot().curr.FontStyle
 	charSpacing := c.getRoot().curr.CharSpacing
 	x := c.getRoot().curr.X
@@ -164,14 +160,12 @@ func (c *contentObj) AppendStreamText(text string) error {
 	fontSubset := c.getRoot().curr.FontISubset
 
 	CellOption := CellOption{transparency: c.getRoot().curr.transparency}
-
 	cache := cacheContentText{
 		fontSubset:     fontSubset,
 		rectangle:      nil,
 		textColor:      textColor,
 		grayFill:       grayFill,
 		fontCountIndex: fontCountIndex,
-		fontSize:       fontSize,
 		fontStyle:      fontStyle,
 		charSpacing:    charSpacing,
 		setXCount:      setXCount,
@@ -199,21 +193,18 @@ func (c *contentObj) AppendStreamSubsetFont(rectangle *canvas.Rect, text string,
 	textColor := c.getRoot().curr.textColor()
 	grayFill := c.getRoot().curr.grayFill
 	fontCountIndex := c.getRoot().curr.FontFontCount + 1
-	fontSize := c.getRoot().curr.FontSize
 	fontStyle := c.getRoot().curr.FontStyle
 	charSpacing := c.getRoot().curr.CharSpacing
 	x := c.getRoot().curr.X
 	y := c.getRoot().curr.Y
 	setXCount := c.getRoot().curr.setXCount
 	fontSubset := c.getRoot().curr.FontISubset
-
 	cache := cacheContentText{
 		fontSubset:     fontSubset,
 		rectangle:      rectangle,
 		textColor:      textColor,
 		grayFill:       grayFill,
 		fontCountIndex: fontCountIndex,
-		fontSize:       fontSize,
 		fontStyle:      fontStyle,
 		charSpacing:    charSpacing,
 		setXCount:      setXCount,

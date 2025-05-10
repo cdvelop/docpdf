@@ -30,9 +30,9 @@ type iFont interface {
 // TtfOption  font option
 type TtfOption struct {
 	UseKerning                bool
-	Style                     config.FontIntStyle //Regular|Bold|Italic
-	OnGlyphNotFound           func(r rune)        //Called when a glyph cannot be found, just for debugging
-	OnGlyphNotFoundSubstitute func(r rune) rune   //Called when a glyph cannot be found, we can return a new rune to replace it.
+	Style                     config.FontStyle  //Regular|Bold|Italic
+	OnGlyphNotFound           func(r rune)      //Called when a glyph cannot be found, just for debugging
+	OnGlyphNotFoundSubstitute func(r rune) rune //Called when a glyph cannot be found, we can return a new rune to replace it.
 }
 
 func defaultTtfFontOption() TtfOption {
@@ -115,14 +115,9 @@ func (f *fontObj) SetIndexObjEncoding(index int) {
 	f.indexObjEncoding = index
 }
 
-// SetFontWithStyle : set font style support Regular or Underline
-// for Bold|Italic should be loaded appropriate fonts with same styles defined
-// size MUST be uint*, int* or float64*
-func (gp *PdfEngine) SetFontWithStyle(family string, style config.FontIntStyle, size any) error {
-	fontSize, err := convertNumericToFloat64(size)
-	if err != nil {
-		return err
-	}
+// SetFontWithStyle
+func (gp *PdfEngine) SetFontWithStyle(updatedStyle config.FontStyle) error {
+
 	found := false
 	i := 0
 	max := len(gp.pdfObjs)
@@ -131,9 +126,8 @@ func (gp *PdfEngine) SetFontWithStyle(family string, style config.FontIntStyle, 
 			obj := gp.pdfObjs[i]
 			sub, ok := obj.(*ttfSubsetObj)
 			if ok {
-				if sub.GetFamily() == family && sub.GetTtfFontOption().Style == style&^config.FontStyleUnderline {
-					gp.curr.FontSize = fontSize
-					gp.curr.FontStyle = style
+				if sub.GetFamily() == updatedStyle.GetFamily() && sub.GetTtfFontOption().Style.GetIntStyle() == updatedStyle.AndNot(config.FontStyleUnderline).GetIntStyle() {
+					gp.curr.FontStyle = updatedStyle
 					gp.curr.FontFontCount = sub.CountOfFont
 					gp.curr.FontISubset = sub
 					found = true
@@ -151,17 +145,17 @@ func (gp *PdfEngine) SetFontWithStyle(family string, style config.FontIntStyle, 
 	return nil
 }
 
-// SetFont : set font style support "" or "U"
-// for "B" and "I" should be loaded appropriate fonts with same styles defined
-// size MUST be uint*, int* or float64*
-func (gp *PdfEngine) SetFont(family string, style string, size any) error {
-	return gp.SetFontWithStyle(family, config.GetFontStyleInIntFormat(style), size)
+// SetFont
+func (gp *PdfEngine) SetFont(cfs config.FontStyle) error {
+	return gp.SetFontWithStyle(cfs)
 }
 
 // SetFontSize : set the font size (and only the font size) of the currently
 // active font
 func (gp *PdfEngine) SetFontSize(fontSize float64) error {
-	gp.curr.FontSize = fontSize
+	fontStyle := gp.curr.FontStyle
+	fontStyle.SetSize(fontSize)
+	gp.curr.FontStyle = fontStyle
 	return nil
 }
 

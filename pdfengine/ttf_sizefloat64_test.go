@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 )
 
 func TestContentObjCalTextHeight(t *testing.T) {
@@ -35,7 +36,7 @@ func TestSetFontCheckGetX(t *testing.T) {
 	}
 
 	// Baseline: SetFont(int) + AddText
-	if err := pdf.SetFont(prefix, "", int(50)); err != nil {
+	if err := pdf.SetFont(config.NewFontStyle(prefix, (50))); err != nil {
 		t.Error(err)
 	}
 
@@ -68,7 +69,7 @@ func setup(t *testing.T) (string, *PdfEngine, float64, float64) {
 	}
 
 	// Baseline: SetFont(int) + AddText
-	if err := pdf.SetFont(prefix, "", int(50)); err != nil {
+	if err := pdf.SetFont(config.NewFontStyle(prefix, 50)); err != nil {
 		t.Error(err)
 	}
 	hx, hy := moveAndAdd(&pdf, prefix)
@@ -77,7 +78,7 @@ func setup(t *testing.T) (string, *PdfEngine, float64, float64) {
 func TestSetFontWithFloat(t *testing.T) {
 	prefix, pdf, wantx, wanty := setup(t)
 	// try it with fontsize = float64(50)
-	if err := pdf.SetFont(prefix, "", float64(50)); err != nil {
+	if err := pdf.SetFont(config.NewFontStyle(prefix, float64(50))); err != nil {
 		t.Error(err)
 	}
 	havex, havey := moveAndAdd(pdf, prefix)
@@ -90,7 +91,7 @@ func TestSetFontWithFloat(t *testing.T) {
 func TestSetFontWithUint(t *testing.T) {
 	prefix, pdf, wantx, wanty := setup(t)
 	// try it with fontsize = uint8(50)
-	if err := pdf.SetFont(prefix, "", uint8(50)); err != nil {
+	if err := pdf.SetFont(config.NewFontStyle(prefix, float64(50))); err != nil {
 		t.Error(err)
 	}
 	havex, havey := moveAndAdd(pdf, prefix)
@@ -102,7 +103,7 @@ func TestSetFontWithUint(t *testing.T) {
 func TestSetFontWithString(t *testing.T) {
 	prefix, pdf, _, _ := setup(t)
 	// Try with a string
-	err := pdf.SetFont(prefix, "", string("50"))
+	err := pdf.SetFont(config.NewFontStyle(prefix, float64(50)))
 	if err == nil {
 		t.Errorf("SetFont(string) + AddText: Should have gotten an error!\n")
 	}

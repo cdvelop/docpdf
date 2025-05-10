@@ -49,10 +49,10 @@ func (d *Document) newTextBuilder(text string, style config.TextStyle, fontName 
 			H: 0,
 		},
 		opts: pdfengine.CellOption{
-			Align: style.Alignment,
+			Align: style.GetAlignment(),
 			// Border:         AllBorders,
 			Float:          config.Bottom,
-			CoefLineHeight: style.LineSpacing,
+			CoefLineHeight: style.GetLineSpacing(),
 		},
 	}
 

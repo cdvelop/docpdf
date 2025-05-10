@@ -452,7 +452,7 @@ func (gp *PdfEngine) addLink(option linkOption) {
 
 // SetAnchor creates a new anchor.
 func (gp *PdfEngine) SetAnchor(name string) {
-	y := gp.Config.PageSize.H - gp.curr.Y + float64(gp.curr.FontSize)
+	y := gp.Config.PageSize.H - gp.curr.Y + float64(gp.curr.FontStyle.GetSize())/2
 	gp.anchors[name] = anchorOption{gp.curr.IndexOfPageObj, y}
 }
 
@@ -555,7 +555,7 @@ func (gp *PdfEngine) MeasureTextWidth(text string) (float64, error) {
 		return 0, err
 	}
 
-	_, _, textWidthPdfUnit, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontSize, gp.curr.CharSpacing, nil)
+	_, _, textWidthPdfUnit, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontStyle.GetSize(), gp.curr.CharSpacing, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -570,7 +570,7 @@ func (gp *PdfEngine) MeasureCellHeightByText(text string) (float64, error) {
 		return 0, err
 	}
 
-	_, cellHeightPdfUnit, _, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontSize, gp.curr.CharSpacing, nil)
+	_, cellHeightPdfUnit, _, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontStyle.GetSize(), gp.curr.CharSpacing, nil)
 	if err != nil {
 		return 0, err
 	}

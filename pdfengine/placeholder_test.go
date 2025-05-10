@@ -26,7 +26,7 @@ func TestPlaceHolderText(t *testing.T) {
 
 	for i := 0; i < 5; i++ {
 		pdf.AddPage()
-		err = pdf.SetFont("LiberationSerif-Regular", "", 14)
+		err = pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 14))
 		if err != nil {
 			t.Log(err.Error())
 			return
@@ -45,7 +45,7 @@ func TestPlaceHolderText(t *testing.T) {
 		}
 		pdf.Br(20)
 
-		err = pdf.SetFont("LiberationSerif-Regular", "", 11)
+		err = pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 11))
 		if err != nil {
 			t.Log(err.Error())
 			return
@@ -79,7 +79,7 @@ func TestPlaceHolderText2(t *testing.T) {
 
 	for i := 0; i < 5; i++ {
 		pdf.AddPage()
-		err = pdf.SetFont("LiberationSerif-Regular", "", 14)
+		err = pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 14))
 		if err != nil {
 			t.Log(err.Error())
 			return
@@ -106,7 +106,7 @@ func TestPlaceHolderText2(t *testing.T) {
 		}
 		pdf.Br(20)
 
-		err = pdf.SetFont("LiberationSerif-Regular", "", 11)
+		err = pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 11))
 		if err != nil {
 			t.Log(err.Error())
 			return

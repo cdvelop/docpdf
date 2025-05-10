@@ -29,7 +29,7 @@ func BenchmarkPdfWithImageHolder(b *testing.B) {
 		return
 	}
 
-	err = pdf.SetFont("LiberationSerif-Regular", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 14))
 	if err != nil {
 		b.Fatal(err)
 		return
@@ -377,7 +377,7 @@ func generatePDFBytesByAddTTFFontData(pdf *pdfengine.PdfEngine, fontData []byte)
 		return nil, err
 	}
 
-	if err := pdf.SetFont("LiberationSerif-Regular", "", 14); err != nil {
+	if err := pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 14)); err != nil {
 		return nil, err
 	}
 
@@ -411,7 +411,7 @@ func TestWhiteTransparent(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = pdf.SetFont("LiberationSerif-Regular", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 14))
 	if err != nil {
 		t.Error(err)
 		return
@@ -520,7 +520,7 @@ func TestWhiteTransparent195(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = pdf.SetFont("LiberationSerif-Regular", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 14))
 	if err != nil {
 		t.Error(err)
 		return
@@ -579,7 +579,7 @@ func TestClearValue(t *testing.T) {
 		return
 	}
 
-	err = pdf.SetFont("LiberationSerif-Regular", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 14))
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -670,7 +670,7 @@ func TestTextColor(t *testing.T) {
 		return
 	}
 
-	err = pdf.SetFont("LiberationSerif", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("LiberationSerif", 14))
 	if err != nil {
 		t.Error(err)
 		return
@@ -708,7 +708,7 @@ func TestAddHeaderFooter(t *testing.T) {
 		return
 	}
 
-	err = pdf.SetFont("LiberationSerif-Regular", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 14))
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -758,7 +758,7 @@ func TestImportPagesFromFile(t *testing.T) {
 		return
 	}
 
-	err = samplePdf.SetFont("LiberationSerif-Regular", "", 14)
+	err = samplePdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 14))
 	if err != nil {
 		t.Error(err)
 		return
@@ -796,7 +796,7 @@ func TestImportPagesFromFile(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = pdf.SetFont("LiberationSerif-Regular", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 14))
 	if err != nil {
 		t.Error(err)
 		return

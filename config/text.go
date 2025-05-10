@@ -4,22 +4,74 @@ import (
 	"github.com/cdvelop/docpdf/style"
 )
 
-const (
-	FontRegular   = "regular"
-	FontBold      = "bold"
-	FontItalic    = "italic"
-	FontUnderline = "underline"
-)
-
 // TextStyle defines the style configuration for different text sections
 type TextStyle struct {
-	Size        float64
-	Color       style.Color
-	LineSpacing float64
-	Alignment   Alignment
-	SpaceBefore float64
-	SpaceAfter  float64
-	FontStyle   FontIntStyle // Renamed from Style for clarity
+	fontStyle   FontStyle // Contains font name, style, size, and color
+	lineSpacing float64
+	alignment   Alignment
+	spaceBefore float64
+	spaceAfter  float64
+}
+
+// NewTextStyle creates a new TextStyle with all properties
+func NewTextStyle(fontStyle FontStyle, lineSpacing float64, alignment Alignment, spaceBefore, spaceAfter float64) TextStyle {
+	return TextStyle{
+		fontStyle:   fontStyle,
+		lineSpacing: lineSpacing,
+		alignment:   alignment,
+		spaceBefore: spaceBefore,
+		spaceAfter:  spaceAfter,
+	}
+}
+
+// GetFontStyle returns the FontStyle
+func (ts TextStyle) GetFontStyle() FontStyle {
+	return ts.fontStyle
+}
+
+// SetFontStyle sets the FontStyle
+func (ts *TextStyle) SetFontStyle(fontStyle FontStyle) {
+	ts.fontStyle = fontStyle
+}
+
+// GetLineSpacing returns the line spacing
+func (ts TextStyle) GetLineSpacing() float64 {
+	return ts.lineSpacing
+}
+
+// SetLineSpacing sets the line spacing
+func (ts *TextStyle) SetLineSpacing(lineSpacing float64) {
+	ts.lineSpacing = lineSpacing
+}
+
+// GetAlignment returns the text alignment
+func (ts TextStyle) GetAlignment() Alignment {
+	return ts.alignment
+}
+
+// SetAlignment sets the text alignment
+func (ts *TextStyle) SetAlignment(alignment Alignment) {
+	ts.alignment = alignment
+}
+
+// GetSpaceBefore returns the space before the text
+func (ts TextStyle) GetSpaceBefore() float64 {
+	return ts.spaceBefore
+}
+
+// SetSpaceBefore sets the space before the text
+func (ts *TextStyle) SetSpaceBefore(spaceBefore float64) {
+	ts.spaceBefore = spaceBefore
+}
+
+// GetSpaceAfter returns the space after the text
+func (ts TextStyle) GetSpaceAfter() float64 {
+	return ts.spaceAfter
+}
+
+// SetSpaceAfter sets the space after the text
+func (ts *TextStyle) SetSpaceAfter(spaceAfter float64) {
+	ts.spaceAfter = spaceAfter
 }
 
 // TextStyles represents different font configurations for document sections.
@@ -39,7 +91,7 @@ type TextStyles struct {
 
 type pdfEngine interface {
 	AddFontFamilyConfig(fontFamily FontFamily) error
-	SetFont(family string, style string, size any) error
+	SetFont(FontStyle) error
 	SetTextColor(r uint8, g uint8, b uint8)
 	SetStrokeColor(r uint8, g uint8, b uint8)
 	SetLineWidth(width float64)
@@ -66,9 +118,10 @@ func (ts *TextStyles) LoadFonts(pdf pdfEngine) error {
 
 // SetDefaultTextConfig applies the normal text style
 func (ts *TextStyles) SetDefaultTextConfig(pdf pdfEngine) {
-	style := ts.normal
-	pdf.SetFont(FontRegular, "", style.Size)
-	pdf.SetTextColor(style.Color.R, style.Color.G, style.Color.B)
+	fontStyle := ts.normal.GetFontStyle()
+	pdf.SetFont(fontStyle)
+	color := fontStyle.GetColor()
+	pdf.SetTextColor(color.R, color.G, color.B)
 	pdf.SetLineWidth(0.7)
 	pdf.SetStrokeColor(0, 0, 0)
 }
@@ -85,105 +138,93 @@ func DefaultTextConfig() TextStyles {
 		Underline: "", // No default underline font, underlining is often a text decoration
 		Path:      "fonts/",
 	})
-
 	// Configure Normal
-	textStyles.SetNormal(TextStyle{
-		Size:        11,
-		Color:       style.Color{R: 0, G: 0, B: 0, A: 255},
-		LineSpacing: 1.15,
-		Alignment:   Left | Top,
-		SpaceBefore: 0,
-		SpaceAfter:  8,
-		FontStyle:   FontStyleRegular,
-	})
-
+	normalFont := FontStyleRegular.WithSize(11).WithColor(style.Color{R: 0, G: 0, B: 0, A: 255})
+	textStyles.SetNormal(NewTextStyle(
+		normalFont,
+		1.15,
+		Left|Top,
+		0,
+		8,
+	))
 	// Configure Header1
-	textStyles.SetHeader1(TextStyle{
-		Size:        16,
-		Color:       style.Color{R: 0, G: 0, B: 0, A: 255},
-		LineSpacing: 1.5,
-		Alignment:   Left | Top,
-		SpaceBefore: 12,
-		SpaceAfter:  8,
-		FontStyle:   FontStyleBold,
-	})
+	header1Font := FontStyleBold.WithSize(16).WithColor(style.Color{R: 0, G: 0, B: 0, A: 255})
+	textStyles.SetHeader1(NewTextStyle(
+		header1Font,
+		1.5,
+		Left|Top,
+		12,
+		8,
+	))
 
 	// Configure Header2
-	textStyles.SetHeader2(TextStyle{
-		Size:        14,
-		Color:       style.Color{R: 0, G: 0, B: 0, A: 255},
-		LineSpacing: 1.3,
-		Alignment:   Left | Top,
-		SpaceBefore: 10,
-		SpaceAfter:  6,
-		FontStyle:   FontStyleBold,
-	})
+	header2Font := FontStyleBold.WithSize(14).WithColor(style.Color{R: 0, G: 0, B: 0, A: 255})
+	textStyles.SetHeader2(NewTextStyle(
+		header2Font,
+		1.3,
+		Left|Top,
+		10,
+		6,
+	))
 
 	// Configure Header3
-	textStyles.SetHeader3(TextStyle{
-		Size:        12,
-		Color:       style.Color{R: 0, G: 0, B: 0, A: 255},
-		LineSpacing: 1.2,
-		Alignment:   Left | Top,
-		SpaceBefore: 8,
-		SpaceAfter:  4,
-		FontStyle:   FontStyleBold,
-	})
+	header3Font := FontStyleBold.WithSize(12).WithColor(style.Color{R: 0, G: 0, B: 0, A: 255})
+	textStyles.SetHeader3(NewTextStyle(
+		header3Font,
+		1.2,
+		Left|Top,
+		8,
+		4,
+	))
 
 	// Configure Footnote
-	textStyles.SetFootnote(TextStyle{
-		Size:        8,
-		Color:       style.Color{R: 128, G: 128, B: 128, A: 255},
-		LineSpacing: 1.0,
-		Alignment:   Left | Top,
-		SpaceBefore: 2,
-		SpaceAfter:  2,
-		FontStyle:   FontStyleRegular,
-	})
-
+	footnoteFont := FontStyleRegular.WithSize(8).WithColor(style.Color{R: 128, G: 128, B: 128, A: 255})
+	textStyles.SetFootnote(NewTextStyle(
+		footnoteFont,
+		1.0,
+		Left|Top,
+		2,
+		2,
+	))
 	// Configure PageHeader
-	textStyles.SetPageHeader(TextStyle{
-		Size:        9,
-		Color:       style.Color{R: 128, G: 128, B: 128, A: 255},
-		LineSpacing: 1.0,
-		Alignment:   Center | Top,
-		SpaceBefore: 0,
-		SpaceAfter:  12,
-		FontStyle:   FontStyleRegular,
-	})
+	pageHeaderFont := FontStyleRegular.WithSize(9).WithColor(style.Color{R: 128, G: 128, B: 128, A: 255})
+	textStyles.SetPageHeader(NewTextStyle(
+		pageHeaderFont,
+		1.0,
+		Center|Top,
+		0,
+		12,
+	))
 
 	// Configure PageFooter
-	textStyles.SetPageFooter(TextStyle{
-		Size:        9,
-		Color:       style.Color{R: 128, G: 128, B: 128, A: 255},
-		LineSpacing: 1.0,
-		Alignment:   Right | Top,
-		SpaceBefore: 2,
-		SpaceAfter:  0,
-		FontStyle:   FontStyleRegular,
-	})
+	pageFooterFont := FontStyleRegular.WithSize(9).WithColor(style.Color{R: 128, G: 128, B: 128, A: 255})
+	textStyles.SetPageFooter(NewTextStyle(
+		pageFooterFont,
+		1.0,
+		Right|Top,
+		2,
+		0,
+	))
 
 	// Configure ChartLabel
-	textStyles.SetChartLabel(TextStyle{
-		Size:        9,
-		Color:       style.Color{R: 50, G: 50, B: 50, A: 255},
-		LineSpacing: 1.0,
-		Alignment:   Left | Top,
-		SpaceBefore: 0,
-		SpaceAfter:  0,
-		FontStyle:   FontStyleRegular,
-	})
+	chartLabelFont := FontStyleRegular.WithSize(9).WithColor(style.Color{R: 50, G: 50, B: 50, A: 255})
+	textStyles.SetChartLabel(NewTextStyle(
+		chartLabelFont,
+		1.0,
+		Left|Top,
+		0,
+		0,
+	))
 
 	// Configure ChartAxisLabel
-	textStyles.SetChartAxisLabel(TextStyle{
-		Size:        8,
-		Color:       style.Color{R: 80, G: 80, B: 80, A: 255},
-		LineSpacing: 1.0,
-		Alignment:   Left | Top,
-		SpaceBefore: 0,
-		SpaceAfter:  0,
-		FontStyle:   FontStyleRegular,
-	})
+	chartAxisLabelFont := FontStyleRegular.WithSize(8).WithColor(style.Color{R: 80, G: 80, B: 80, A: 255})
+	textStyles.SetChartAxisLabel(NewTextStyle(
+		chartAxisLabelFont,
+		1.0,
+		Left|Top,
+		0,
+		0,
+	))
 
 	return textStyles
 }

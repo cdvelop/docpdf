@@ -124,7 +124,7 @@ func createDefaultTableStyles(doc *Document) (headerStyle, cellStyle style.Cell)
 		FillColor: style.Color{R: 240, G: 240, B: 240},
 		TextColor: style.Color{R: 0, G: 0, B: 0},
 		Font:      FontBold,
-		FontSize:  doc.textConfig.GetHeader3().Size,
+		FontSize:  doc.textConfig.GetHeader3().Size(),
 	}
 
 	// Estilo para las celdas normales

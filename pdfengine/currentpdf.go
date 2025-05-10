@@ -10,14 +10,13 @@ type currentPdf struct {
 	setXCount int //many times we go func SetX()
 	X         float64
 	Y         float64
-
 	//font
 	IndexOfFontObj int
 	CountOfFont    int
 	CountOfL       int
 
-	FontSize      float64
-	FontStyle     config.FontIntStyle
+	// Font configuration consolidated in FontStyle
+	FontStyle     config.FontStyle
 	FontFontCount int
 	FontType      int // CURRENT_FONT_TYPE_IFONT or  CURRENT_FONT_TYPE_SUBSET
 

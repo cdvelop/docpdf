@@ -9,6 +9,7 @@ import (
 
 	"github.com/cdvelop/docpdf"
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/pdfengine"
 )
 
@@ -39,7 +40,8 @@ func TestSetY(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = pdf.SetFont("Ubuntu-L", "", 14)
+
+	err = pdf.SetFont(config.NewFontStyle("Ubuntu-L", 14))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +80,7 @@ func TestSetNewY(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = pdf.SetFont("Ubuntu-L", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("Ubuntu-L", 14))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +121,7 @@ func TestSetNewXY(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = pdf.SetFont("Ubuntu-L", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("Ubuntu-L", 14))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -160,7 +162,7 @@ func TestSetNewYX(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = pdf.SetFont("Ubuntu-L", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("Ubuntu-L", 14))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -201,7 +203,7 @@ func TestSetNewYCheckHeight(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = pdf.SetFont("Ubuntu-L", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("Ubuntu-L", 14))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -234,7 +236,7 @@ func TestLineBreak(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = pdf.SetFont("Ubuntu-L", "", 28)
+	err = pdf.SetFont(config.NewFontStyle("Ubuntu-L", 28))
 	if err != nil {
 		t.Fatal(err)
 	}

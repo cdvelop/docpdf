@@ -17,7 +17,7 @@ type relateFont struct {
 	CountOfFont int
 	//etc  5 0 R
 	IndexOfObj int
-	Style      config.FontIntStyle // Regular|Bold|Italic
+	Style      config.FontStyle // Regular|Bold|Italic
 }
 
 // IsContainsFamily checks if font family exists.
@@ -31,9 +31,9 @@ func (re *relateFonts) IsContainsFamily(family string) bool {
 }
 
 // IsContainsFamilyAndStyle checks if font with same name and style already exists .
-func (re *relateFonts) IsContainsFamilyAndStyle(family string, style config.FontIntStyle) bool {
+func (re *relateFonts) IsContainsFamilyAndStyle(family string, style config.FontStyle) bool {
 	for _, rf := range *re {
-		if rf.Family == family && rf.Style == style {
+		if rf.Family == family && rf.Style.GetIntStyle() == style.GetIntStyle() {
 			return true
 		}
 	}
@@ -154,11 +154,10 @@ func (gp *PdfEngine) setSubsetFontObject(subsetFont *ttfSubsetObj, family string
 	subsetFont.SetIndexObjCIDFont(cidindex)
 	subsetFont.SetIndexObjUnicodeMap(unicodeindex)
 	index := gp.addObj(subsetFont) //add หลังสุด
-
 	if gp.indexOfProcSet != -1 {
 		procset := gp.pdfObjs[gp.indexOfProcSet].(*procSetObj)
-		if !procset.Relates.IsContainsFamilyAndStyle(family, option.Style&^config.FontStyleUnderline) {
-			procset.Relates = append(procset.Relates, relateFont{Family: family, IndexOfObj: index, CountOfFont: gp.curr.CountOfFont, Style: option.Style &^ config.FontStyleUnderline})
+		if !procset.Relates.IsContainsFamilyAndStyle(family, option.Style.AndNot(config.FontStyleUnderline)) {
+			procset.Relates = append(procset.Relates, relateFont{Family: family, IndexOfObj: index, CountOfFont: gp.curr.CountOfFont, Style: option.Style.AndNot(config.FontStyleUnderline)})
 			subsetFont.CountOfFont = gp.curr.CountOfFont
 			gp.curr.CountOfFont++
 		}

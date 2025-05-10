@@ -22,7 +22,7 @@ func (m *mockPDFEngine) AddFontFamilyConfig(fontFamily config.FontFamily) error 
 	return nil
 }
 
-func (m *mockPDFEngine) SetFont(family string, style string, size any) error {
+func (m *mockPDFEngine) SetFont(fs config.FontStyle) error {
 	return nil
 }
 

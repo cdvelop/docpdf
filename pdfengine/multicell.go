@@ -150,7 +150,7 @@ func (gp *PdfEngine) PlaceHolderText(placeHolderName string, placeHolderWidth fl
 			indexInContent:   indexInContent,
 			fontISubset:      fontISubset,
 			placeHolderWidth: placeHolderWidth,
-			fontSize:         gp.curr.FontSize,
+			fontSize:         gp.curr.FontStyle.GetSize(),
 			charSpacing:      gp.curr.CharSpacing,
 		},
 	)
@@ -211,7 +211,7 @@ func (gp *PdfEngine) MultiCell(rectangle *canvas.Rect, text string) error {
 	if err != nil {
 		return err
 	}
-	_, lineHeight, _, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontSize, gp.curr.CharSpacing, nil)
+	_, lineHeight, _, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontStyle.GetSize(), gp.curr.CharSpacing, nil)
 	if err != nil {
 		return err
 	}
@@ -254,7 +254,7 @@ func (gp *PdfEngine) IsFitMultiCell(rectangle *canvas.Rect, text string) (bool, 
 	if err != nil {
 		return false, totalLineHeight, err
 	}
-	_, lineHeight, _, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontSize, gp.curr.CharSpacing, nil)
+	_, lineHeight, _, err := CreateContent(gp.curr.FontISubset, text, gp.curr.FontStyle.GetSize(), gp.curr.CharSpacing, nil)
 
 	if err != nil {
 		return false, totalLineHeight, err
@@ -338,7 +338,7 @@ func (gp *PdfEngine) MultiCellWithOption(rectangle *canvas.Rect, text string, op
 	if err != nil {
 		return err
 	}
-	_, lineHeight, _, err := CreateContent(gp.curr.FontISubset, itext, gp.curr.FontSize, gp.curr.CharSpacing, nil)
+	_, lineHeight, _, err := CreateContent(gp.curr.FontISubset, itext, gp.curr.FontStyle.GetSize(), gp.curr.CharSpacing, nil)
 	if err != nil {
 		return err
 	}

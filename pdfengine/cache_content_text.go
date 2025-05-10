@@ -23,15 +23,13 @@ const contentTypeText = 1
 
 var errContentTypeNotFound = errs.New("contentType not found")
 
-type cacheContentText struct {
-	//---setup---
+type cacheContentText struct { //---setup---
 	rectangle      *canvas.Rect
 	textColor      ICacheColorText
 	grayFill       float64
 	txtColorMode   string
-	fontCountIndex int //Curr.FontFontCount+1
-	fontSize       float64
-	fontStyle      config.FontIntStyle //Regular|Bold|Italic
+	fontCountIndex int              //Curr.FontFontCount+1
+	fontStyle      config.FontStyle //Contains style, size, color and family
 	charSpacing    float64
 	setXCount      int //จำนวนครั้งที่ใช้ setX
 	x, y           float64
@@ -58,7 +56,6 @@ func (c *cacheContentText) isSame(cache cacheContentText) bool {
 		(c.textColor != nil && c.textColor.Equal(cache.textColor))) &&
 		c.grayFill == cache.grayFill &&
 		c.fontCountIndex == cache.fontCountIndex &&
-		c.fontSize == cache.fontSize &&
 		c.fontStyle == cache.fontStyle &&
 		c.charSpacing == cache.charSpacing &&
 		c.setXCount == cache.setXCount &&
@@ -84,11 +81,11 @@ func convertTypoUnit(val float64, unitsPerEm uint, fontSize float64) float64 {
 }
 
 func (c *cacheContentText) calTypoAscender() float64 {
-	return convertTypoUnit(float64(c.fontSubset.ttfp.TypoAscender()), c.fontSubset.ttfp.UnitsPerEm(), float64(c.fontSize))
+	return convertTypoUnit(float64(c.fontSubset.ttfp.TypoAscender()), c.fontSubset.ttfp.UnitsPerEm(), c.fontStyle.GetSize())
 }
 
 func (c *cacheContentText) calTypoDescender() float64 {
-	return convertTypoUnit(float64(c.fontSubset.ttfp.TypoDescender()), c.fontSubset.ttfp.UnitsPerEm(), float64(c.fontSize))
+	return convertTypoUnit(float64(c.fontSubset.ttfp.TypoDescender()), c.fontSubset.ttfp.UnitsPerEm(), c.fontStyle.GetSize())
 }
 
 func (c *cacheContentText) calY() (float64, error) {
@@ -158,7 +155,7 @@ func (c *cacheContentText) Write(w Writer, protection *pdfProtection) error {
 	}
 
 	fmt.Fprintf(w, "%0.2f %0.2f TD\n", x, y)
-	fmt.Fprintf(w, "/F%d %s Tf %s Tc\n", c.fontCountIndex, formatFloatTrim(c.fontSize), formatFloatTrim(c.charSpacing))
+	fmt.Fprintf(w, "/F%d %s Tf %s Tc\n", c.fontCountIndex, formatFloatTrim(c.fontStyle.GetSize()), formatFloatTrim(c.charSpacing))
 
 	if c.txtColorMode == "color" {
 		c.textColor.Write(w, protection)
@@ -193,8 +190,7 @@ func (c *cacheContentText) Write(w Writer, protection *pdfProtection) error {
 
 	io.WriteString(w, ">] TJ\n")
 	io.WriteString(w, "ET\n")
-
-	if c.fontStyle&config.FontStyleUnderline == config.FontStyleUnderline {
+	if c.fontStyle.BitwiseAnd(config.FontStyleUnderline).Equals(config.FontStyleUnderline) {
 		if err := c.underline(w); err != nil {
 			return err
 		}
@@ -277,18 +273,18 @@ func (c *cacheContentText) underline(w Writer) error {
 	if c.cellOpt.CoefUnderlineThickness != 0 {
 		coefUnderlineThickness = c.cellOpt.CoefUnderlineThickness
 	}
-
-	ascenderPx := c.fontSubset.GetAscenderPx(c.fontSize)
-	descenderPx := -c.fontSubset.GetDescenderPx(c.fontSize)
+	fontSize := c.fontStyle.GetSize()
+	ascenderPx := c.fontSubset.GetAscenderPx(fontSize)
+	descenderPx := -c.fontSubset.GetDescenderPx(fontSize)
 
 	contentHeight := ascenderPx + descenderPx
-	virtualHeight := coefLineHeight * float64(c.fontSize)
+	virtualHeight := coefLineHeight * fontSize
 	leading := (contentHeight - virtualHeight) / 2
 
 	baseline := ascenderPx + leading
 
-	underlinePositionPx := c.fontSubset.GetUnderlinePositionPx(c.fontSize) * coefUnderlinePosition
-	underlineThicknessPx := c.fontSubset.GetUnderlineThicknessPx(c.fontSize) * coefUnderlineThickness
+	underlinePositionPx := c.fontSubset.GetUnderlinePositionPx(fontSize) * coefUnderlinePosition
+	underlineThicknessPx := c.fontSubset.GetUnderlineThicknessPx(fontSize) * coefUnderlineThickness
 
 	yUnderlinePosition := c.pageHeight() - c.y + underlinePositionPx - baseline
 	if _, err := fmt.Fprintf(w, "%0.2f %0.2f %0.2f %0.2f re f\n", c.x, yUnderlinePosition, c.cellWidthPdfUnit, underlineThicknessPx); err != nil {
@@ -300,7 +296,7 @@ func (c *cacheContentText) underline(w Writer) error {
 
 func (c *cacheContentText) CreateContent() (float64, float64, error) {
 
-	cellWidthPdfUnit, cellHeightPdfUnit, textWidthPdfUnit, err := CreateContent(c.fontSubset, c.text, c.fontSize, c.charSpacing, c.rectangle)
+	cellWidthPdfUnit, cellHeightPdfUnit, textWidthPdfUnit, err := CreateContent(c.fontSubset, c.text, c.fontStyle.GetSize(), c.charSpacing, c.rectangle)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -392,8 +388,7 @@ func (c *cacheContent) Setup(rectangle *canvas.Rect,
 	textColor ICacheColorText,
 	grayFill float64,
 	fontCountIndex int, //Curr.FontFontCount+1
-	fontSize float64,
-	fontStyle config.FontIntStyle,
+	fontStyle config.FontStyle,
 	charSpacing float64,
 	setXCount int, //จำนวนครั้งที่ใช้ setX
 	x, y float64,
@@ -409,7 +404,6 @@ func (c *cacheContent) Setup(rectangle *canvas.Rect,
 		textColor:      textColor,
 		grayFill:       grayFill,
 		fontCountIndex: fontCountIndex,
-		fontSize:       fontSize,
 		fontStyle:      fontStyle,
 		charSpacing:    charSpacing,
 		setXCount:      setXCount,

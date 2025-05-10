@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/errs"
 )
 
@@ -45,7 +46,7 @@ func kern01(font string, prefix string, leftRune rune, rightRune rune) (int, err
 		return 0, err
 	}
 
-	err = pdf.SetFont(prefix, "", 50)
+	err = pdf.SetFont(config.NewFontStyle(prefix, 50))
 	if err != nil {
 		fmt.Errorf(err.Error())
 		return 0, err

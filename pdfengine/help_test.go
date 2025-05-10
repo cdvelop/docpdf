@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/pdfengine"
 )
 
@@ -26,7 +27,7 @@ func setupDefaultA4PDF(t *testing.T) *pdfengine.PdfEngine {
 		t.Fatal(err)
 	}
 
-	err = pdf.SetFont("LiberationSerif-Regular", "", 14)
+	err = pdf.SetFont(config.NewFontStyle("LiberationSerif-Regular", 14))
 	if err != nil {
 		t.Fatal(err)
 	}
