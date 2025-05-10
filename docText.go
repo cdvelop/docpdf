@@ -65,29 +65,29 @@ func (d *Document) newTextBuilder(text string, style config.TextStyle, fontName 
 
 // AddText crea texto normal
 func (d *Document) AddText(text string) *docText {
-	dt := d.newTextBuilder(text, d.fontConfig.Normal, FontRegular)
+	dt := d.newTextBuilder(text, d.textConfig.GetNormal(), FontRegular)
 	dt.fullWidth = false // Solo para texto normal, usar ancho automático
 	return dt
 }
 
 // AddHeader1 crea un encabezado nivel 1
 func (d *Document) AddHeader1(text string) *docText {
-	return d.newTextBuilder(text, d.fontConfig.Header1, FontBold)
+	return d.newTextBuilder(text, d.textConfig.GetHeader1(), FontBold)
 }
 
 // AddHeader2 crea un encabezado nivel 2
 func (d *Document) AddHeader2(text string) *docText {
-	return d.newTextBuilder(text, d.fontConfig.Header2, FontBold)
+	return d.newTextBuilder(text, d.textConfig.GetHeader2(), FontBold)
 }
 
 // AddHeader3 crea un encabezado nivel 3
 func (d *Document) AddHeader3(text string) *docText {
-	return d.newTextBuilder(text, d.fontConfig.Header3, FontBold)
+	return d.newTextBuilder(text, d.textConfig.GetHeader3(), FontBold)
 }
 
 // AddFootnote crea una nota al pie
 func (d *Document) AddFootnote(text string) *docText {
-	return d.newTextBuilder(text, d.fontConfig.Footnote, FontItalic)
+	return d.newTextBuilder(text, d.textConfig.GetFootnote(), FontItalic)
 }
 
 // AddJustifiedText crea texto justificado directamente
@@ -152,7 +152,7 @@ func (d *Document) SpaceBefore(spaces ...float64) {
 	// Get the current font size
 	fontSize := d.CurrentPdf().FontSize
 	if fontSize <= 0 {
-		fontSize = d.fontConfig.Normal.Size // Default font size if none is set
+		fontSize = d.textConfig.GetNormal().Size // Default font size if none is set
 	}
 
 	// Add vertical space based on font size
@@ -411,24 +411,23 @@ func (dt *docText) Draw() error {
 
 func (doc *Document) newLineBreakBasedOnDefaultFont(originY float64) {
 	// Reset font to regular for next text (prevents style bleed)
-	doc.setDefaultFont()
+	doc.textConfig.SetDefaultTextConfig(doc.PdfEngine)
 
 	// Apply space after the paragraph based on the current active text style
 	// This ensures headers have their proper spacing
 	var spaceAfter float64
-
 	// Determine which style was used based on font size
 	fontSize := doc.CurrentPdf().FontSize
-	if fontSize >= doc.fontConfig.Header1.Size {
-		spaceAfter = doc.fontConfig.Header1.SpaceAfter
-	} else if fontSize >= doc.fontConfig.Header2.Size {
-		spaceAfter = doc.fontConfig.Header2.SpaceAfter
-	} else if fontSize >= doc.fontConfig.Header3.Size {
-		spaceAfter = doc.fontConfig.Header3.SpaceAfter
-	} else if fontSize <= doc.fontConfig.Footnote.Size {
-		spaceAfter = doc.fontConfig.Footnote.SpaceAfter
+	if fontSize >= doc.textConfig.GetHeader1().Size {
+		spaceAfter = doc.textConfig.GetHeader1().SpaceAfter
+	} else if fontSize >= doc.textConfig.GetHeader2().Size {
+		spaceAfter = doc.textConfig.GetHeader2().SpaceAfter
+	} else if fontSize >= doc.textConfig.GetHeader3().Size {
+		spaceAfter = doc.textConfig.GetHeader3().SpaceAfter
+	} else if fontSize <= doc.textConfig.GetFootnote().Size {
+		spaceAfter = doc.textConfig.GetFootnote().SpaceAfter
 	} else {
-		spaceAfter = doc.fontConfig.Normal.SpaceAfter
+		spaceAfter = doc.textConfig.GetNormal().SpaceAfter
 	}
 
 	// Get line height for current font size - this is critical for proper spacing

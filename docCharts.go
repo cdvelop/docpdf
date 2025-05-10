@@ -30,44 +30,54 @@ func (doc *Document) Chart() *docCharts {
 	// Pero el PdfRenderer usa directamente el fontProvider de docpdf
 	if fontbridge.SharedFontConfig.Font == nil && doc != nil {
 		// Color para elementos del gráfico
+		header1 := doc.textConfig.GetHeader1()
 		titleColor := fontbridge.GetDrawingColor(
-			doc.fontConfig.Header1.Color.R,
-			doc.fontConfig.Header1.Color.G,
-			doc.fontConfig.Header1.Color.B,
+			header1.Color.R,
+			header1.Color.G,
+			header1.Color.B,
 		)
+
+		chartLabel := doc.textConfig.GetChartLabel()
 		normalColor := fontbridge.GetDrawingColor(
-			doc.fontConfig.ChartLabel.Color.R,
-			doc.fontConfig.ChartLabel.Color.G,
-			doc.fontConfig.ChartLabel.Color.B,
+			chartLabel.Color.R,
+			chartLabel.Color.G,
+			chartLabel.Color.B,
 		)
+
+		footnote := doc.textConfig.GetFootnote()
 		footnoteColor := fontbridge.GetDrawingColor(
-			doc.fontConfig.Footnote.Color.R,
-			doc.fontConfig.Footnote.Color.G,
-			doc.fontConfig.Footnote.Color.B,
+			footnote.Color.R,
+			footnote.Color.G,
+			footnote.Color.B,
 		)
 
 		// Color específico para ejes
+		chartAxisLabel := doc.textConfig.GetChartAxisLabel()
 		axisColor := fontbridge.GetDrawingColor(
-			doc.fontConfig.ChartAxisLabel.Color.R,
-			doc.fontConfig.ChartAxisLabel.Color.G,
-			doc.fontConfig.ChartAxisLabel.Color.B,
+			chartAxisLabel.Color.R,
+			chartAxisLabel.Color.G,
+			chartAxisLabel.Color.B,
 		)
 
 		// Inicializar la configuración compartida
+		fontFamily := doc.textConfig.GetFontFamily()
+		header2 := doc.textConfig.GetHeader2()
+		normal := doc.textConfig.GetNormal()
+
 		fontbridge.InitFromDocConfig(
-			doc.fontConfig.FontFamily.Path,
-			doc.fontConfig.FontFamily.Regular,
-			float64(doc.fontConfig.Header2.Size),
-			float64(doc.fontConfig.ChartLabel.Size),
-			float64(doc.fontConfig.Footnote.Size),
+			fontFamily.Path,
+			fontFamily.Regular,
+			float64(header2.Size),
+			float64(chartLabel.Size),
+			float64(footnote.Size),
 			titleColor,
 			normalColor,
 			footnoteColor,
-			doc.fontConfig.Normal.LineSpacing,
+			normal.LineSpacing,
 		)
 
 		// Actualizar específicamente el tamaño y color de las etiquetas de ejes
-		fontbridge.SharedFontConfig.AxisLabelSize = float64(doc.fontConfig.ChartAxisLabel.Size)
+		fontbridge.SharedFontConfig.AxisLabelSize = float64(chartAxisLabel.Size)
 		fontbridge.SharedFontConfig.AxisLabelColor = axisColor
 	}
 

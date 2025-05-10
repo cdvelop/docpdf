@@ -447,7 +447,7 @@ func (t *docTable) Draw() error {
 	}
 
 	// Actualizar la posición del documento para que sea después de la tabla
-	t.doc.SetY(currentY + t.doc.fontConfig.Normal.SpaceAfter)
+	t.doc.SetY(currentY + t.doc.textConfig.GetNormal().SpaceAfter)
 
 	return nil
 }

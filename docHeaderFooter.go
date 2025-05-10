@@ -86,13 +86,12 @@ func (hf *headerFooter) draw() {
 
 	// Save current config.Alignment and drawing settings
 	prevX, prevY := hf.doc.GetX(), hf.doc.GetY()
-
 	// Determinar el estilo de fuente para usar sus propiedades de espaciado
 	var fontStyle config.TextStyle
 	if hf.isHeader {
-		fontStyle = hf.doc.fontConfig.PageHeader
+		fontStyle = hf.doc.textConfig.GetPageHeader()
 	} else {
-		fontStyle = hf.doc.fontConfig.PageFooter
+		fontStyle = hf.doc.textConfig.GetPageFooter()
 	}
 
 	// Determine Y config.Alignment based on whether this is a header or footer
@@ -391,9 +390,8 @@ func (hf *headerFooter) SetFont(fontName string) *headerFooter {
 }
 
 // AddPageHeader adds a header to the document (legacy method for backward compatibility)
-func (d *Document) AddPageHeader(text string) *docText {
-	// Create text builder with header style
-	builder := d.newTextBuilder(text, d.fontConfig.PageHeader, FontRegular)
+func (d *Document) AddPageHeader(text string) *docText { // Create text builder with header style
+	builder := d.newTextBuilder(text, d.textConfig.GetPageHeader(), FontRegular)
 
 	// Mark as fixed config.Alignment so it doesn't trigger page breaks
 	builder.positioning = fixedPosition
@@ -406,9 +404,8 @@ func (d *Document) AddPageHeader(text string) *docText {
 }
 
 // AddPageFooter adds a footer to the document (legacy method for backward compatibility)
-func (d *Document) AddPageFooter(text string) *docText {
-	// Create text builder with footer style
-	builder := d.newTextBuilder(text, d.fontConfig.PageFooter, FontRegular)
+func (d *Document) AddPageFooter(text string) *docText { // Create text builder with footer style
+	builder := d.newTextBuilder(text, d.textConfig.GetPageFooter(), FontRegular)
 
 	// Mark as fixed config.Alignment so it doesn't trigger page breaks
 	builder.positioning = fixedPosition
@@ -421,10 +418,9 @@ func (d *Document) AddPageFooter(text string) *docText {
 }
 
 // WithPageNumber adds page number to the text builder (legacy method for backward compatibility)
-func (dt *docText) WithPageNumber() *docText {
-	// Find if this is a header or footer by comparing styles
-	isHeader := dt.style.Size == dt.doc.fontConfig.PageHeader.Size
-	isFooter := dt.style.Size == dt.doc.fontConfig.PageFooter.Size
+func (dt *docText) WithPageNumber() *docText { // Find if this is a header or footer by comparing styles
+	isHeader := dt.style.Size == dt.doc.textConfig.GetPageHeader().Size
+	isFooter := dt.style.Size == dt.doc.textConfig.GetPageFooter().Size
 
 	// Determine if this is a header/footer text and update the appropriate structure
 	if isHeader || isFooter {

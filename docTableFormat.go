@@ -124,7 +124,7 @@ func createDefaultTableStyles(doc *Document) (headerStyle, cellStyle style.Cell)
 		FillColor: style.Color{R: 240, G: 240, B: 240},
 		TextColor: style.Color{R: 0, G: 0, B: 0},
 		Font:      FontBold,
-		FontSize:  doc.fontConfig.Header3.Size,
+		FontSize:  doc.textConfig.GetHeader3().Size,
 	}
 
 	// Estilo para las celdas normales
@@ -140,7 +140,7 @@ func createDefaultTableStyles(doc *Document) (headerStyle, cellStyle style.Cell)
 		FillColor: style.Color{R: 255, G: 255, B: 255},
 		TextColor: style.Color{R: 0, G: 0, B: 0},
 		Font:      FontRegular,
-		FontSize:  doc.fontConfig.Normal.Size,
+		FontSize:  doc.textConfig.GetNormal().Size,
 	}
 
 	return headerStyle, cellStyle
@@ -250,7 +250,7 @@ func initializeAutoWidthColumns(doc *Document, headers []string, cellPadding flo
 	columns := make([]tableColumn, len(headers))
 
 	// Configurar la fuente para estimaciones de ancho
-	doc.SetFont(FontBold, "", doc.fontConfig.Header3.Size)
+	doc.SetFont(FontBold, "", doc.textConfig.GetHeader3().Size)
 
 	// Procesar cada encabezado
 	for i, headerStr := range headers {
@@ -261,7 +261,7 @@ func initializeAutoWidthColumns(doc *Document, headers []string, cellPadding flo
 		if options.WidthMode == widthModeFixed {
 			colWidth = options.Width
 		} else {
-			colWidth = calculateAutoColumnWidth(options.HeaderTitle, doc.fontConfig.Header3.Size, cellPadding)
+			colWidth = calculateAutoColumnWidth(options.HeaderTitle, doc.textConfig.GetHeader3().Size, cellPadding)
 		}
 
 		// Crear columna con las opciones analizadas

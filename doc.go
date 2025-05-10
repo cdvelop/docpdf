@@ -9,7 +9,7 @@ import (
 
 type Document struct {
 	*pdfengine.PdfEngine
-	fontConfig         config.TextStyles
+	textConfig         config.TextStyles
 	contentAreaWidth   float64       // Width of the content area (page width - canvas.Margins)
 	inlineMode         bool          // Add this field to track inline element state
 	lastInlineWidth    float64       // Track the width of the last inline element
@@ -48,7 +48,7 @@ func NewDocument(configs ...any) *Document {
 
 	doc := &Document{
 		PdfEngine:       &pdfengine.PdfEngine{},
-		fontConfig:      config.DefaultTextStyles(),
+		textConfig:      config.DefaultTextConfig(),
 		inlineMode:      false,
 		lastInlineWidth: 0,
 	}
@@ -70,9 +70,9 @@ func NewDocument(configs ...any) *Document {
 			// Custom logger
 			doc.Log = v
 		case config.TextStyles:
-			doc.fontConfig = v
+			doc.textConfig = v
 		case config.FontFamily:
-			doc.fontConfig.FontFamily = v
+			doc.textConfig.SetFontFamily(v)
 		case canvas.Margins:
 			// Convert millimeters to points (1 mm = 72.0/25.4 points)
 			doc.SetMargins(
@@ -99,7 +99,7 @@ func NewDocument(configs ...any) *Document {
 	// Set default canvas.Margins explicitly
 	doc.SetMargins(leftMargin, otherMargins, otherMargins, otherMargins)
 
-	err := doc.loadFonts()
+	err := doc.textConfig.LoadFonts(doc.PdfEngine)
 	if err != nil {
 		doc.Log("Error loading fonts: ", err)
 	}
@@ -111,7 +111,7 @@ func NewDocument(configs ...any) *Document {
 
 	// Importante: Agregar la primera página después de inicializar el header y footer
 	doc.AddPage()
-	doc.setDefaultFont()
+	doc.textConfig.SetDefaultTextConfig(doc.PdfEngine)
 
 	return doc
 }
@@ -121,7 +121,7 @@ func (doc *Document) GetLineHeight() float64 {
 	// Get current font size and add some padding
 	fontSize := doc.CurrentPdf().FontSize
 	if fontSize <= 0 {
-		fontSize = doc.fontConfig.Normal.Size // Default font size as fallback
+		fontSize = doc.textConfig.GetNormal().Size // Default font size as fallback
 	}
 
 	// Line height is typically 1.2 to 1.5 times the font size
@@ -145,7 +145,7 @@ func (doc *Document) AddPage() {
 	// Respetar el SpaceAfter del encabezado para el contenido inicial de la página
 	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.NumOfPagesObj > 1) {
 		// Ajustar la posición Y inicial para incluir el espacio después del encabezado
-		doc.SetY(doc.Margins().Top + doc.fontConfig.PageHeader.SpaceAfter)
+		doc.SetY(doc.Margins().Top + doc.textConfig.GetPageHeader().SpaceAfter)
 	}
 }
 
@@ -165,7 +165,7 @@ func (doc *Document) AddPageWithOption(opt pdfengine.PageOption) {
 	// Respetar el SpaceAfter del encabezado para el contenido inicial de la página
 	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.NumOfPagesObj > 1) {
 		// Ajustar la posición Y inicial para incluir el espacio después del encabezado
-		doc.SetY(doc.Margins().Top + doc.fontConfig.PageHeader.SpaceAfter)
+		doc.SetY(doc.Margins().Top + doc.textConfig.GetPageHeader().SpaceAfter)
 	}
 }
 

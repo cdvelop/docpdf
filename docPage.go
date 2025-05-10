@@ -30,16 +30,18 @@ func (doc *Document) EnsureElementFits(height float64, minBottomMargin ...float6
 
 	if doc.header != nil && doc.header.initialized && (!doc.header.hideOnFirstPage || doc.NumOfPagesObj > 1) {
 		// Considerar tanto el tamaño de la fuente como los espaciados
-		headerSpace = doc.fontConfig.PageHeader.Size +
-			doc.fontConfig.PageHeader.SpaceBefore +
-			doc.fontConfig.PageHeader.SpaceAfter
+		pageHeader := doc.textConfig.GetPageHeader()
+		headerSpace = pageHeader.Size +
+			pageHeader.SpaceBefore +
+			pageHeader.SpaceAfter
 	}
 
 	if doc.footer != nil && doc.footer.initialized && (!doc.footer.hideOnFirstPage || doc.NumOfPagesObj > 1) {
 		// Considerar tanto el tamaño de la fuente como los espaciados
-		footerSpace = doc.fontConfig.PageFooter.Size +
-			doc.fontConfig.PageFooter.SpaceBefore +
-			doc.fontConfig.PageFooter.SpaceAfter
+		pageFooter := doc.textConfig.GetPageFooter()
+		footerSpace = pageFooter.Size +
+			pageFooter.SpaceBefore +
+			pageFooter.SpaceAfter
 	}
 
 	// Calculate available space considering header/footer
