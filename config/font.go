@@ -40,10 +40,11 @@ type FontFamily struct {
 // FontStyle represents a complete font configuration with styling, size, color, and family
 // This is the unified font structure for the entire docpdf project
 type FontStyle struct {
-	name     string
-	intStyle int
-	size     float64
-	color    Color
+	name      string
+	intStyle  int
+	size      float64
+	color     Color
+	grayScale float64 // Indicates the grayscale intensity (0.0 for no grayscale, 0.1-1.0 for intensity)
 }
 
 // NewFontStyle creates a new FontStyle with the given properties
@@ -76,10 +77,11 @@ func NewFontStyle(name string, size float64, color ...Color) FontStyle {
 	}
 
 	return FontStyle{
-		name:     name,
-		intStyle: intStyle,
-		size:     size,
-		color:    defaultColor,
+		name:      name,
+		intStyle:  intStyle,
+		size:      size,
+		color:     defaultColor,
+		grayScale: 0.0, // Default to no grayscale
 	}
 }
 
@@ -141,6 +143,11 @@ func (fs FontStyle) GetFamily() string {
 	return fs.name
 }
 
+// GetGrayScale returns the grayscale intensity of the font
+func (fs FontStyle) GetGrayScale() float64 {
+	return fs.grayScale
+}
+
 // SetName sets the name of the font style
 func (fs *FontStyle) SetName(name string) {
 	fs.name = name
@@ -164,6 +171,13 @@ func (fs *FontStyle) SetColor(color Color) {
 // SetFamily sets the font family name
 func (fs *FontStyle) SetFamily(family string) {
 	fs.name = family
+}
+
+// SetGrayScale sets the grayscale intensity for the font
+// A value of 0.0 means no grayscale (full color).
+// Values from 0.1 to 1.0 indicate the intensity of the grayscale.
+func (fs *FontStyle) SetGrayScale(grayScale float64) {
+	fs.grayScale = grayScale
 }
 
 // GetFontStyle converts a string font style to its FontStyle representation

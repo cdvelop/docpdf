@@ -109,42 +109,6 @@ func (c *cacheContentPolygon) Write(w Writer, protection *pdfProtection) error {
 	return nil
 }
 
-type cacheContentTextColorRGB struct {
-	r, g, b uint8
-}
-
-func (c cacheContentTextColorRGB) Write(w Writer, protection *pdfProtection) error {
-	fmt.Fprintf(w, "%.3f %.3f %.3f %s\n", float64(c.r)/255, float64(c.g)/255, float64(c.b)/255, colorTypeFillRGB)
-	return nil
-}
-
-func (c cacheContentTextColorRGB) Equal(obj ICacheColorText) bool {
-	rgb, ok := obj.(cacheContentTextColorRGB)
-	if !ok {
-		return false
-	}
-
-	return c.r == rgb.r && c.g == rgb.g && c.b == rgb.b
-}
-
-type cacheContentTextColorCMYK struct {
-	c, m, y, k uint8
-}
-
-func (c cacheContentTextColorCMYK) Write(w Writer, protection *pdfProtection) error {
-	fmt.Fprintf(w, "%.2f %.2f %.2f %.2f %s\n", float64(c.c)/100, float64(c.m)/100, float64(c.y)/100, float64(c.k)/100, colorTypeFillCMYK)
-	return nil
-}
-
-func (c cacheContentTextColorCMYK) Equal(obj ICacheColorText) bool {
-	cmyk, ok := obj.(cacheContentTextColorCMYK)
-	if !ok {
-		return false
-	}
-
-	return c.c == cmyk.c && c.m == cmyk.m && c.y == cmyk.y && c.k == cmyk.k
-}
-
 type cacheContentRotate struct {
 	isReset     bool
 	pageHeight  float64

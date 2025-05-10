@@ -12,11 +12,9 @@ type Border struct {
 
 // Defines the style for a cell, including border, fill, text, and font properties
 type Cell struct {
-	Border    Border  // Border style for the cell
-	FillColor Color   // Background color of the cell
-	TextColor Color   // Color of the text in the cell
-	Font      string  // Font name for the cell text
-	FontSize  float64 // Font size for the cell text
+	Border    Border    // Border style for the cell
+	FillColor Color     // Background color of the cell
+	TextStyle TextStyle // Style for the text in the cell
 }
 
 // metodo para comparar dos estilos de celda
@@ -33,13 +31,7 @@ func (c *Cell) Equals(other *Cell) bool {
 	if c.FillColor != other.FillColor {
 		return false
 	}
-	if c.TextColor != other.TextColor {
-		return false
-	}
-	if c.Font != other.Font {
-		return false
-	}
-	if c.FontSize != other.FontSize {
+	if c.TextStyle != other.TextStyle {
 		return false
 	}
 	return true
@@ -50,8 +42,6 @@ func NewCell() *Cell {
 	return &Cell{
 		Border:    Border{},
 		FillColor: Color{},
-		TextColor: Color{},
-		Font:      "",
-		FontSize:  0,
+		TextStyle: TextStyle{},
 	}
 }

@@ -28,19 +28,17 @@ type docText struct {
 	opts        pdfengine.CellOption
 	rect        *canvas.Rect
 	style       config.TextStyle
-	fontName    string
 	fullWidth   bool            // Por defecto es false (solo usa el ancho necesario)
 	positioning elementPosition // "inline", "newline" (por defecto newline)
 	wordWrap    bool            // Whether to use word-wrap (true) or allow mid-word breaks (false)
 }
 
 // newTextBuilder creates a new docText with the given style
-func (d *Document) newTextBuilder(text string, style config.TextStyle, fontName string) *docText {
+func (d *Document) newTextBuilder(text string, style config.TextStyle) *docText {
 	builder := &docText{
 		doc:         d,
 		text:        text,
-		style:       style, // Store the style
-		fontName:    fontName,
+		style:       style,           // Store the style
 		fullWidth:   true,            // Por defecto usar ancho completo para mantener compatibilidad
 		positioning: newlinePosition, // Por defecto es newline
 		wordWrap:    true,            // Por defecto usar word wrap (no cortar palabras)
@@ -57,7 +55,7 @@ func (d *Document) newTextBuilder(text string, style config.TextStyle, fontName 
 	}
 
 	// Apply style
-	d.SetFont(fontName, "", style.Size)
+	d.SetFont(style.GetFontStyle())
 	d.SetTextColor(config.Color.R, config.Color.G, config.Color.B)
 
 	return builder
@@ -65,24 +63,24 @@ func (d *Document) newTextBuilder(text string, style config.TextStyle, fontName 
 
 // AddText crea texto normal
 func (d *Document) AddText(text string) *docText {
-	dt := d.newTextBuilder(text, d.textConfig.GetNormal(), FontRegular)
+	dt := d.newTextBuilder(text, d.textConfig.GetNormal())
 	dt.fullWidth = false // Solo para texto normal, usar ancho automático
 	return dt
 }
 
 // AddHeader1 crea un encabezado nivel 1
 func (d *Document) AddHeader1(text string) *docText {
-	return d.newTextBuilder(text, d.textConfig.GetHeader1(), FontBold)
+	return d.newTextBuilder(text, d.textConfig.GetHeader1())
 }
 
 // AddHeader2 crea un encabezado nivel 2
 func (d *Document) AddHeader2(text string) *docText {
-	return d.newTextBuilder(text, d.textConfig.GetHeader2(), FontBold)
+	return d.newTextBuilder(text, d.textConfig.GetHeader2())
 }
 
 // AddHeader3 crea un encabezado nivel 3
 func (d *Document) AddHeader3(text string) *docText {
-	return d.newTextBuilder(text, d.textConfig.GetHeader3(), FontBold)
+	return d.newTextBuilder(text, d.textConfig.GetHeader3())
 }
 
 // AddFootnote crea una nota al pie
@@ -125,19 +123,25 @@ func (dt *docText) WithBorder() *docText {
 // Métodos para cambiar el estilo de fuente
 func (dt *docText) Bold() *docText {
 	dt.fontName = FontBold
-	dt.doc.SetFont(FontBold, "", dt.style.Size)
+	fontStyle := dt.style.GetFontStyle()
+	fontStyle.SetName(FontBold)
+	dt.doc.SetFont(fontStyle)
 	return dt
 }
 
 func (dt *docText) Italic() *docText {
 	dt.fontName = FontItalic
-	dt.doc.SetFont(FontItalic, "", dt.style.Size)
+	fontStyle := dt.style.GetFontStyle()
+	fontStyle.SetName(FontItalic)
+	dt.doc.SetFont(fontStyle)
 	return dt
 }
 
 func (dt *docText) Regular() *docText {
 	dt.fontName = FontRegular
-	dt.doc.SetFont(FontRegular, "", dt.style.Size)
+	fontStyle := dt.style.GetFontStyle()
+	fontStyle.SetName(FontRegular)
+	dt.doc.SetFont(fontStyle)
 	return dt
 }
 
@@ -221,10 +225,8 @@ func (dt *docText) minimumWidthRequiredForText() {
 			} else {
 				// Si no se puede medir directamente, usar el método de estimación por caracteres
 				// Obtener el factor de ancho según el tipo de fuente
-				widthFactor := dt.doc.measureTextWidthFactor(dt.fontName)
-
-				// Calcular ancho considerando un factor de reducción más realista
-				charWidth := dt.style.Size * widthFactor
+				widthFactor := dt.doc.measureTextWidthFactor(dt.fontName) // Calcular ancho considerando un factor de reducción más realista
+				charWidth := dt.style.GetFontStyle().GetSize() * widthFactor
 
 				// Considerar longitud efectiva (algunos caracteres son más estrechos)
 				// Aumentar el factor para evitar problemas con signos de puntuación
@@ -239,10 +241,8 @@ func (dt *docText) minimumWidthRequiredForText() {
 				}
 
 				// Calcular ancho estimado
-				width := effectiveLength * charWidth
-
-				// Añadir un pequeño margen
-				width += dt.style.Size * 1.3 // Aumentar el margen un 30%
+				width := effectiveLength * charWidth             // Añadir un pequeño margen
+				width += dt.style.GetFontStyle().GetSize() * 1.3 // Aumentar el margen un 30%
 
 				// Si el texto es largo usar el ancho de página
 				if width >= dt.doc.contentAreaWidth {
@@ -250,7 +250,7 @@ func (dt *docText) minimumWidthRequiredForText() {
 				}
 
 				// Asegurar un ancho mínimo razonable
-				minWidth := dt.style.Size * 1.5
+				minWidth := dt.style.GetFontStyle().GetSize() * 1.5
 				if width < minWidth {
 					width = minWidth
 				}
@@ -343,10 +343,9 @@ func (dt *docText) Draw() error {
 	if err != nil {
 		return err
 	}
-
 	// Get line height in current font and size
 	_, lineHeight, _, err := pdfengine.CreateContent(dt.doc.CurrentPdf().FontISubset, dt.text,
-		dt.doc.CurrentPdf().FontSize, dt.doc.CurrentPdf().CharSpacing, nil)
+		dt.style.GetFontStyle().GetSize(), dt.doc.CurrentPdf().CharSpacing, nil)
 	if err != nil {
 		return err
 	}
@@ -361,11 +360,10 @@ func (dt *docText) Draw() error {
 
 	// Set the rectangle height to accommodate all text
 	dt.rect.H = totalHeight
-
 	// Skip page break check if we're in header/footer drawing mode
 	if !dt.doc.inHeaderFooterDraw {
 		// Check if the text fits on current page
-		newY := dt.doc.EnsureElementFits(totalHeight, dt.style.SpaceAfter)
+		newY := dt.doc.EnsureElementFits(totalHeight, dt.style.GetSpaceAfter())
 		dt.doc.SetY(newY)
 	}
 
@@ -415,19 +413,18 @@ func (doc *Document) newLineBreakBasedOnDefaultFont(originY float64) {
 
 	// Apply space after the paragraph based on the current active text style
 	// This ensures headers have their proper spacing
-	var spaceAfter float64
-	// Determine which style was used based on font size
-	fontSize := doc.CurrentPdf().FontSize
-	if fontSize >= doc.textConfig.GetHeader1().Size {
-		spaceAfter = doc.textConfig.GetHeader1().SpaceAfter
-	} else if fontSize >= doc.textConfig.GetHeader2().Size {
-		spaceAfter = doc.textConfig.GetHeader2().SpaceAfter
-	} else if fontSize >= doc.textConfig.GetHeader3().Size {
-		spaceAfter = doc.textConfig.GetHeader3().SpaceAfter
-	} else if fontSize <= doc.textConfig.GetFootnote().Size {
-		spaceAfter = doc.textConfig.GetFootnote().SpaceAfter
+	var spaceAfter float64 // Determine which style was used based on font size
+	fontSize := doc.CurrentPdf().FontStyle.GetSize()
+	if fontSize >= doc.textConfig.GetHeader1().GetFontStyle().GetSize() {
+		spaceAfter = doc.textConfig.GetHeader1().GetSpaceAfter()
+	} else if fontSize >= doc.textConfig.GetHeader2().GetFontStyle().GetSize() {
+		spaceAfter = doc.textConfig.GetHeader2().GetSpaceAfter()
+	} else if fontSize >= doc.textConfig.GetHeader3().GetFontStyle().GetSize() {
+		spaceAfter = doc.textConfig.GetHeader3().GetSpaceAfter()
+	} else if fontSize <= doc.textConfig.GetFootnote().GetFontStyle().GetSize() {
+		spaceAfter = doc.textConfig.GetFootnote().GetSpaceAfter()
 	} else {
-		spaceAfter = doc.textConfig.GetNormal().SpaceAfter
+		spaceAfter = doc.textConfig.GetNormal().GetSpaceAfter()
 	}
 
 	// Get line height for current font size - this is critical for proper spacing

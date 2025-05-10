@@ -27,7 +27,6 @@ type cacheContentText struct { //---setup---
 	rectangle      *canvas.Rect
 	textColor      ICacheColorText
 	grayFill       float64
-	txtColorMode   string
 	fontCountIndex int              //Curr.FontFontCount+1
 	fontStyle      config.FontStyle //Contains style, size, color and family
 	charSpacing    float64

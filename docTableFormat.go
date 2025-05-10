@@ -109,8 +109,7 @@ func parseTableFormat(headerStr string) tableFormat {
 
 // createDefaultTableStyles crea los estilos predeterminados para una tabla basados en la configuración del documento
 // Devuelve los estilos para el encabezado y las celdas normales
-func createDefaultTableStyles(doc *Document) (headerStyle, cellStyle config.Cell) {
-	// Estilo para el encabezado
+func createDefaultTableStyles(doc *Document) (headerStyle, cellStyle config.Cell) { // Estilo para el encabezado
 	headerStyle = config.Cell{
 		Border: config.Border{
 			Top:    true,
@@ -121,9 +120,7 @@ func createDefaultTableStyles(doc *Document) (headerStyle, cellStyle config.Cell
 			Color:  config.Color{R: 100, G: 100, B: 100},
 		},
 		FillColor: config.Color{R: 240, G: 240, B: 240},
-		TextColor: config.Color{R: 0, G: 0, B: 0},
-		Font:      FontBold,
-		FontSize:  doc.textConfig.GetHeader3().Size(),
+		TextStyle: doc.textConfig.GetHeader3(),
 	}
 
 	// Estilo para las celdas normales
@@ -137,9 +134,7 @@ func createDefaultTableStyles(doc *Document) (headerStyle, cellStyle config.Cell
 			Color:  config.Color{R: 200, G: 200, B: 200},
 		},
 		FillColor: config.Color{R: 255, G: 255, B: 255},
-		TextColor: config.Color{R: 0, G: 0, B: 0},
-		Font:      FontRegular,
-		FontSize:  doc.textConfig.GetNormal().Size,
+		TextStyle: doc.textConfig.GetNormal(),
 	}
 
 	return headerStyle, cellStyle
@@ -247,9 +242,8 @@ func initializeFixedWidthColumns(doc *Document, headers []string, cellPadding fl
 // initializeAutoWidthColumns inicializa columnas con anchos automáticos
 func initializeAutoWidthColumns(doc *Document, headers []string, cellPadding float64) []tableColumn {
 	columns := make([]tableColumn, len(headers))
-
 	// Configurar la fuente para estimaciones de ancho
-	doc.SetFont(FontBold, "", doc.textConfig.GetHeader3().Size)
+	doc.SetFont(doc.textConfig.GetHeader3().GetFontStyle())
 
 	// Procesar cada encabezado
 	for i, headerStr := range headers {
@@ -260,7 +254,7 @@ func initializeAutoWidthColumns(doc *Document, headers []string, cellPadding flo
 		if options.WidthMode == widthModeFixed {
 			colWidth = options.Width
 		} else {
-			colWidth = calculateAutoColumnWidth(options.HeaderTitle, doc.textConfig.GetHeader3().Size, cellPadding)
+			colWidth = calculateAutoColumnWidth(options.HeaderTitle, doc.textConfig.GetHeader3().GetFontStyle().GetSize(), cellPadding)
 		}
 
 		// Crear columna con las opciones analizadas

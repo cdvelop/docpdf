@@ -16,7 +16,12 @@ type currentPdf struct {
 	CountOfL       int
 
 	// Font configuration consolidated in FontStyle
-	FontStyle     config.FontStyle
+	FontStyle config.FontStyle
+	//text color mode
+	txtColorMode string //color, gray
+
+	//text color
+	txtColor      ICacheColorText
 	FontFontCount int
 	FontType      int // CURRENT_FONT_TYPE_IFONT or  CURRENT_FONT_TYPE_SUBSET
 
@@ -31,12 +36,6 @@ type currentPdf struct {
 	CountOfImg int
 	//cache of image in pdf file
 	ImgCaches map[int]imageCache
-
-	//text color mode
-	txtColorMode string //color, gray
-
-	//text color
-	txtColor ICacheColorText
 
 	//text grayscale
 	grayFill float64
