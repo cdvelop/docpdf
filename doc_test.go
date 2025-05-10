@@ -7,7 +7,6 @@ import (
 
 	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/config"
-	"github.com/cdvelop/docpdf/style"
 )
 
 func TestDocumentAPIUsage(t *testing.T) {
@@ -138,33 +137,33 @@ func TestDocumentAPIUsage(t *testing.T) {
 	)
 
 	// Customize header style
-	comprehensiveTable.HeaderStyle(style.Cell{
-		Border: style.Border{
+	comprehensiveTable.HeaderStyle(config.Cell{
+		Border: config.Border{
 			Top:    false,
 			Left:   false,
 			Bottom: false,
 			Right:  false,
 			Width:  1.0,
-			Color:  style.Color{R: 50, G: 50, B: 150},
+			Color:  config.Color{R: 50, G: 50, B: 150},
 		},
-		FillColor: style.Color{R: 220, G: 230, B: 255},
-		TextColor: style.Color{R: 20, G: 20, B: 100},
+		FillColor: config.Color{R: 220, G: 230, B: 255},
+		TextColor: config.Color{R: 20, G: 20, B: 100},
 		Font:      FontBold,
 		FontSize:  12,
 	})
 
 	// Customize cell style
-	comprehensiveTable.Cell(style.Cell{
-		Border: style.Border{
+	comprehensiveTable.Cell(config.Cell{
+		Border: config.Border{
 			Top:    false,
 			Left:   true,
 			Bottom: true,
 			Right:  true,
 			Width:  0.5,
-			Color:  style.Color{R: 180, G: 180, B: 220},
+			Color:  config.Color{R: 180, G: 180, B: 220},
 		},
-		FillColor: style.Color{R: 255, G: 255, B: 255},
-		TextColor: style.Color{R: 50, G: 50, B: 80},
+		FillColor: config.Color{R: 255, G: 255, B: 255},
+		TextColor: config.Color{R: 50, G: 50, B: 80},
 		Font:      FontRegular,
 		FontSize:  11,
 	})

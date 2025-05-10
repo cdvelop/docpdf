@@ -7,7 +7,6 @@ import (
 	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/pdfengine"
-	"github.com/cdvelop/docpdf/style"
 )
 
 // Point representa un punto en un camino (path) para el renderizado
@@ -21,13 +20,13 @@ type PdfRenderer struct {
 	engine       *pdfengine.PdfEngine
 	className    string
 	dpi          float64
-	strokeColor  style.Color
-	fillColor    style.Color
+	strokeColor  config.Color
+	fillColor    config.Color
 	strokeWidth  float64
 	dashArray    []float64
 	font         config.FontFamily
 	fontSize     float64
-	fontColor    style.Color
+	fontColor    config.Color
 	textRotation float64
 
 	// Coordenadas de la posición actual (para MoveTo, LineTo, etc.)
@@ -47,12 +46,12 @@ func NewPdfRenderer(engine *pdfengine.PdfEngine) *PdfRenderer {
 	return &PdfRenderer{
 		engine:      engine,
 		dpi:         96.0, // DPI estándar para SVG
-		strokeColor: style.ColorBlack,
-		fillColor:   style.ColorWhite,
+		strokeColor: config.ColorBlack,
+		fillColor:   config.ColorWhite,
 		font:        engine, // Usar la fuente predeterminada en lugar del engine
 		strokeWidth: 1.0,
 		fontSize:    10.0,
-		fontColor:   style.ColorBlack,
+		fontColor:   config.ColorBlack,
 		pathPoints:  []Point{}, // Inicializar el slice de puntos vacío
 	}
 }
@@ -60,12 +59,12 @@ func NewPdfRenderer(engine *pdfengine.PdfEngine) *PdfRenderer {
 // ResetStyle restablece los estilos del renderizador a sus valores predeterminados
 func (r *PdfRenderer) ResetStyle() {
 	r.className = ""
-	r.strokeColor = style.ColorBlack
-	r.fillColor = style.ColorWhite
+	r.strokeColor = config.ColorBlack
+	r.fillColor = config.ColorWhite
 	r.strokeWidth = 1.0
 	r.dashArray = nil
 	r.fontSize = 10.0
-	r.fontColor = style.ColorBlack
+	r.fontColor = config.ColorBlack
 	r.textRotation = 0.0
 }
 
@@ -85,14 +84,14 @@ func (r *PdfRenderer) SetClassName(className string) {
 }
 
 // SetStrokeColor establece el color de trazo actual
-func (r *PdfRenderer) SetStrokeColor(color style.Color) {
+func (r *PdfRenderer) SetStrokeColor(color config.Color) {
 	r.strokeColor = color
 	// Aplicar al pdfengine
 	r.engine.SetStrokeColor(color.R, color.G, color.B)
 }
 
 // SetFillColor establece el color de relleno actual
-func (r *PdfRenderer) SetFillColor(color style.Color) {
+func (r *PdfRenderer) SetFillColor(color config.Color) {
 	r.fillColor = color
 	// Aplicar al pdfengine
 	r.engine.SetFillColor(color.R, color.G, color.B)
@@ -396,7 +395,7 @@ func (r *PdfRenderer) SetFont(font config.FontFamily) {
 }
 
 // SetFontColor establece el color de una fuente
-func (r *PdfRenderer) SetFontColor(color style.Color) {
+func (r *PdfRenderer) SetFontColor(color config.Color) {
 	r.fontColor = color
 	// Aplicar al pdfengine (para el texto se usa SetFillColor)
 	r.engine.SetFillColor(color.R, color.G, color.B)

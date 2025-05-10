@@ -7,7 +7,6 @@ import (
 
 	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart"
-	"github.com/cdvelop/docpdf/style"
 )
 
 func main() {

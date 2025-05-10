@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/cdvelop/docpdf/chart"
-	"github.com/cdvelop/docpdf/style"
 )
 
 func main() {

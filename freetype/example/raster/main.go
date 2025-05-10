@@ -23,9 +23,9 @@ import (
 	"image/png"
 	"os"
 
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/raster"
-	"github.com/cdvelop/docpdf/style"
 )
 
 type node struct {
@@ -130,7 +130,7 @@ func showNodes(m *image.RGBA, ns []node) {
 		if !(image.Point{x, y}).In(m.Bounds()) {
 			continue
 		}
-		var c style.Color
+		var c config.Color
 		switch n.degree {
 		case 0:
 			c = color.RGBA{0, 255, 255, 255}

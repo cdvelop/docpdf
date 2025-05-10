@@ -10,7 +10,7 @@ import (
 	"image/draw"
 	"math"
 
-	"github.com/cdvelop/docpdf/style"
+	"github.com/cdvelop/docpdf/config"
 )
 
 // A Span is a horizontal segment of pixels with constant alpha. X0 is an
@@ -172,7 +172,7 @@ func (r *RGBAPainter) Paint(ss []Span, done bool) {
 }
 
 // SetColor sets the color to paint the spans.
-func (r *RGBAPainter) SetColor(c style.Color) {
+func (r *RGBAPainter) SetColor(c config.Color) {
 	r.cr, r.cg, r.cb, r.ca = c.RGBA()
 }
 

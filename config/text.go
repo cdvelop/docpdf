@@ -1,8 +1,6 @@
 package config
 
-import (
-	"github.com/cdvelop/docpdf/style"
-)
+import ()
 
 // TextStyle defines the style configuration for different text sections
 type TextStyle struct {
@@ -139,7 +137,7 @@ func DefaultTextConfig() TextStyles {
 		Path:      "fonts/",
 	})
 	// Configure Normal
-	normalFont := FontStyleRegular.WithSize(11).WithColor(style.Color{R: 0, G: 0, B: 0, A: 255})
+	normalFont := FontStyleRegular.WithSize(11).WithColor(Color{R: 0, G: 0, B: 0, A: 255})
 	textStyles.SetNormal(NewTextStyle(
 		normalFont,
 		1.15,
@@ -148,7 +146,7 @@ func DefaultTextConfig() TextStyles {
 		8,
 	))
 	// Configure Header1
-	header1Font := FontStyleBold.WithSize(16).WithColor(style.Color{R: 0, G: 0, B: 0, A: 255})
+	header1Font := FontStyleBold.WithSize(16).WithColor(Color{R: 0, G: 0, B: 0, A: 255})
 	textStyles.SetHeader1(NewTextStyle(
 		header1Font,
 		1.5,
@@ -158,7 +156,7 @@ func DefaultTextConfig() TextStyles {
 	))
 
 	// Configure Header2
-	header2Font := FontStyleBold.WithSize(14).WithColor(style.Color{R: 0, G: 0, B: 0, A: 255})
+	header2Font := FontStyleBold.WithSize(14).WithColor(Color{R: 0, G: 0, B: 0, A: 255})
 	textStyles.SetHeader2(NewTextStyle(
 		header2Font,
 		1.3,
@@ -168,7 +166,7 @@ func DefaultTextConfig() TextStyles {
 	))
 
 	// Configure Header3
-	header3Font := FontStyleBold.WithSize(12).WithColor(style.Color{R: 0, G: 0, B: 0, A: 255})
+	header3Font := FontStyleBold.WithSize(12).WithColor(Color{R: 0, G: 0, B: 0, A: 255})
 	textStyles.SetHeader3(NewTextStyle(
 		header3Font,
 		1.2,
@@ -178,7 +176,7 @@ func DefaultTextConfig() TextStyles {
 	))
 
 	// Configure Footnote
-	footnoteFont := FontStyleRegular.WithSize(8).WithColor(style.Color{R: 128, G: 128, B: 128, A: 255})
+	footnoteFont := FontStyleRegular.WithSize(8).WithColor(Color{R: 128, G: 128, B: 128, A: 255})
 	textStyles.SetFootnote(NewTextStyle(
 		footnoteFont,
 		1.0,
@@ -187,7 +185,7 @@ func DefaultTextConfig() TextStyles {
 		2,
 	))
 	// Configure PageHeader
-	pageHeaderFont := FontStyleRegular.WithSize(9).WithColor(style.Color{R: 128, G: 128, B: 128, A: 255})
+	pageHeaderFont := FontStyleRegular.WithSize(9).WithColor(Color{R: 128, G: 128, B: 128, A: 255})
 	textStyles.SetPageHeader(NewTextStyle(
 		pageHeaderFont,
 		1.0,
@@ -197,7 +195,7 @@ func DefaultTextConfig() TextStyles {
 	))
 
 	// Configure PageFooter
-	pageFooterFont := FontStyleRegular.WithSize(9).WithColor(style.Color{R: 128, G: 128, B: 128, A: 255})
+	pageFooterFont := FontStyleRegular.WithSize(9).WithColor(Color{R: 128, G: 128, B: 128, A: 255})
 	textStyles.SetPageFooter(NewTextStyle(
 		pageFooterFont,
 		1.0,
@@ -207,7 +205,7 @@ func DefaultTextConfig() TextStyles {
 	))
 
 	// Configure ChartLabel
-	chartLabelFont := FontStyleRegular.WithSize(9).WithColor(style.Color{R: 50, G: 50, B: 50, A: 255})
+	chartLabelFont := FontStyleRegular.WithSize(9).WithColor(Color{R: 50, G: 50, B: 50, A: 255})
 	textStyles.SetChartLabel(NewTextStyle(
 		chartLabelFont,
 		1.0,
@@ -217,7 +215,7 @@ func DefaultTextConfig() TextStyles {
 	))
 
 	// Configure ChartAxisLabel
-	chartAxisLabelFont := FontStyleRegular.WithSize(8).WithColor(style.Color{R: 80, G: 80, B: 80, A: 255})
+	chartAxisLabelFont := FontStyleRegular.WithSize(8).WithColor(Color{R: 80, G: 80, B: 80, A: 255})
 	textStyles.SetChartAxisLabel(NewTextStyle(
 		chartAxisLabelFont,
 		1.0,

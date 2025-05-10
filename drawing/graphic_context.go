@@ -3,8 +3,8 @@ package drawing
 import (
 	"image"
 
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/freetype/truetype"
-	"github.com/cdvelop/docpdf/style"
 )
 
 // GraphicContext describes the interface for the various backends (images, pdf, opengl, ...)
@@ -26,9 +26,9 @@ type GraphicContext interface {
 	// Scale applies a scale to the current transformation matrix.
 	Scale(sx, sy float64)
 	// SetStrokeColor sets the current stroke color
-	SetStrokeColor(c style.Color)
+	SetStrokeColor(c config.Color)
 	// SetFillColor sets the current fill color
-	SetFillColor(c style.Color)
+	SetFillColor(c config.Color)
 	// SetFillRule sets the current fill rule
 	SetFillRule(f FillRule)
 	// SetLineWidth sets the current line width

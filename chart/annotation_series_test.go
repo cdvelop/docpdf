@@ -6,7 +6,7 @@ import (
 
 	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart/testutil"
-	"github.com/cdvelop/docpdf/style"
+	"github.com/cdvelop/docpdf/config"
 )
 
 func TestAnnotationSeriesMeasure(t *testing.T) {
@@ -62,8 +62,8 @@ func TestAnnotationSeriesRender(t *testing.T) {
 
 	as := AnnotationSeries{
 		Style: Style{
-			FillColor:   style.ColorWhite,
-			StrokeColor: style.ColorBlack,
+			FillColor:   config.ColorWhite,
+			StrokeColor: config.ColorBlack,
 		},
 		Annotations: []Value2{
 			{XValue: 1.0, YValue: 1.0, Label: "1.0"},

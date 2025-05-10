@@ -5,10 +5,10 @@ import (
 	"image"
 	"math"
 
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/fixedpoint"
 	"github.com/cdvelop/docpdf/freetype/raster"
 	"github.com/cdvelop/docpdf/freetype/truetype"
-	"github.com/cdvelop/docpdf/style"
 	"golang.org/x/image/draw"
 	"golang.org/x/image/font"
 )
@@ -212,7 +212,7 @@ func (rgc *RasterGraphicContext) SetFontSize(fontSizePoints float64) {
 	rgc.recalc()
 }
 
-func (rgc *RasterGraphicContext) paint(rasterizer *raster.Rasterizer, color style.Color) {
+func (rgc *RasterGraphicContext) paint(rasterizer *raster.Rasterizer, color config.Color) {
 	rgc.painter.SetColor(color)
 	rasterizer.Rasterize(rgc.painter)
 	rasterizer.Clear()

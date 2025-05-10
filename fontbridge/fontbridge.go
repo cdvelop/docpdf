@@ -4,8 +4,8 @@ import (
 	"os"
 
 	"github.com/cdvelop/docpdf/chart"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/freetype/truetype"
-	"github.com/cdvelop/docpdf/style"
 )
 
 // FontConfig contiene la configuración de fuente compartida entre docpdf y chart
@@ -20,10 +20,10 @@ type FontConfig struct {
 	LegendSize     float64 // Para leyendas (Normal o Footnote)
 
 	// Colores
-	TitleColor      style.Color
-	AxisLabelColor  style.Color
-	ValueLabelColor style.Color
-	LegendColor     style.Color
+	TitleColor      config.Color
+	AxisLabelColor  config.Color
+	ValueLabelColor config.Color
+	LegendColor     config.Color
 
 	// Espaciado
 	LineSpacing float64
@@ -41,17 +41,17 @@ func init() {
 		AxisLabelSize:   11,
 		ValueLabelSize:  11,
 		LegendSize:      9,
-		TitleColor:      style.Color{R: 0, G: 0, B: 0, A: 255},       // Negro
-		AxisLabelColor:  style.Color{R: 0, G: 0, B: 0, A: 255},       // Negro
-		ValueLabelColor: style.Color{R: 0, G: 0, B: 0, A: 255},       // Negro
-		LegendColor:     style.Color{R: 128, G: 128, B: 128, A: 255}, // Gris
+		TitleColor:      config.Color{R: 0, G: 0, B: 0, A: 255},       // Negro
+		AxisLabelColor:  config.Color{R: 0, G: 0, B: 0, A: 255},       // Negro
+		ValueLabelColor: config.Color{R: 0, G: 0, B: 0, A: 255},       // Negro
+		LegendColor:     config.Color{R: 128, G: 128, B: 128, A: 255}, // Gris
 		LineSpacing:     1.2,
 	}
 }
 
 // InitFromDocConfig actualiza la configuración compartida desde docpdf.FontConfig
 func InitFromDocConfig(fontPath string, fontFile string, titleSize, normalSize, footnoteSize float64,
-	titleColor, normalColor, footnoteColor style.Color, lineSpacing float64) error {
+	titleColor, normalColor, footnoteColor config.Color, lineSpacing float64) error {
 
 	// Si ya tenemos una fuente cargada, no la cargamos de nuevo
 	if SharedFontConfig.Font == nil {
@@ -133,9 +133,9 @@ func ApplyToChartStyle(style *chart.Style, fontType string) {
 	}
 }
 
-// GetDrawingColor convierte style.Color de docpdf a style.Color para chart
-func GetDrawingColor(r, g, b uint8) style.Color {
-	return style.Color{
+// GetDrawingColor convierte config.Color de docpdf a config.Color para chart
+func GetDrawingColor(r, g, b uint8) config.Color {
+	return config.Color{
 		R: r,
 		G: g,
 		B: b,

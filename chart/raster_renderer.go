@@ -10,7 +10,6 @@ import (
 	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/drawing"
 	"github.com/cdvelop/docpdf/mathutils"
-	"github.com/cdvelop/docpdf/style"
 )
 
 // PNG returns a new png/raster renderer.
@@ -55,7 +54,7 @@ func (rr *rasterRenderer) SetDPI(dpi float64) {
 func (rr *rasterRenderer) SetClassName(_ string) {}
 
 // SetStrokeColor implements the interface method.
-func (rr *rasterRenderer) SetStrokeColor(c style.Color) {
+func (rr *rasterRenderer) SetStrokeColor(c config.Color) {
 	rr.s.StrokeColor = c
 }
 
@@ -70,7 +69,7 @@ func (rr *rasterRenderer) SetStrokeDashArray(dashArray []float64) {
 }
 
 // SetFillColor implements the interface method.
-func (rr *rasterRenderer) SetFillColor(c style.Color) {
+func (rr *rasterRenderer) SetFillColor(c config.Color) {
 	rr.s.FillColor = c
 }
 
@@ -150,7 +149,7 @@ func (rr *rasterRenderer) SetFontSize(size float64) {
 }
 
 // SetFontColor implements the interface method.
-func (rr *rasterRenderer) SetFontColor(c style.Color) {
+func (rr *rasterRenderer) SetFontColor(c config.Color) {
 	rr.s.FontColor = c
 }
 

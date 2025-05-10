@@ -1,4 +1,4 @@
-package style
+package config
 
 // Defines the border style for a cell or table
 type Border struct {

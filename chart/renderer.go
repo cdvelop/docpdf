@@ -5,7 +5,6 @@ import (
 
 	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/config"
-	"github.com/cdvelop/docpdf/style"
 )
 
 // RendererProvider is a function that returns a renderer.
@@ -26,10 +25,10 @@ type Renderer interface {
 	SetClassName(string)
 
 	// SetStrokeColor sets the current stroke color.
-	SetStrokeColor(style.Color)
+	SetStrokeColor(config.Color)
 
 	// SetFillColor sets the current fill color.
-	SetFillColor(style.Color)
+	SetFillColor(config.Color)
 
 	// SetStrokeWidth sets the stroke width.
 	SetStrokeWidth(width float64)
@@ -71,7 +70,7 @@ type Renderer interface {
 	SetFont(config.FontFamily)
 
 	// SetFontColor sets a font's color
-	SetFontColor(style.Color)
+	SetFontColor(config.Color)
 
 	// SetFontSize sets the font size for a text field.
 	SetFontSize(size float64)

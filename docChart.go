@@ -9,7 +9,6 @@ import (
 	"github.com/cdvelop/docpdf/chartutils"
 	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/fontbridge"
-	"github.com/cdvelop/docpdf/style"
 	"github.com/cdvelop/tinystring"
 )
 
@@ -49,7 +48,7 @@ type docChart struct {
 }
 
 // WithStyle aplica un estilo personalizado al gráfico
-func (c *docChart) WithStyle(backgroundColor, chartColor style.Color) *docChart {
+func (c *docChart) WithStyle(backgroundColor, chartColor config.Color) *docChart {
 	c.background = chart.Style{
 		FillColor: backgroundColor,
 	}

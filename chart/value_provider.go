@@ -1,6 +1,6 @@
 package chart
 
-import "github.com/cdvelop/docpdf/style"
+import "github.com/cdvelop/docpdf/config"
 
 // ValuesProvider is a type that produces values.
 type ValuesProvider interface {
@@ -45,7 +45,7 @@ type FullBoundedValuesProvider interface {
 type SizeProvider func(xrange, yrange Range, index int, x, y float64) float64
 
 // ColorProvider is a general provider for color ranges based on values.
-type ColorProvider func(v, vmin, vmax float64) style.Color
+type ColorProvider func(v, vmin, vmax float64) config.Color
 
 // DotColorProvider is a provider for dot color.
-type DotColorProvider func(xrange, yrange Range, index int, x, y float64) style.Color
+type DotColorProvider func(xrange, yrange Range, index int, x, y float64) config.Color

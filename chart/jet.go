@@ -1,12 +1,12 @@
 package chart
 
 import (
-	"github.com/cdvelop/docpdf/style"
+	"github.com/cdvelop/docpdf/config"
 )
 
 // Jet is a color map provider based on matlab's jet color map.
-func Jet(v, vmin, vmax float64) style.Color {
-	c := style.Color{R: 0xff, G: 0xff, B: 0xff, A: 0xff} // white
+func Jet(v, vmin, vmax float64) config.Color {
+	c := config.Color{R: 0xff, G: 0xff, B: 0xff, A: 0xff} // white
 	var dv float64
 
 	if v < vmin {

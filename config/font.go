@@ -2,21 +2,20 @@
 package config
 
 import (
-	"github.com/cdvelop/docpdf/style"
 	"github.com/cdvelop/tinystring"
 )
 
 // Regular font style (000000)
-var FontStyleRegular = FontStyle{name: "regular", intStyle: 0, size: 12, color: style.Color{R: 0, G: 0, B: 0, A: 255}}
+var FontStyleRegular = FontStyle{name: "regular", intStyle: 0, size: 12, color: Color{R: 0, G: 0, B: 0, A: 255}}
 
 // Italic font style (000001)
-var FontStyleItalic = FontStyle{name: "italic", intStyle: 1, size: 12, color: style.Color{R: 0, G: 0, B: 0, A: 255}}
+var FontStyleItalic = FontStyle{name: "italic", intStyle: 1, size: 12, color: Color{R: 0, G: 0, B: 0, A: 255}}
 
 // Bold font style (000010)
-var FontStyleBold = FontStyle{name: "bold", intStyle: 2, size: 12, color: style.Color{R: 0, G: 0, B: 0, A: 255}}
+var FontStyleBold = FontStyle{name: "bold", intStyle: 2, size: 12, color: Color{R: 0, G: 0, B: 0, A: 255}}
 
 // Underline font style (000011)
-var FontStyleUnderline = FontStyle{name: "underline", intStyle: 3, size: 12, color: style.Color{R: 0, G: 0, B: 0, A: 255}}
+var FontStyleUnderline = FontStyle{name: "underline", intStyle: 3, size: 12, color: Color{R: 0, G: 0, B: 0, A: 255}}
 
 // FontFamily represents font files for different styles
 // It contains the regular, bold, italic, and other styles.
@@ -44,16 +43,16 @@ type FontStyle struct {
 	name     string
 	intStyle int
 	size     float64
-	color    style.Color
+	color    Color
 }
 
 // NewFontStyle creates a new FontStyle with the given properties
 // name: The font style name (e.g., "regular", "bold", "italic", "underline")
 // size: Font size in points
 // color: Optional color parameter. If not provided, defaults to black (0,0,0,255)
-func NewFontStyle(name string, size float64, color ...style.Color) FontStyle {
+func NewFontStyle(name string, size float64, color ...Color) FontStyle {
 	// Default color is black
-	defaultColor := style.Color{R: 0, G: 0, B: 0, A: 255}
+	defaultColor := Color{R: 0, G: 0, B: 0, A: 255}
 
 	// Use provided color if available
 	if len(color) > 0 {
@@ -92,7 +91,7 @@ func (fs FontStyle) WithSize(size float64) FontStyle {
 }
 
 // WithColor returns a copy of this style with the specified color
-func (fs FontStyle) WithColor(color style.Color) FontStyle {
+func (fs FontStyle) WithColor(color Color) FontStyle {
 	copy := fs
 	copy.color = color
 	return copy
@@ -133,7 +132,7 @@ func (fs FontStyle) GetSize() float64 {
 }
 
 // GetColor returns the font color
-func (fs FontStyle) GetColor() style.Color {
+func (fs FontStyle) GetColor() Color {
 	return fs.color
 }
 
@@ -158,7 +157,7 @@ func (fs *FontStyle) SetSize(size float64) {
 }
 
 // SetColor sets the font color
-func (fs *FontStyle) SetColor(color style.Color) {
+func (fs *FontStyle) SetColor(color Color) {
 	fs.color = color
 }
 
@@ -214,7 +213,7 @@ func GetFontStyle(fontStyleStr string) FontStyle {
 
 // GetCompleteFont creates a FontStyle with all properties specified
 // Use this to create a complete font definition with style, size, color and family
-func GetCompleteFont(styleStr string, size float64, color style.Color, family string) FontStyle {
+func GetCompleteFont(styleStr string, size float64, color Color, family string) FontStyle {
 	baseStyle := GetFontStyle(styleStr)
 	baseStyle.SetSize(size)
 	baseStyle.SetColor(color)

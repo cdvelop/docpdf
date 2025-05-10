@@ -2,15 +2,15 @@ package chart
 
 import (
 	"github.com/cdvelop/docpdf/canvas"
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/mathutils"
-	"github.com/cdvelop/docpdf/style"
 )
 
 // Legend returns a legend renderable function.
 func Legend(c *Chart, userDefaults ...Style) Renderable {
 	return func(r Renderer, cb canvas.Box, chartDefaults Style) {
 		legendDefaults := Style{
-			FillColor:   style.ColorWhite,
+			FillColor:   config.ColorWhite,
 			FontColor:   DefaultTextColor,
 			FontSize:    8.0,
 			StrokeColor: DefaultAxisColor,
@@ -124,7 +124,7 @@ func Legend(c *Chart, userDefaults ...Style) Renderable {
 func LegendThin(c *Chart, userDefaults ...Style) Renderable {
 	return func(r Renderer, cb canvas.Box, chartDefaults Style) {
 		legendDefaults := Style{
-			FillColor:   style.ColorWhite,
+			FillColor:   config.ColorWhite,
 			FontColor:   DefaultTextColor,
 			FontSize:    8.0,
 			StrokeColor: DefaultAxisColor,
@@ -221,7 +221,7 @@ func LegendThin(c *Chart, userDefaults ...Style) Renderable {
 func LegendLeft(c *Chart, userDefaults ...Style) Renderable {
 	return func(r Renderer, cb canvas.Box, chartDefaults Style) {
 		legendDefaults := Style{
-			FillColor:   style.ColorWhite,
+			FillColor:   config.ColorWhite,
 			FontColor:   DefaultTextColor,
 			FontSize:    8.0,
 			StrokeColor: DefaultAxisColor,

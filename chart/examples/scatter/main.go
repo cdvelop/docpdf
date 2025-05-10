@@ -8,12 +8,12 @@ import (
 
 	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/chart"
-	"github.com/cdvelop/docpdf/style"
+	"github.com/cdvelop/docpdf/config"
 )
 
 func drawChart(res http.ResponseWriter, req *http.Request) {
 
-	viridisByY := func(xr, yr chart.Range, index int, x, y float64) style.Color {
+	viridisByY := func(xr, yr chart.Range, index int, x, y float64) config.Color {
 		return chart.Viridis(y, yr.GetMin(), yr.GetMax())
 	}
 

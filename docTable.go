@@ -4,7 +4,6 @@ import (
 	"github.com/cdvelop/docpdf/canvas"
 	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/pdfengine"
-	"github.com/cdvelop/docpdf/style"
 	"github.com/cdvelop/tinystring"
 )
 
@@ -26,8 +25,8 @@ type docTable struct {
 	rowHeight                 float64
 	maxLinesTextForRowInACell int // Maximum number of text lines per row in a cell
 	cellPadding               float64
-	headerStyle               style.Cell
-	cellStyle                 style.Cell
+	headerStyle               config.Cell
+	cellStyle                 config.Cell
 	alignment                 config.Alignment // config.Left, config.Center, or config.Right alignment
 	currentWidth              float64
 }
@@ -44,9 +43,9 @@ type tableColumn struct {
 
 // tableCell represents a cell in the table
 type tableCell struct {
-	content      string     // Content of the cell
-	useCellStyle bool       // If true, use custom style instead of the table's default
-	cellStyle    style.Cell // Custom style for this cell
+	content      string      // Content of the cell
+	useCellStyle bool        // If true, use custom style instead of the table's default
+	cellStyle    config.Cell // Custom style for this cell
 }
 
 // NewTable creates a new table with the specified headers
@@ -236,13 +235,13 @@ func (t *docTable) AlignRight() *docTable {
 }
 
 // HeaderStyle sets the style for the header row
-func (t *docTable) HeaderStyle(s style.Cell) *docTable {
+func (t *docTable) HeaderStyle(s config.Cell) *docTable {
 	t.headerStyle = s
 	return t
 }
 
-// style.Cell sets the default style for regular cells
-func (t *docTable) Cell(s style.Cell) *docTable {
+// config.Cell sets the default style for regular cells
+func (t *docTable) Cell(s config.Cell) *docTable {
 	t.cellStyle = s
 	return t
 }
@@ -302,11 +301,11 @@ func (t *docTable) AddStyledRow(cells ...styledCell) *docTable {
 // styledCell represents a cell with custom styling
 type styledCell struct {
 	Content string
-	Style   style.Cell
+	Style   config.Cell
 }
 
 // NewStyledCell creates a new cell with custom styling
-func (doc *Document) NewStyledCell(content string, style style.Cell) styledCell {
+func (doc *Document) NewStyledCell(content string, style config.Cell) styledCell {
 	return styledCell{
 		Content: content,
 		Style:   style,
@@ -321,7 +320,7 @@ func (t *docTable) Draw() error {
 	// Colección para guardar información de los encabezados para dibujar sus bordes al final
 	type headerInfo struct {
 		x, y, width, height float64
-		style               style.Cell
+		style               config.Cell
 	}
 	headers := []headerInfo{}
 
@@ -368,7 +367,7 @@ func (t *docTable) Draw() error {
 
 	// Dibujar los bordes de los encabezados
 	for _, h := range headers {
-		t.drawCellBorder(h.x, h.y, h.width, h.height, h.style.Border)
+		t.drawCellBorder(h.x, h.y, h.width, h.height, h.config.Border)
 	}
 	// Dibujar filas de datos
 	for _, row := range t.rows {
@@ -409,7 +408,7 @@ func (t *docTable) Draw() error {
 
 			// Dibujar los bordes de los encabezados
 			for _, h := range headers {
-				t.drawCellBorder(h.x, h.y, h.width, h.height, h.style.Border)
+				t.drawCellBorder(h.x, h.y, h.width, h.height, h.config.Border)
 			}
 
 			// Ajustar currentY para empezar debajo del encabezado
@@ -460,10 +459,10 @@ func (t *docTable) drawCellContent(
 	height float64,
 	content string,
 	align config.Alignment,
-	stCell style.Cell,
+	stCell config.Cell,
 ) {
 	// Fill the cell background if a fill color is specified
-	if (stCell.FillColor != style.Color{}) {
+	if (stCell.FillColor != config.Color{}) {
 		t.doc.SetFillColor(stCell.FillColor.R, stCell.FillColor.G, stCell.FillColor.B)
 		t.doc.RectFromUpperLeftWithStyle(x, y, width, height, "F")
 	}
@@ -539,7 +538,7 @@ func (t *docTable) drawCellBorder(
 	y float64,
 	width float64,
 	height float64,
-	borderStyle style.Border,
+	borderStyle config.Border,
 ) {
 	if borderStyle.Width > 0 {
 		t.doc.SetLineWidth(borderStyle.Width)
@@ -572,13 +571,13 @@ func (t *docTable) drawCell(
 	height float64,
 	content string,
 	align config.Alignment,
-	style style.Cell,
+	style config.Cell,
 ) {
 	// Primero dibujamos el contenido y el fondo
 	t.drawCellContent(x, y, width, height, content, align, style)
 
 	// Luego dibujamos los bordes
-	t.drawCellBorder(x, y, width, height, style.Border)
+	t.drawCellBorder(x, y, width, height, config.Border)
 }
 
 // calculatePosition determina donde colocar la tabla

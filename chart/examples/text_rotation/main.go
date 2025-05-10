@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/cdvelop/docpdf/chart"
-	"github.com/cdvelop/docpdf/style"
+	"github.com/cdvelop/docpdf/config"
 )
 
 func main() {
@@ -14,20 +14,20 @@ func main() {
 	r, _ := chart.PNG(1024, 1024)
 
 	chart.Draw.Text(r, "Test", 64, 64, chart.Style{
-		FontColor: style.ColorBlack,
+		FontColor: config.ColorBlack,
 		FontSize:  18,
 		Font:      f,
 	})
 
 	chart.Draw.Text(r, "Test", 64, 64, chart.Style{
-		FontColor:           style.ColorBlack,
+		FontColor:           config.ColorBlack,
 		FontSize:            18,
 		Font:                f,
 		TextRotationDegrees: 45.0,
 	})
 
 	tb := chart.Draw.MeasureText(r, "Test", chart.Style{
-		FontColor: style.ColorBlack,
+		FontColor: config.ColorBlack,
 		FontSize:  18,
 		Font:      f,
 	}).Shift(64, 64)

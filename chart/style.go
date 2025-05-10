@@ -8,7 +8,6 @@ import (
 	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/freetype/truetype"
 	"github.com/cdvelop/docpdf/mathutils"
-	"github.com/cdvelop/docpdf/style"
 )
 
 const (
@@ -52,18 +51,18 @@ type Style struct {
 	ClassName string
 
 	StrokeWidth     float64
-	StrokeColor     style.Color
+	StrokeColor     config.Color
 	StrokeDashArray []float64
 
-	DotColor style.Color
+	DotColor config.Color
 	DotWidth float64
 
 	DotWidthProvider SizeProvider
 	DotColorProvider DotColorProvider
-	FillColor        style.Color
+	FillColor        config.Color
 
 	FontSize     float64
-	FontColor    style.Color
+	FontColor    config.Color
 	Font         *truetype.Font
 	FontProvider config.FontFamily
 
@@ -188,7 +187,7 @@ func (s Style) GetClassName(defaults ...string) string {
 }
 
 // GetStrokeColor returns the stroke color.
-func (s Style) GetStrokeColor(defaults ...style.Color) style.Color {
+func (s Style) GetStrokeColor(defaults ...config.Color) config.Color {
 	if s.StrokeColor.IsZero() {
 		if len(defaults) > 0 {
 			return defaults[0]
@@ -199,7 +198,7 @@ func (s Style) GetStrokeColor(defaults ...style.Color) style.Color {
 }
 
 // GetFillColor returns the fill color.
-func (s Style) GetFillColor(defaults ...style.Color) style.Color {
+func (s Style) GetFillColor(defaults ...config.Color) config.Color {
 	if s.FillColor.IsZero() {
 		if len(defaults) > 0 {
 			return defaults[0]
@@ -210,7 +209,7 @@ func (s Style) GetFillColor(defaults ...style.Color) style.Color {
 }
 
 // GetDotColor returns the stroke color.
-func (s Style) GetDotColor(defaults ...style.Color) style.Color {
+func (s Style) GetDotColor(defaults ...config.Color) config.Color {
 	if s.DotColor.IsZero() {
 		if len(defaults) > 0 {
 			return defaults[0]
@@ -265,7 +264,7 @@ func (s Style) GetFontSize(defaults ...float64) float64 {
 }
 
 // GetFontColor gets the font size.
-func (s Style) GetFontColor(defaults ...style.Color) style.Color {
+func (s Style) GetFontColor(defaults ...config.Color) config.Color {
 	if s.FontColor.IsZero() {
 		if len(defaults) > 0 {
 			return defaults[0]

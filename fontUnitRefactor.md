@@ -285,13 +285,13 @@ type PdfRenderer struct {
     engine       *pdfengine.PdfEngine
     className    string
     dpi          float64
-    strokeColor  style.Color
-    fillColor    style.Color
+    strokeColor  config.Color
+    fillColor    config.Color
     strokeWidth  float64
     dashArray    []float64
     font         fontengine.FontProvider
     fontSize     float64
-    fontColor    style.Color
+    fontColor    config.Color
     textRotation float64
 
     // Coordenadas de la posición actual (para MoveTo, LineTo, etc.)
@@ -326,12 +326,12 @@ func NewPdfRenderer(engine *pdfengine.PdfEngine) *PdfRenderer {
     return &PdfRenderer{
         engine:      engine,
         dpi:         96.0,
-        strokeColor: style.ColorBlack,
-        fillColor:   style.ColorWhite,
+        strokeColor: config.ColorBlack,
+        fillColor:   config.ColorWhite,
         font:        engine, // Asignación directa según chart/pdf_renderer.go.
         strokeWidth: 1.0,    // Valor según chart/pdf_renderer.go.
         fontSize:    10.0,
-        fontColor:   style.ColorBlack,
+        fontColor:   config.ColorBlack,
         pathPoints:  []canvas.Point{}, // Asume que Point en chart/pdf_renderer.go es canvas.Point.
     }
 }

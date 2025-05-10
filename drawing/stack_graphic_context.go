@@ -1,8 +1,8 @@
 package drawing
 
 import (
+	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/freetype/truetype"
-	"github.com/cdvelop/docpdf/style"
 )
 
 // StackGraphicContext is a context that does thngs.
@@ -17,8 +17,8 @@ type ContextStack struct {
 	LineWidth   float64
 	Dash        []float64
 	DashOffset  float64
-	StrokeColor style.Color
-	FillColor   style.Color
+	StrokeColor config.Color
+	FillColor   config.Color
 	FillRule    FillRule
 	Cap         LineCap
 	Join        LineJoin
@@ -38,8 +38,8 @@ func NewStackGraphicContext() *StackGraphicContext {
 	gc.current.Tr = NewIdentityMatrix()
 	gc.current.Path = new(Path)
 	gc.current.LineWidth = 1.0
-	gc.current.StrokeColor = style.ColorBlack
-	gc.current.FillColor = style.ColorWhite
+	gc.current.StrokeColor = config.ColorBlack
+	gc.current.FillColor = config.ColorWhite
 	gc.current.Cap = RoundCap
 	gc.current.FillRule = FillRuleEvenOdd
 	gc.current.Join = RoundJoin
@@ -78,12 +78,12 @@ func (gc *StackGraphicContext) Scale(sx, sy float64) {
 }
 
 // SetStrokeColor sets the stroke color.
-func (gc *StackGraphicContext) SetStrokeColor(c style.Color) {
+func (gc *StackGraphicContext) SetStrokeColor(c config.Color) {
 	gc.current.StrokeColor = c
 }
 
 // SetFillColor sets the fill color.
-func (gc *StackGraphicContext) SetFillColor(c style.Color) {
+func (gc *StackGraphicContext) SetFillColor(c config.Color) {
 	gc.current.FillColor = c
 }
 

@@ -58,7 +58,7 @@ func (d *Document) newTextBuilder(text string, style config.TextStyle, fontName 
 
 	// Apply style
 	d.SetFont(fontName, "", style.Size)
-	d.SetTextColor(style.Color.R, style.Color.G, style.Color.B)
+	d.SetTextColor(config.Color.R, config.Color.G, config.Color.B)
 
 	return builder
 }

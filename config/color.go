@@ -1,4 +1,4 @@
-package style
+package config
 
 import (
 	"fmt"
@@ -210,7 +210,7 @@ func ColorChannelFromFloat(v float64) uint8 {
 	return uint8(v * 255)
 }
 
-// Color is our internal color type because style.Color is bullshit.
+// Color is our internal color type because config.Color is bullshit.
 type Color struct {
 	R, G, B, A uint8
 }

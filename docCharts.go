@@ -5,7 +5,6 @@ import (
 	"github.com/cdvelop/docpdf/chartutils"
 	"github.com/cdvelop/docpdf/config"
 	"github.com/cdvelop/docpdf/fontbridge"
-	"github.com/cdvelop/docpdf/style"
 )
 
 // chartType define los tipos de gráficos soportados
@@ -254,7 +253,7 @@ func (c *docBarChart) WithoutThousandsSeparator() *docBarChart {
 }
 
 // WithStyle aplica un estilo personalizado al gráfico de barras
-func (c *docBarChart) WithStyle(backgroundColor, barColor style.Color) *docBarChart {
+func (c *docBarChart) WithStyle(backgroundColor, barColor config.Color) *docBarChart {
 	c.docChart.WithStyle(backgroundColor, barColor)
 	return c
 }
@@ -376,7 +375,7 @@ func (c *docDonutChart) WithoutThousandsSeparator() *docDonutChart {
 }
 
 // WithStyle aplica un estilo personalizado al gráfico de donut
-func (c *docDonutChart) WithStyle(backgroundColor, sliceColor style.Color) *docDonutChart {
+func (c *docDonutChart) WithStyle(backgroundColor, sliceColor config.Color) *docDonutChart {
 	c.docChart.WithStyle(backgroundColor, sliceColor)
 	return c
 }

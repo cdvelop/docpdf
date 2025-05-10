@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/cdvelop/docpdf/chart/testutil"
-	"github.com/cdvelop/docpdf/style"
+	"github.com/cdvelop/docpdf/config"
 )
 
 func TestVectorRendererPath(t *testing.T) {
@@ -56,10 +56,10 @@ func TestCanvasStyleSVG(t *testing.T) {
 	testutil.AssertNil(t, err)
 
 	set := Style{
-		StrokeColor: style.ColorWhite,
+		StrokeColor: config.ColorWhite,
 		StrokeWidth: 5.0,
-		FillColor:   style.ColorWhite,
-		FontColor:   style.ColorWhite,
+		FillColor:   config.ColorWhite,
+		FontColor:   config.ColorWhite,
 		Font:        f,
 		Padding:     DefaultBackgroundPadding,
 	}
